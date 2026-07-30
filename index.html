@@ -500,7 +500,9 @@ function iniciarRed(){
   jsonpCall({ accion:'buscar', ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
     btn.disabled = false; btn.textContent = 'Iniciar red →';
     if(!resp || !resp.ok){
-      toast('No se pudo conectar con el servidor' + ((resp&&resp.error)?': '+resp.error:''), true);
+      /* Si el proxy respondió con un motivo, se muestra tal cual: es un
+         problema de permisos o de datos, no de conexión. */
+      toast(resp && resp.error ? resp.error : 'No se pudo conectar con el servidor', true);
       return;
     }
     grupo.ciclo = ciclo; grupo.numero_grupo = ngrupo;
