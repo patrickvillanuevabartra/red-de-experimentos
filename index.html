@@ -123,6 +123,14 @@
   #grupo-estado.err{color:#a5341f;}
   #grupo-estado.ok{color:#0f6e56;}
   .app-locked{opacity:.4;pointer-events:none;filter:grayscale(45%);}
+
+  /* DIAGRAMA */
+  .net-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+  .net-resumen{font-size:13.5px;color:var(--color-text-tertiary);}
+  #net-wrap{overflow-x:auto;margin-bottom:16px;}
+  #net-wrap svg{display:block;max-width:100%;height:auto;}
+  .net-vacio{padding:34px 16px;text-align:center;font-size:14.5px;color:var(--color-text-tertiary);
+             border:1px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);}
 </style>
 </head>
 <body>
@@ -171,30 +179,11 @@
 
     <!-- ══════════════ VISTA 1: RED SEMÁNTICA ══════════════ -->
     <div id="view-network">
-      <svg width="100%" viewBox="0 0 680 380" role="img">
-        <title>Red semántica jerárquica</title>
-        <desc>Enfoques → Conceptos → Instrumentos de la literatura</desc>
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </marker>
-        </defs>
-        <line x1="234" y1="104" x2="446" y2="104" marker-end="url(#arrow)" style="stroke:var(--color-border-secondary);stroke-width:1.5"/>
-        <line x1="464" y1="148" x2="386" y2="224" marker-end="url(#arrow)" style="stroke:var(--color-border-secondary);stroke-width:1.5"/>
-        <g class="node c-purple" onclick="focusRootInput()">
-          <circle cx="170" cy="104" r="64" stroke-width="0.5"/>
-          <text class="th" x="170" y="104" text-anchor="middle" dominant-baseline="central">Enfoques</text>
-        </g>
-        <g class="c-teal">
-          <circle cx="510" cy="104" r="64" stroke-width="0.5"/>
-          <text class="th" x="510" y="104" text-anchor="middle" dominant-baseline="central">Conceptos</text>
-        </g>
-        <g class="c-coral">
-          <circle cx="340" cy="268" r="64" stroke-width="0.5"/>
-          <text class="th" x="340" y="268" text-anchor="middle" dominant-baseline="central">Instrumentos</text>
-        </g>
-        <text id="proc-count" class="ts" x="340" y="352" text-anchor="middle">0 registrados</text>
-      </svg>
+      <div class="net-toolbar">
+        <span id="net-resumen" class="net-resumen"></span>
+        <button id="btn-png" onclick="descargarPNG()">Descargar PNG</button>
+      </div>
+      <div id="net-wrap"></div>
 
       <div class="tree-root-add">
         <input id="in-enfoques" placeholder="Agregar enfoque…">
@@ -428,10 +417,41 @@ function restaurarCanvas_(tarjetas){
 }
 
 /* ── Guardado ── */
+/* Quita las claves auxiliares del diagrama (_y) antes de guardar:
+   son posiciones que se recalculan en cada render, no deben ir a la base. */
+function limpiarParaGuardar_(enfoques){
+  return (enfoques||[]).map(function(e){
+    return {
+      id: e.id, text: e.text,
+      conceptos: (e.conceptos||[]).map(function(c){
+        return {
+          id: c.id, text: c.text,
+          instrumentos: (c.instrumentos||[]).map(function(i){
+            return { id: i.id, text: i.text };
+          }),
+          preguntas: (c.preguntas||[]).map(function(p){
+            return {
+              id: p.id, text: p.text,
+              procedimientos: (p.procedimientos||[]).map(function(pr){
+                return {
+                  id: pr.id, text: pr.text,
+                  herramientas: (pr.herramientas||[]).map(function(h){
+                    return { id: h.id, text: h.text };
+                  })
+                };
+              })
+            };
+          })
+        };
+      })
+    };
+  });
+}
+
 function estadoCompleto_(){
   return {
     pregunta: document.getElementById('qa-pregunta').value,
-    enfoques: data,
+    enfoques: limpiarParaGuardar_(data),
     otrosElementos: serializarOtros_(),
     canvas: serializarCanvas_()
   };
@@ -619,11 +639,226 @@ function makeChildren(items, buildFn){
 function renderAll(){ renderNetwork(); renderTable(); marcarCambio(); }
 
 /* ── Red semántica ── */
+/* ════════════════════════════════
+   DIAGRAMA DE LA RED SEMÁNTICA
+   Se dibuja a partir de los datos reales: cada enfoque, concepto e
+   instrumento agregado aparece como nodo. El alto crece con el contenido.
+════════════════════════════════ */
+var PALETA_CLARA = {
+  fondo:'#FFFFFF', linea:'#C9C6C0', textoTenue:'#6B6862',
+  enfoque:    { fill:'#EEEDFE', stroke:'#534AB7', texto:'#26215C' },
+  concepto:   { fill:'#E1F5EE', stroke:'#0F6E56', texto:'#04342C' },
+  instrumento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' }
+};
+var PALETA_OSCURA = {
+  fondo:'#1F1E1D', linea:'#4A4844', textoTenue:'#A5A199',
+  enfoque:    { fill:'#3C3489', stroke:'#AFA9EC', texto:'#CECBF6' },
+  concepto:   { fill:'#085041', stroke:'#5DCAA5', texto:'#9FE1CB' },
+  instrumento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' }
+};
+function paletaActual(){
+  var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return oscuro ? PALETA_OSCURA : PALETA_CLARA;
+}
+
+var NET = {
+  colX:  [16, 246, 476],      // x de cada columna
+  nodeW: [186, 186, 186],     // ancho de nodo por columna
+  nodeH: 40,
+  rowH:  54,
+  topPad: 44,
+  botPad: 20,
+  width: 678
+};
+
+function escapeXml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* Parte el texto en máximo 2 líneas que quepan en el ancho del nodo */
+function partirTexto(txt, anchoPx, fontPx){
+  var maxChars = Math.floor((anchoPx - 18) / (fontPx * 0.55));
+  var palabras = String(txt).trim().split(/\s+/);
+  var lineas = [], actual = '';
+  for(var i=0;i<palabras.length;i++){
+    var prueba = actual ? actual + ' ' + palabras[i] : palabras[i];
+    if(prueba.length <= maxChars){ actual = prueba; }
+    else {
+      if(actual) lineas.push(actual);
+      actual = palabras[i];
+      if(lineas.length === 2) break;
+    }
+  }
+  if(actual && lineas.length < 2) lineas.push(actual);
+  if(lineas.length === 0) lineas = [''];
+  // Si sobró texto, se recorta la última línea con puntos suspensivos
+  var usado = lineas.join(' ').length;
+  if(usado < String(txt).trim().length){
+    var ult = lineas[lineas.length-1];
+    lineas[lineas.length-1] = ult.slice(0, Math.max(0, maxChars-1)) + '…';
+  }
+  return lineas;
+}
+
+/* Calcula la posición vertical de cada nodo: las hojas ocupan una fila
+   y cada padre se centra respecto a sus hijos. */
+function calcularLayout_(){
+  var filas = 0;
+  function yDeFila(f){ return NET.topPad + f * NET.rowH + NET.nodeH/2; }
+
+  data.forEach(function(e){
+    if(!e.conceptos || e.conceptos.length === 0){
+      e._y = yDeFila(filas); filas++;
+      return;
+    }
+    e.conceptos.forEach(function(c){
+      if(!c.instrumentos || c.instrumentos.length === 0){
+        c._y = yDeFila(filas); filas++;
+        return;
+      }
+      c.instrumentos.forEach(function(i){ i._y = yDeFila(filas); filas++; });
+      c._y = (c.instrumentos[0]._y + c.instrumentos[c.instrumentos.length-1]._y) / 2;
+    });
+    e._y = (e.conceptos[0]._y + e.conceptos[e.conceptos.length-1]._y) / 2;
+  });
+  return { filas: filas, alto: NET.topPad + filas * NET.rowH + NET.botPad };
+}
+
+function nodoSVG_(x, y, w, texto, color){
+  var fontPx = 13.5;
+  var lineas = partirTexto(texto, w, fontPx);
+  var h = NET.nodeH;
+  var s = '<g><rect x="'+x+'" y="'+(y-h/2)+'" width="'+w+'" height="'+h+'" rx="9" '
+        + 'fill="'+color.fill+'" stroke="'+color.stroke+'" stroke-width="1"/>';
+  var cx = x + w/2;
+  if(lineas.length === 1){
+    s += '<text x="'+cx+'" y="'+(y+4.5)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
+       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[0])+'</text>';
+  } else {
+    s += '<text x="'+cx+'" y="'+(y-2)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
+       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[0])+'</text>'
+       + '<text x="'+cx+'" y="'+(y+13)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
+       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[1])+'</text>';
+  }
+  return s + '</g>';
+}
+
+/* Conector curvo entre el borde derecho del padre y el izquierdo del hijo */
+function enlaceSVG_(x1, y1, x2, y2, color){
+  var mx = (x1 + x2) / 2;
+  return '<path d="M'+x1+' '+y1+' C'+mx+' '+y1+' '+mx+' '+y2+' '+x2+' '+y2+'" '
+       + 'fill="none" stroke="'+color+'" stroke-width="1.3"/>';
+}
+
+function construirSVG_(paleta, conFondo){
+  var lay = calcularLayout_();
+  var W = NET.width, H = lay.alto;
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img">';
+  s += '<title>Red semántica: enfoques, conceptos e instrumentos</title>';
+  if(conFondo) s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+paleta.fondo+'"/>';
+
+  /* Encabezados de columna */
+  var titulos = ['Enfoques','Conceptos','Instrumentos'];
+  for(var k=0;k<3;k++){
+    s += '<text x="'+(NET.colX[k] + NET.nodeW[k]/2)+'" y="24" text-anchor="middle" '
+       + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12.5" font-weight="600" '
+       + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+titulos[k].toUpperCase()+'</text>';
+  }
+
+  /* Enlaces primero, para que queden detrás de los nodos */
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      s += enlaceSVG_(NET.colX[0]+NET.nodeW[0], e._y, NET.colX[1], c._y, paleta.linea);
+      (c.instrumentos||[]).forEach(function(i){
+        s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], i._y, paleta.linea);
+      });
+    });
+  });
+
+  /* Nodos */
+  data.forEach(function(e){
+    s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque);
+    (e.conceptos||[]).forEach(function(c){
+      s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto);
+      (c.instrumentos||[]).forEach(function(i){
+        s += nodoSVG_(NET.colX[2], i._y, NET.nodeW[2], i.text, paleta.instrumento);
+      });
+    });
+  });
+
+  return s + '</svg>';
+}
+
 function renderNetwork(){
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
   data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
-  var t = totalInstrumentos();
-  document.getElementById('proc-count').textContent = t + (t === 1 ? ' registrado' : ' registrados');
+
+  var wrap = document.getElementById('net-wrap');
+  var nEnf = data.length;
+  var nCon = 0, nIns = totalInstrumentos();
+  data.forEach(function(e){ nCon += (e.conceptos||[]).length; });
+
+  if(nEnf === 0){
+    wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo y el diagrama se irá construyendo solo.</div>';
+  } else {
+    wrap.innerHTML = construirSVG_(paletaActual(), false);
+  }
+  document.getElementById('net-resumen').textContent =
+    nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
+    nCon + (nCon===1?' concepto':' conceptos') + ' · ' +
+    nIns + (nIns===1?' instrumento':' instrumentos');
+  document.getElementById('btn-png').disabled = (nEnf === 0);
+}
+
+/* ── Descarga en PNG ──
+   Se exporta siempre con la paleta clara y fondo blanco, que es lo que
+   sirve para pegar en informes y presentaciones. */
+function descargarPNG(){
+  if(data.length === 0) return;
+  var btn = document.getElementById('btn-png');
+  var textoOriginal = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Generando…';
+
+  var svgTexto = construirSVG_(PALETA_CLARA, true);
+  var lay = calcularLayout_();
+  var escala = 2.5; // resolución para que se vea nítido al imprimir
+
+  var img = new Image();
+  var blob = new Blob([svgTexto], { type: 'image/svg+xml;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+
+  img.onload = function(){
+    var canvas = document.createElement('canvas');
+    canvas.width  = Math.round(NET.width * escala);
+    canvas.height = Math.round(lay.alto  * escala);
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+
+    canvas.toBlob(function(pngBlob){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(pngBlob);
+      a.download = nombreArchivoPNG_();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+      btn.disabled = false; btn.textContent = textoOriginal;
+    }, 'image/png');
+  };
+  img.onerror = function(){
+    URL.revokeObjectURL(url);
+    btn.disabled = false; btn.textContent = textoOriginal;
+    alert('No se pudo generar la imagen. Intenta nuevamente.');
+  };
+  img.src = url;
+}
+
+function nombreArchivoPNG_(){
+  var partes = ['red-semantica'];
+  if(grupo.ciclo)        partes.push(grupo.ciclo);
+  if(grupo.numero_grupo) partes.push('grupo' + grupo.numero_grupo);
+  return partes.join('_').replace(/[^\w\-]/g,'-') + '.png';
 }
 function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
