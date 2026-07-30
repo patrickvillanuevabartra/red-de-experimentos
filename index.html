@@ -131,6 +131,21 @@
   #net-wrap svg{display:block;max-width:100%;height:auto;}
   .net-vacio{padding:34px 16px;text-align:center;font-size:14.5px;color:var(--color-text-tertiary);
              border:1px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);}
+
+  /* REDES GUARDADAS */
+  .guardadas-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;}
+  .guardadas-titulo{font-size:16px;font-weight:500;margin:0;}
+  .guardadas-msg{font-size:14px;color:var(--color-text-tertiary);margin:0;}
+  #guardadas-tabla{width:100%;border-collapse:collapse;font-size:14.5px;}
+  #guardadas-tabla th{text-align:left;font-weight:500;font-size:13px;color:var(--color-text-secondary);
+                      padding:6px 8px;border-bottom:1px solid var(--color-border-tertiary);white-space:nowrap;}
+  #guardadas-tabla td{padding:8px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle;}
+  #guardadas-tabla tr:last-child td{border-bottom:none;}
+  .g-grupo{font-weight:500;white-space:nowrap;}
+  .g-sub{font-size:12.5px;color:var(--color-text-tertiary);}
+  .g-conteo{font-size:13px;color:var(--color-text-secondary);white-space:nowrap;}
+  .g-abrir{font-size:13.5px;padding:5px 12px;white-space:nowrap;}
+  .fila-activa{background:var(--color-background-secondary);}
 </style>
 </head>
 <body>
@@ -166,6 +181,14 @@
       <button id="btn-cargar" onclick="cargarGrupo()">Ingresar</button>
     </div>
     <p id="grupo-estado"></p>
+  </div>
+
+  <div class="card" id="guardadas-card">
+    <div class="guardadas-head">
+      <h2 class="guardadas-titulo">Redes guardadas</h2>
+      <button id="btn-refrescar" onclick="cargarGuardadas()">Actualizar</button>
+    </div>
+    <div id="guardadas-cuerpo"><p class="guardadas-msg">Cargando…</p></div>
   </div>
 
   <div class="card app-locked" id="app-card">
@@ -327,6 +350,7 @@ function cargarGrupo(){
     grupo.cargado = true;
     bloquearApp(false);
     suprimirAutoguardado = false;
+    cargarGuardadas();
   }, function(){
     document.getElementById('btn-cargar').disabled = false;
     setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
@@ -483,10 +507,14 @@ function guardarAhora(){
   postRequest(params, function(resp){
     guardadoEnCurso = false;
     if(resp && resp.ok){
+      var eraNuevo = !grupo.id;
       if(!grupo.id && resp.record && resp.record.id){
         grupo.id = resp.record.id;
       }
       setEstadoGrupo('Guardado ✓ · ' + new Date().toLocaleTimeString(), 'ok');
+      /* Solo se refresca la lista cuando aparece un grupo nuevo; hacerlo en
+         cada autoguardado dispararía una consulta por cada tecla escrita. */
+      if(eraNuevo) cargarGuardadas();
     } else {
       setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
     }
@@ -639,6 +667,107 @@ function makeChildren(items, buildFn){
 function renderAll(){ renderNetwork(); renderTable(); marcarCambio(); }
 
 /* ── Red semántica ── */
+/* ════════════════════════════════
+   REDES GUARDADAS
+════════════════════════════════ */
+function cargarGuardadas(){
+  var cuerpo = document.getElementById('guardadas-cuerpo');
+  var btn = document.getElementById('btn-refrescar');
+  btn.disabled = true;
+  cuerpo.innerHTML = '<p class="guardadas-msg">Cargando…</p>';
+  jsonpRequest({ accion: 'listar_resumen' }, function(resp){
+    btn.disabled = false;
+    if(!resp || !resp.ok){
+      cuerpo.innerHTML = '<p class="guardadas-msg">No se pudo cargar la lista. Usa «Actualizar» para reintentar.</p>';
+      return;
+    }
+    pintarGuardadas_(resp.grupos || []);
+  }, function(){
+    btn.disabled = false;
+    cuerpo.innerHTML = '<p class="guardadas-msg">No se pudo cargar la lista. Usa «Actualizar» para reintentar.</p>';
+  });
+}
+
+function fechaCorta_(iso){
+  if(!iso) return '';
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function pintarGuardadas_(grupos){
+  var cuerpo = document.getElementById('guardadas-cuerpo');
+  if(grupos.length === 0){
+    cuerpo.innerHTML = '<p class="guardadas-msg">Todavía no hay redes guardadas. La primera se creará cuando un grupo ingrese y empiece a trabajar.</p>';
+    return;
+  }
+  var tabla = document.createElement('table');
+  tabla.id = 'guardadas-tabla';
+  tabla.innerHTML = '<thead><tr><th>Grupo</th><th>Contenido</th><th>Última edición</th><th></th></tr></thead>';
+  var tbody = document.createElement('tbody');
+
+  grupos.forEach(function(g){
+    var tr = document.createElement('tr');
+    if(grupo.id && g.id === grupo.id) tr.className = 'fila-activa';
+
+    var td1 = document.createElement('td');
+    td1.innerHTML = '<div class="g-grupo">' + escapeHtml_(g.ciclo) + ' · Grupo ' + escapeHtml_(g.numero_grupo) + '</div>'
+                  + '<div class="g-sub">' + escapeHtml_(g.coordinador || 'Sin coordinador') + '</div>';
+
+    var td2 = document.createElement('td');
+    td2.className = 'g-conteo';
+    td2.textContent = g.nEnfoques + ' enf · ' + g.nConceptos + ' conc · ' + g.nInstrumentos + ' instr';
+
+    var td3 = document.createElement('td');
+    td3.className = 'g-sub';
+    td3.textContent = fechaCorta_(g.actualizado);
+
+    var td4 = document.createElement('td');
+    var btn = document.createElement('button');
+    btn.className = 'g-abrir';
+    btn.textContent = (grupo.id && g.id === grupo.id) ? 'En edición' : 'Abrir';
+    btn.disabled = !!(grupo.id && g.id === grupo.id);
+    btn.addEventListener('click', function(){ abrirGuardada_(g); });
+    td4.appendChild(btn);
+
+    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+  cuerpo.innerHTML = '';
+  cuerpo.appendChild(tabla);
+}
+
+function escapeHtml_(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* Abre una red guardada: rellena la barra de grupo y reutiliza cargarGrupo(),
+   que es el único camino que trae la estructura completa desde QuintaDB. */
+function abrirGuardada_(g){
+  if(guardadoEnCurso || guardadoPendiente || guardarTimer){
+    if(!confirm('Hay cambios sin terminar de guardar en el grupo actual. ¿Cambiar de grupo de todos modos?')) return;
+  }
+  clearTimeout(guardarTimer); guardarTimer = null;
+  suprimirAutoguardado = true;
+  grupo.cargado = false;
+  grupo.id = null;
+  var selCiclo = document.getElementById('in-ciclo');
+  /* Si el ciclo guardado no está entre las opciones (p. ej. un ciclo antiguo),
+     se agrega para que igual se pueda abrir el registro. */
+  if(g.ciclo && !Array.prototype.some.call(selCiclo.options, function(o){ return o.value === g.ciclo; })){
+    var op = document.createElement('option');
+    op.value = g.ciclo; op.textContent = g.ciclo;
+    selCiclo.appendChild(op);
+  }
+  selCiclo.value = g.ciclo || '';
+  document.getElementById('in-numgrupo').value    = g.numero_grupo || '';
+  document.getElementById('in-coordinador').value = g.coordinador || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  cargarGrupo();
+}
+
 /* ════════════════════════════════
    DIAGRAMA DE LA RED SEMÁNTICA
    Se dibuja a partir de los datos reales: cada enfoque, concepto e
@@ -1001,6 +1130,7 @@ document.getElementById('exp-grid').addEventListener('input', marcarCambio);
 
 renderAll();
 switchView('network');
+cargarGuardadas();
 </script>
 </body>
 </html>
