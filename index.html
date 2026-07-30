@@ -269,12 +269,27 @@ function jsonpRequest(params, onSuccess, onError){
   document.body.appendChild(script);
 }
 
+/* Guardado por POST: el contenido viaja en el cuerpo, no en la URL.
+   Content-Type text/plain lo mantiene como "simple request" (sin preflight CORS). */
+function postRequest(params, onSuccess, onError){
+  fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(params)
+  })
+  .then(function(r){ return r.json(); })
+  .then(onSuccess)
+  .catch(function(){ onError && onError(); });
+}
+
 /* ════════════════════════════════
    ESTADO DE GRUPO Y AUTOGUARDADO
 ════════════════════════════════ */
 var grupo = { id: null, ciclo: '', numero_grupo: '', coordinador: '', cargado: false };
 var suprimirAutoguardado = true; // evita disparar guardado durante la carga inicial
 var guardarTimer = null;
+var guardadoEnCurso = false;
+var guardadoPendiente = false;
 
 function setEstadoGrupo(msg, tipo){
   var el = document.getElementById('grupo-estado');
@@ -296,7 +311,7 @@ function cargarGrupo(){
   }
   setEstadoGrupo('Buscando tu grupo…');
   document.getElementById('btn-cargar').disabled = true;
-  jsonpRequest({ accion: 'listar' }, function(resp){
+  jsonpRequest({ accion: 'listar', ciclo: ciclo, numero_grupo: numGrupo }, function(resp){
     document.getElementById('btn-cargar').disabled = false;
     if(!resp || !resp.ok){
       setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
@@ -338,8 +353,11 @@ function aplicarEstadoCargado_(estructuraTxt){
   document.getElementById('qa-pregunta').value = estado.pregunta || '';
   data = estado.enfoques || [];
   reindexarIds_(data);
-  restaurarOtros_(estado.otrosElementos || []);
-  restaurarCanvas_(estado.canvas || []);
+  /* Solo se sobrescriben si el guardado realmente trae esas listas.
+     Si no, se conservan las filas y tarjetas por defecto del HTML. */
+  if(Array.isArray(estado.otrosElementos)) restaurarOtros_(estado.otrosElementos);
+  if(Array.isArray(estado.canvas))         restaurarCanvas_(estado.canvas);
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   renderAll();
 }
 
@@ -425,6 +443,13 @@ function marcarCambio(){
   guardarTimer = setTimeout(guardarAhora, 1400);
 }
 function guardarAhora(){
+  /* Candado: si ya hay un guardado en vuelo, no lanzamos otro.
+     Sin esto, dos cambios seguidos antes de la primera respuesta crearían
+     DOS registros para el mismo grupo (el id aún no existe). */
+  if(guardadoEnCurso){ guardadoPendiente = true; return; }
+  guardadoEnCurso = true;
+  guardadoPendiente = false;
+
   var estructura = JSON.stringify(estadoCompleto_());
   setEstadoGrupo('Guardando…');
   var params = {
@@ -435,7 +460,8 @@ function guardarAhora(){
     coordinador: grupo.coordinador,
     estructura: estructura
   };
-  jsonpRequest(params, function(resp){
+  postRequest(params, function(resp){
+    guardadoEnCurso = false;
     if(resp && resp.ok){
       if(!grupo.id && resp.record && resp.record.id){
         grupo.id = resp.record.id;
@@ -444,10 +470,20 @@ function guardarAhora(){
     } else {
       setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
     }
+    if(guardadoPendiente) guardarAhora();
   }, function(){
+    guardadoEnCurso = false;
     setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
   });
 }
+
+/* Aviso si el usuario cierra la pestaña con cambios sin guardar */
+window.addEventListener('beforeunload', function(e){
+  if(guardadoEnCurso || guardadoPendiente || guardarTimer){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 
 /* ════════════════════════════════
    ESTADO
