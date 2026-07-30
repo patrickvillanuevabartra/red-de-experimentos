@@ -2,365 +2,555 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Red de Experimentos · URP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Red de Experimentos — Ingeniería URP</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --color-background-primary:#ffffff;
-    --color-background-secondary:#f5f4f0;
-    --color-background-tertiary:#eeede6;
-    --color-text-primary:#1a1a18;
-    --color-text-secondary:#5f5e5a;
-    --color-text-tertiary:#8a8980;
-    --color-text-info:#185fa5;
-    --color-border-tertiary:rgba(0,0,0,0.14);
-    --color-border-secondary:rgba(0,0,0,0.26);
-    --border-radius-md:8px;
-    --border-radius-lg:12px;
-    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --color-background-primary:#1e1e1c;
-      --color-background-secondary:#292926;
-      --color-background-tertiary:#161615;
-      --color-text-primary:#ECEAE3;
-      --color-text-secondary:#b4b2a9;
-      --color-text-tertiary:#85847c;
-      --color-text-info:#85b7eb;
-      --color-border-tertiary:rgba(255,255,255,0.16);
-      --color-border-secondary:rgba(255,255,255,0.28);
-    }
+    --ink:#1c2a33; --paper:#eef1ec; --amber:#c8743b; --teal:#2f6d6a; --line:#c9cfc6;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--color-background-tertiary);font-family:var(--font-sans);color:var(--color-text-primary);}
-  .page{max-width:800px;margin:0 auto;padding:32px 20px 64px;}
-  header{margin-bottom:1.5rem;}
-  header h1{font-size:24px;font-weight:500;margin:0 0 6px;}
-  header p{font-size:15.5px;color:var(--color-text-secondary);margin:0;line-height:1.5;}
-  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;}
-  button{font-family:inherit;font-size:15px;padding:9px 16px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);cursor:pointer;}
-  button:hover{background:var(--color-background-secondary);}
-  button:active{transform:scale(0.98);}
-  input,textarea{font-family:inherit;font-size:16.5px;padding:9px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-primary);}
-  input{height:36px;}
-  input:focus,textarea:focus,[contenteditable]:focus{outline:2px solid var(--color-text-info);outline-offset:1px;}
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-
-  /* TABS */
-  .tabs{display:flex;gap:4px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem;flex-wrap:wrap;}
-  .tab-btn{font-size:15.5px;padding:10px 16px;border-radius:var(--border-radius-md) var(--border-radius-md) 0 0;border:0.5px solid transparent;}
-  .tab-active{font-weight:500;color:var(--color-text-info);border-bottom:2px solid var(--color-text-info);}
-
-  /* SVG */
-  .th{font-family:var(--font-sans);font-size:15.5px;font-weight:500;fill:var(--color-text-primary);}
-  .ts{font-family:var(--font-sans);font-size:13.5px;fill:var(--color-text-secondary);}
-  .node{cursor:pointer;}
-  .node:hover{opacity:0.85;}
-  .c-purple circle{fill:#EEEDFE;stroke:#534AB7;} .c-purple text{fill:#26215C;}
-  .c-teal   circle{fill:#E1F5EE;stroke:#0F6E56;} .c-teal   text{fill:#04342C;}
-  .c-coral  circle{fill:#FAECE7;stroke:#993C1D;} .c-coral  text{fill:#4A1B0C;}
-  @media(prefers-color-scheme:dark){
-    .c-purple circle{fill:#3C3489;stroke:#AFA9EC;} .c-purple text{fill:#CECBF6;}
-    .c-teal   circle{fill:#085041;stroke:#5DCAA5;} .c-teal   text{fill:#9FE1CB;}
-    .c-coral  circle{fill:#712B13;stroke:#F0997B;} .c-coral  text{fill:#F5C4B3;}
-  }
-
-  /* DOTS */
-  .net-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-  .dot-purple{background:#534AB7;} .dot-teal{background:#0F6E56;} .dot-coral{background:#993C1D;}
-  .dot-pink{background:#993556;}   .dot-amber{background:#9a6b00;} .dot-blue{background:#3568b0;}
-
-  /* TREE */
-  .tree-root-add{display:flex;gap:6px;margin-top:14px;}
-  .tree-root-add input{flex:1;}
-  .tree-children{margin-left:18px;padding-left:14px;border-left:0.5px solid var(--color-border-tertiary);margin-top:8px;display:flex;flex-direction:column;gap:8px;}
-  .tree-children.root{margin-left:0;padding-left:0;border-left:none;}
-  .tree-item{border-radius:var(--border-radius-md);padding:8px 10px;}
-  .tree-item.l1{background:var(--color-background-secondary);}
-  .tree-item.l2{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);}
-  .tree-item.l3{background:var(--color-background-secondary);}
-  .tree-item.l4{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);}
-  .tree-item.l5{background:var(--color-background-secondary);}
-  .tree-head{display:flex;align-items:center;gap:6px;font-size:15px;}
-  .tree-text{flex:1;font-weight:500;}
-  .tree-badge{font-size:12.5px;color:var(--color-text-tertiary);white-space:nowrap;}
-  .tree-del{border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:16px;padding:0 4px;}
+  body{font-family:'Poppins',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+       margin:0;line-height:1.5;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px;}
+  .kicker{font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--amber);margin-bottom:10px;}
+  h1{font-weight:700;font-size:32px;line-height:1.15;margin:0 0 10px;}
+  .sub{max-width:620px;color:#4a5a60;margin:0 0 24px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:26px;margin-bottom:18px;box-shadow:0 1px 0 rgba(0,0,0,.03);}
+  h2{font-size:18px;font-weight:600;margin:0 0 16px;}
+  label{display:block;font-size:13.5px;letter-spacing:.06em;color:#6a746f;margin:10px 0 6px;text-transform:uppercase;}
+  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:4px;padding:11px 12px;font-size:16.5px;color:var(--ink);font-family:'Poppins',sans-serif;background:#fff;}
+  textarea{resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .note{font-size:14.5px;color:#6a746f;margin:0 0 14px;}
+  .blockLbl{font-size:13px;color:var(--teal);font-weight:500;margin:0 0 4px;}
+  .actions{display:flex;justify-content:space-between;gap:12px;margin-top:20px;align-items:center;}
+  button{cursor:pointer;transition:transform .08s,opacity .15s;font-family:'Poppins',sans-serif;}
+  button:hover:not(:disabled){transform:translateY(-1px);}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  .btn{background:var(--ink);color:#fff;border:none;border-radius:4px;padding:11px 20px;font-size:14px;font-weight:600;}
+  .btnGhost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:11px 18px;font-size:14px;font-weight:500;}
+  .btnMini{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:13px;}
+  .btnSave{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:13px;font-weight:600;}
+  .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;padding:8px 12px;font-size:13px;}
+  .btnDel:hover{background:#fbf1ee;}
+  .coordsBox{margin-top:8px;padding:10px 14px;background:#eef5f4;border-radius:4px;font-size:14.5px;}
+  .hintWarn{font-size:12px;color:#9a3b2c;margin-top:6px;}
+  .badge{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:11px;}
+  .ejBtn{background:none;border:1px solid var(--teal);color:var(--teal);border-radius:3px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;}
+  .ejBtn:hover{background:#eef5f4;}
+  /* tabs superiores */
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{padding:8px 16px;border:1px solid var(--line);border-radius:4px;background:#fff;font-size:14px;font-weight:500;}
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  /* barra de grupo */
+  .grupoBar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-bottom:16px;}
+  .grupoBar .info{font-size:13px;color:#4a5a60;display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;}
+  .grupoBar .info b{color:var(--ink);}
+  .grupoBar .info .cy{background:#eef5f4;color:var(--teal);padding:2px 8px;border-radius:20px;font-size:12px;}
+  .grupoBar .acts{display:flex;gap:8px;flex-wrap:wrap;}
+  /* lista de guardadas */
+  .listItem{border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px;background:#fff;}
+  .listMeta{font-size:12px;color:#8a948f;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .listTema{font-size:15px;margin-bottom:6px;font-weight:500;}
+  .listPg{font-size:13px;color:#4a5a60;}
+  /* vistas internas */
+  .vtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap;}
+  .vtab{font-size:14px;padding:9px 15px;border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;background:transparent;color:#6a746f;font-weight:500;margin-bottom:-1px;}
+  .vtab.on{background:#fff;border-color:var(--line);color:var(--ink);}
+  /* árbol */
+  .tree-children{display:flex;flex-direction:column;gap:8px;}
+  .tree-children.root{gap:10px;margin-top:12px;}
+  .tree-item{border:1px solid var(--line);border-radius:4px;padding:10px 12px;background:#fff;}
+  .tree-item.l1{background:#fff;border-left:3px solid #534AB7;}
+  .tree-item.l2{background:#fafbf9;border-left:3px solid var(--teal);}
+  .tree-item.l3{background:#f4f6f2;border-left:3px solid var(--amber);}
+  .tree-item.l4{background:#f7f8f5;border-left:3px solid #8a6d1f;}
+  .tree-item.l5{background:#fafbf9;border-left:3px solid #3a6ea5;}
+  .tree-head{display:flex;align-items:center;gap:8px;font-size:15px;}
+  .tree-text{flex:1;}
+  .net-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;}
+  .dot-purple{background:#534AB7;} .dot-teal{background:var(--teal);}
+  .dot-coral{background:var(--amber);} .dot-pink{background:#a33e6d;}
+  .dot-amber{background:#8a6d1f;}     .dot-blue{background:#3a6ea5;}
+  .tree-badge{font-size:12.5px;color:#8a948f;white-space:nowrap;}
+  .tree-del{border:none;background:none;color:#b04a3a;cursor:pointer;font-size:16px;padding:0 4px;line-height:1;}
   .tree-add{display:flex;gap:6px;margin-top:8px;}
-  .tree-add input{flex:1;height:38px;font-size:15px;}
-  .tree-add button{padding:5px 12px;font-size:14.5px;}
-
-  /* TABLA */
-  .qa-question{margin-bottom:1.25rem;}
-  .qa-label{display:block;font-size:14px;color:var(--color-text-secondary);margin-bottom:4px;}
-  #qa-pregunta{width:100%;}
-  .qa-section-title{font-size:15px;font-weight:500;color:var(--color-text-secondary);margin:18px 0 10px;}
-  .qa-hint-sub{font-size:13.5px;font-weight:400;color:var(--color-text-tertiary);}
-  .qa-empty{padding:18px;text-align:center;}
-  .qa-empty p{font-size:14.5px;color:var(--color-text-secondary);margin-bottom:10px;}
-  #qa-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15.5px;margin-bottom:10px;}
-  #qa-table th,#qa-table td{border:0.5px solid var(--color-border-tertiary);padding:8px;text-align:left;vertical-align:top;}
-  #qa-table th{background:var(--color-background-secondary);font-weight:500;font-size:14.5px;}
-  #qa-table td[contenteditable]:empty:before{content:attr(data-placeholder);color:var(--color-text-tertiary);}
-  .qa-del{padding:2px 8px;border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:17px;}
-
-  /* CANVAS */
-  .exp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
-  .exp-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;}
-  .exp-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px;}
-  .exp-title{font-size:15px;font-weight:500;color:var(--color-text-secondary);}
-  .exp-del{padding:0 6px;border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:17px;}
-  .exp-card textarea{width:100%;resize:vertical;}
-  .add-section-btn{margin-top:12px;}
-
-  /* GRUPO / GUARDADO */
-  #grupo-bar{margin-bottom:14px;}
-  .grupo-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
-  .grupo-field{flex:1;min-width:110px;}
-  .grupo-field.wide{flex:2;min-width:180px;}
-  .grupo-field select,.grupo-field input{width:100%;}
-  #grupo-estado{font-size:13.5px;color:var(--color-text-tertiary);margin:8px 0 0;}
-  #grupo-estado.err{color:#a5341f;}
-  #grupo-estado.ok{color:#0f6e56;}
-  .app-locked{opacity:.4;pointer-events:none;filter:grayscale(45%);}
-
-  /* DIAGRAMA */
-  .net-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
-  .net-resumen{font-size:13.5px;color:var(--color-text-tertiary);}
+  .tree-add input{flex:1;font-size:15px;padding:7px 10px;}
+  .tree-add button{padding:5px 12px;font-size:14.5px;border:1px solid var(--line);border-radius:4px;background:#fff;}
+  .tree-root-add{display:flex;gap:8px;margin-top:14px;}
+  .tree-root-add input{flex:1;}
+  .tree-root-add button{background:var(--ink);color:#fff;border:none;border-radius:4px;padding:11px 18px;font-size:14px;font-weight:600;white-space:nowrap;}
+  /* diagrama */
+  .net-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .net-resumen{font-size:13.5px;color:#8a948f;}
   #net-wrap{overflow-x:auto;margin-bottom:16px;}
   #net-wrap svg{display:block;max-width:100%;height:auto;}
-  .net-vacio{padding:34px 16px;text-align:center;font-size:14.5px;color:var(--color-text-tertiary);
-             border:1px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);}
-
-  /* REDES GUARDADAS */
-  .guardadas-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;}
-  .guardadas-titulo{font-size:16px;font-weight:500;margin:0;}
-  .guardadas-msg{font-size:14px;color:var(--color-text-tertiary);margin:0;}
-  #guardadas-tabla{width:100%;border-collapse:collapse;font-size:14.5px;}
-  #guardadas-tabla th{text-align:left;font-weight:500;font-size:13px;color:var(--color-text-secondary);
-                      padding:6px 8px;border-bottom:1px solid var(--color-border-tertiary);white-space:nowrap;}
-  #guardadas-tabla td{padding:8px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle;}
-  #guardadas-tabla tr:last-child td{border-bottom:none;}
-  .g-grupo{font-weight:500;white-space:nowrap;}
-  .g-sub{font-size:12.5px;color:var(--color-text-tertiary);}
-  .g-conteo{font-size:13px;color:var(--color-text-secondary);white-space:nowrap;}
-  .g-abrir{font-size:13.5px;padding:5px 12px;white-space:nowrap;}
-  .fila-activa{background:var(--color-background-secondary);}
+  .net-vacio{padding:34px 16px;text-align:center;font-size:14.5px;color:#8a948f;
+             border:1px dashed var(--line);border-radius:4px;background:#fafbf9;}
+  /* tabla de análisis */
+  .qa-section-title{font-size:15px;font-weight:500;color:#4a5a60;margin:18px 0 10px;}
+  .qa-hint-sub{font-size:13.5px;font-weight:400;color:#8a948f;}
+  .qa-empty{padding:22px;text-align:center;border:1px dashed var(--line);border-radius:4px;background:#fafbf9;}
+  .qa-empty p{font-size:14.5px;color:#6a746f;margin-bottom:10px;}
+  #qa-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15.5px;margin-bottom:10px;}
+  #qa-table th,#qa-table td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  #qa-table th{background:var(--ink);color:#fff;font-weight:500;font-size:14.5px;}
+  #qa-table td[contenteditable]:empty:before{content:attr(data-placeholder);color:#a8b0aa;}
+  .qa-del{padding:2px 8px;border:none;background:none;color:#b04a3a;cursor:pointer;font-size:17px;}
+  /* canvas */
+  .exp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+  .exp-card{border:1px solid var(--line);border-radius:4px;padding:12px;background:#fafbf9;}
+  .exp-card-head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px;}
+  .exp-title{font-size:15px;font-weight:500;color:var(--teal);flex:1;}
+  .exp-del{padding:0 6px;border:none;background:none;color:#b04a3a;cursor:pointer;font-size:17px;}
+  .exp-card textarea{font-size:15px;}
+  /* toast */
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .toast.show{opacity:1;}
+  .toast.err{background:#9a3b2c;}
+  /* portada de ingreso */
+  .authWrap{position:fixed;inset:0;background:#f7f5f0;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+  .authCard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:32px 30px;max-width:430px;width:100%;text-align:center;}
+  .authCard h2{margin:0 0 6px;font-size:20px;}
+  .authCard p{font-size:13.5px;color:#6a746f;line-height:1.5;margin:0 0 20px;}
+  .authBtn{display:flex;justify-content:center;min-height:44px;}
+  .authErr{color:#a8501e;font-size:13px;margin-top:14px;}
+  .userBar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:#6a746f;margin-bottom:10px;}
+  .userBar b{color:var(--ink);}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  @media(max-width:680px){.row2{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <h1>Red de Experimentos</h1>
-    <p>Red semántica · Tabla de análisis de pregunta · Canvas de experimentos — Taller de Investigación en Ingeniería I.</p>
-  </header>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <div class="card" id="grupo-bar">
-    <div class="grupo-row">
-      <div class="grupo-field">
-        <label class="qa-label" for="in-ciclo">Ciclo</label>
-        <select id="in-ciclo">
-          <option value="">Selecciona…</option>
-          <option>2026-2</option>
-          <option>2027-1</option>
-          <option>2027-2</option>
-          <option>2028-1</option>
-          <option>2028-2</option>
-          <option>2029-1</option>
-          <option>2029-2</option>
-        </select>
-      </div>
-      <div class="grupo-field">
-        <label class="qa-label" for="in-numgrupo">N° de grupo</label>
-        <input id="in-numgrupo" placeholder="ej. 3">
-      </div>
-      <div class="grupo-field wide">
-        <label class="qa-label" for="in-coordinador">Coordinador(a)</label>
-        <input id="in-coordinador" placeholder="Nombre del coordinador del grupo">
-      </div>
-      <button id="btn-cargar" onclick="cargarGrupo()">Ingresar</button>
-    </div>
-    <p id="grupo-estado"></p>
+<!-- ============ PORTADA DE INGRESO ============ -->
+<div class="authWrap" id="authWrap">
+  <div class="authCard">
+    <div class="kicker">URP · INGENIERÍA INDUSTRIAL</div>
+    <h2>Red de experimentos</h2>
+    <p>Ingresa con tu correo institucional. Solo verás las redes de tu grupo.</p>
+    <div class="authBtn" id="gbtn"></div>
+    <div class="authErr" id="authErr" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kicker">URP · INGENIERÍA · TALLER DE INVESTIGACIÓN EN INGENIERÍA I</div>
+  <h1>De la red semántica al experimento</h1>
+  <p class="sub">Construye la red de enfoques, conceptos e instrumentos; desglosa la pregunta en procedimientos y herramientas; y arma el canvas de experimentos.</p>
+
+  <div class="userBar" id="userBar" style="display:none;">
+    <span id="userTxt"></span>
+    <button class="btnMini" style="padding:4px 10px;font-size:12px;" onclick="salirSesion()">Salir</button>
   </div>
 
-  <div class="card" id="guardadas-card">
-    <div class="guardadas-head">
-      <h2 class="guardadas-titulo">Redes guardadas</h2>
-      <button id="btn-refrescar" onclick="cargarGuardadas()">Actualizar</button>
-    </div>
-    <div id="guardadas-cuerpo"><p class="guardadas-msg">Cargando…</p></div>
+  <div class="tabs">
+    <button class="tab on" id="tabTrabajo" onclick="mostrarTab('trabajo')">Red en edición</button>
+    <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Redes guardadas</button>
+    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="nuevaRed()">＋ Nueva desde cero</button>
   </div>
 
-  <div class="card app-locked" id="app-card">
-    <h2 class="sr-only">Herramienta con tres vistas: red semántica, tabla de análisis y canvas de experimentos.</h2>
+  <!-- ============ VISTA TRABAJO ============ -->
+  <div id="vistaTrabajo">
+    <div id="grupoBar"></div>
 
-    <div class="tabs">
-      <button class="tab-btn" data-view="network" onclick="switchView('network')">Red semántica</button>
-      <button class="tab-btn" data-view="table"   onclick="switchView('table')">Tabla de análisis de pregunta</button>
-      <button class="tab-btn" data-view="canvas"  onclick="switchView('canvas')">Canvas de experimentos</button>
+    <!-- Registro del grupo -->
+    <div class="card" id="registroCard">
+      <h2>Registro del grupo</h2>
+      <p class="note">Antes de construir la red, consigna los datos básicos del grupo.</p>
+
+      <div class="coordsBox" style="margin-bottom:20px;">
+        <div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Curso</div>
+        <div style="font-weight:600;margin-bottom:8px;" id="txtCurso"></div>
+        <div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Profesor</div>
+        <div style="font-weight:600;" id="txtProfesor"></div>
+      </div>
+
+      <label for="f_ciclo">Ciclo</label>
+      <select id="f_ciclo"></select>
+
+      <div class="row2">
+        <div>
+          <label for="f_ngrupo">N° de grupo</label>
+          <input id="f_ngrupo" placeholder="Ej. 3">
+        </div>
+        <div>
+          <label for="f_coord">Coordinador(a) de grupo</label>
+          <input id="f_coord" placeholder="Nombres y apellidos">
+        </div>
+      </div>
+
+      <label for="f_correo2">Correo del compañero(a) de grupo</label>
+      <input id="f_correo2" placeholder="compañero@urp.edu.pe">
+      <p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b id="txtMiCorreo"></b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar esta red. Si trabajas solo, déjalo vacío.</p>
+
+      <div class="actions"><span></span>
+        <button class="btn" id="btnIniciar" onclick="iniciarRed()">Iniciar red →</button>
+      </div>
     </div>
 
-    <!-- ══════════════ VISTA 1: RED SEMÁNTICA ══════════════ -->
-    <div id="view-network">
-      <div class="net-toolbar">
-        <span id="net-resumen" class="net-resumen"></span>
-        <button id="btn-png" onclick="descargarPNG()">Descargar PNG</button>
+    <!-- Herramienta de tres vistas -->
+    <div class="card" id="appCard" style="display:none;">
+      <h2 class="sr-only">Red semántica, tabla de análisis y canvas de experimentos</h2>
+      <div class="vtabs">
+        <button class="vtab" data-view="network" onclick="switchView('network')">Red semántica</button>
+        <button class="vtab" data-view="table"   onclick="switchView('table')">Tabla de análisis de pregunta</button>
+        <button class="vtab" data-view="canvas"  onclick="switchView('canvas')">Canvas de experimentos</button>
       </div>
-      <div id="net-wrap"></div>
 
-      <div class="tree-root-add">
-        <input id="in-enfoques" placeholder="Agregar enfoque…">
-        <button onclick="addEnfoqueTop()">+ Agregar enfoque</button>
+      <!-- VISTA 1: RED SEMÁNTICA -->
+      <div id="view-network">
+        <div class="net-toolbar">
+          <span id="net-resumen" class="net-resumen"></span>
+          <button class="btnMini" id="btn-png" onclick="descargarPNG()">⬇ Descargar PNG</button>
+        </div>
+        <div id="net-wrap"></div>
+        <div class="tree-root-add">
+          <input id="in-enfoques" placeholder="Agregar enfoque…">
+          <button onclick="addEnfoqueTop()">+ Agregar enfoque</button>
+        </div>
+        <div id="enfoques-list" class="tree-children root"></div>
       </div>
-      <div id="enfoques-list" class="tree-children root"></div>
-    </div>
 
-    <!-- ══════════════ VISTA 2: TABLA ══════════════ -->
-    <div id="view-table">
-      <div class="qa-question">
-        <label class="qa-label" for="qa-pregunta">Pregunta de investigación general</label>
+      <!-- VISTA 2: TABLA DE ANÁLISIS -->
+      <div id="view-table" style="display:none;">
+        <label for="qa-pregunta">Pregunta de investigación general</label>
         <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
+
+        <div class="qa-section-title">Desglose
+          <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta / Instrumento</span>
+        </div>
+        <div id="qa-breakdown"></div>
+
+        <div class="qa-section-title">Otros elementos del análisis</div>
+        <table id="qa-table">
+          <thead><tr><th style="width:32%;">Elemento</th><th>Análisis</th><th style="width:44px;"></th></tr></thead>
+          <tbody id="qa-tbody">
+            <tr><td contenteditable="true">Población o unidad de análisis</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+            <tr><td contenteditable="true">Contexto o escenario</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+            <tr><td contenteditable="true">Justificación / relevancia</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+          </tbody>
+        </table>
+        <button class="btnMini" onclick="addQaRow()">+ Agregar fila</button>
       </div>
 
-      <div class="qa-section-title">
-        Desglose
-        <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta / Instrumento</span>
+      <!-- VISTA 3: CANVAS DE EXPERIMENTOS -->
+      <div id="view-canvas" style="display:none;">
+        <p class="note">Cada tarjeta es una sección del experimento. Puedes renombrar los títulos, editar el contenido y agregar o quitar secciones.</p>
+        <div class="exp-grid" id="exp-grid">
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Hipótesis</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable independiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable dependiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Grupo de control</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Procedimiento</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Instrumentos de medición</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Resultados esperados</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+          <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Limitaciones</div><button class="exp-del" onclick="this.closest('.exp-card').remove(); marcarCambio();">×</button></div><textarea rows="3" placeholder="Escribe aquí…"></textarea></div>
+        </div>
+        <button class="btnMini" style="margin-top:12px;" onclick="addExpCard()">+ Agregar sección</button>
       </div>
-      <div id="qa-breakdown"></div>
-
-      <div class="qa-section-title">Otros elementos de la pregunta</div>
-      <table id="qa-table">
-        <colgroup><col style="width:28%"><col style="width:62%"><col style="width:10%"></colgroup>
-        <thead><tr><th>Elemento</th><th>Análisis</th><th></th></tr></thead>
-        <tbody id="qa-tbody">
-          <tr><td contenteditable="true">Población o unidad de análisis</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-          <tr><td contenteditable="true">Contexto o escenario</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-          <tr><td contenteditable="true">Justificación / relevancia</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-        </tbody>
-      </table>
-      <button onclick="addQaRow()">+ Agregar fila</button>
     </div>
+  </div>
 
-    <!-- ══════════════ VISTA 3: CANVAS ══════════════ -->
-    <div id="view-canvas">
-      <div class="exp-grid" id="exp-grid">
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Hipótesis</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="¿Qué esperas comprobar?"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Objetivo del experimento</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="¿Qué quieres lograr?"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable independiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué vas a manipular"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable dependiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué vas a medir"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Procedimiento / pasos</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Pasos a seguir"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Materiales y herramientas</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué necesitas"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Resultados esperados</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué crees que pasará"></textarea></div>
-        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Resultados obtenidos / conclusión</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué obtuviste realmente"></textarea></div>
+  <!-- ============ VISTA LISTA ============ -->
+  <div id="vistaLista" style="display:none;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <h2 style="margin:0;">Redes guardadas</h2>
+        <button class="btnGhost" onclick="cargarLista()">↻ Actualizar</button>
       </div>
-      <button class="add-section-btn" onclick="addExpCard()">+ Agregar sección</button>
+      <div id="listaCont" style="margin-top:16px;"><p class="note">Cargando…</p></div>
     </div>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-/* ════════════════════════════════
-   CONEXIÓN QuintaDB (vía proxy Apps Script)
-════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   CONFIGURACIÓN
+════════════════════════════════════════════════════════════ */
 var PROXY_URL = 'https://script.google.com/macros/s/AKfycbwNt7zJot7yFkHyah_7txPW__KCkyit234wejd5P3duemBImFYi7mIr0hkHYev8bZ4Feg/exec';
 
-var jsonpN = 0;
-function jsonpRequest(params, onSuccess, onError){
-  var cb = 'rdx_cb_' + (jsonpN++) + '_' + Date.now();
-  var script = document.createElement('script');
-  window[cb] = function(resp){
-    delete window[cb];
-    script.remove();
-    onSuccess(resp);
+// Mismo Client ID de Planteamiento Investigativo: el origen autorizado
+// (https://patrickvillanuevabartra.github.io) cubre todas tus apps.
+var CLIENT_ID = '18106318332-vn8isa4ivi4p53ms01uesh8t0kpni0jf.apps.googleusercontent.com';
+
+// Sesión: el id corto lo emite el proxy tras validar el token de Google.
+var SESION = { sid:'', email:'', docente:false };
+
+var CURSO_FIJO    = 'Taller de Investigación en Ingeniería I';
+var PROFESOR_FIJO = 'Mg. Ing. Patrick Horacio Villanueva Bartra';
+var CICLOS = ['2026-2','2027-1','2027-2','2028-1','2028-2','2029-1','2029-2'];
+
+/* ════════════════════════════════════════════════════════════
+   TRANSPORTE
+   Lectura por JSONP (salta CORS). Guardado por POST, porque el
+   árbol completo no cabe en una URL.
+════════════════════════════════════════════════════════════ */
+var _jsonpId = 0;
+var ULTIMO_FALLO = null;
+
+function jsonpCall(params, onOk, onErr){
+  _jsonpId++;
+  var cbName = '_rx_cb_' + _jsonpId;
+  var t0 = new Date().getTime();
+  var cargo = false, cerrado = false;
+  var sc = document.createElement('script');
+
+  function cleanup(){
+    clearTimeout(timer);
+    try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+    if(sc && sc.parentNode) sc.parentNode.removeChild(sc);
+  }
+  function fallar(motivo){
+    if(cerrado) return; cerrado = true;
+    var ms = new Date().getTime() - t0, url = sc.src;
+    cleanup();
+    ULTIMO_FALLO = { motivo:motivo, ms:ms, url:url, accion:(params.accion||'?') };
+    try{
+      console.error('[jsonpCall] '+motivo+'  ·  '+ms+' ms  ·  acción: '+(params.accion||'?'));
+      console.error('[jsonpCall] URL completa: '+url);
+    }catch(e){}
+    if(onErr) onErr(ULTIMO_FALLO);
+  }
+  var timer = setTimeout(function(){
+    fallar(cargo ? 'respondió, pero el contenido no era la respuesta esperada'
+                 : 'no respondió en 20 s');
+  }, 20000);
+
+  window[cbName] = function(data){
+    if(cerrado) return; cerrado = true;
+    cleanup();
+    if(onOk) onOk(data);
   };
-  var qs = Object.keys(params).map(function(k){
-    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k] == null ? '' : params[k]);
-  }).join('&');
-  script.src = PROXY_URL + '?' + qs + '&callback=' + cb;
-  script.onerror = function(){ delete window[cb]; script.remove(); onError && onError(); };
-  document.body.appendChild(script);
+
+  var qs = 'callback=' + cbName;
+  // El parámetro va como "ses": si se llama "sid", Google devuelve 400 y la
+  // respuesta nunca llega. Es el mismo bug que costó depurar en Planteamiento.
+  if(params.accion !== 'login' && SESION.sid) qs += '&ses=' + SESION.sid;
+  for(var k in params){ qs += '&' + k + '=' + encodeURIComponent(params[k]==null?'':params[k]); }
+  sc.src = PROXY_URL + '?' + qs;
+
+  sc.onerror = function(){ fallar('el navegador no pudo cargar la respuesta (fallo HTTP o de red)'); };
+  sc.onload  = function(){
+    cargo = true;
+    setTimeout(function(){
+      fallar('respondió, pero el contenido no era la respuesta esperada '+
+             '(probablemente una página de Google, no nuestro JSON)');
+    }, 60);
+  };
+  document.body.appendChild(sc);
+}
+
+function textoFallo(f){
+  if(!f || !f.motivo) return '';
+  return 'Motivo: ' + f.motivo + ' (' + f.ms + ' ms). Detalle completo en la consola (F12).';
 }
 
 /* Guardado por POST: el contenido viaja en el cuerpo, no en la URL.
-   Content-Type text/plain lo mantiene como "simple request" (sin preflight CORS). */
-function postRequest(params, onSuccess, onError){
+   Content-Type text/plain lo mantiene como "simple request" (sin preflight). */
+function postCall(params, onOk, onErr){
+  params.ses = SESION.sid;
   fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
     body: JSON.stringify(params)
   })
   .then(function(r){ return r.json(); })
-  .then(onSuccess)
-  .catch(function(){ onError && onError(); });
+  .then(onOk)
+  .catch(function(){ if(onErr) onErr(); });
 }
 
-/* ════════════════════════════════
-   ESTADO DE GRUPO Y AUTOGUARDADO
-════════════════════════════════ */
-var grupo = { id: null, ciclo: '', numero_grupo: '', coordinador: '', cargado: false };
-var suprimirAutoguardado = true; // evita disparar guardado durante la carga inicial
+/* ════════════════════════════════════════════════════════════
+   INGRESO CON GOOGLE
+════════════════════════════════════════════════════════════ */
+function iniciarGoogle(){
+  if(typeof google === 'undefined' || !google.accounts || !google.accounts.id){
+    return setTimeout(iniciarGoogle, 300);   // el script de Google aún no cargó
+  }
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: alRecibirCredencial });
+  google.accounts.id.renderButton(document.getElementById('gbtn'),
+    { theme:'outline', size:'large', text:'signin_with', width:280 });
+}
+
+function alRecibirCredencial(resp){
+  var err = document.getElementById('authErr');
+  err.style.display = 'none';
+  jsonpCall({ accion:'login', token: resp.credential }, function(r){
+    if(r && r.ok){
+      SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
+      document.getElementById('authWrap').style.display = 'none';
+      var ub = document.getElementById('userBar');
+      ub.style.display = 'flex';
+      document.getElementById('userTxt').innerHTML =
+        (SESION.docente ? '<b>Docente</b> · ' : '') + esc(SESION.email);
+      document.getElementById('txtMiCorreo').textContent = SESION.email;
+      arrancarApp();
+    } else {
+      err.textContent = 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
+      err.style.display = 'block';
+    }
+  }, function(){
+    err.textContent = 'Error de red al ingresar. Intenta de nuevo.';
+    err.style.display = 'block';
+  });
+}
+
+function salirSesion(){
+  SESION = { sid:'', email:'', docente:false };
+  try{ google.accounts.id.disableAutoSelect(); }catch(e){}
+  location.reload();
+}
+
+/* ════════════════════════════════════════════════════════════
+   ESTADO DEL GRUPO Y AUTOGUARDADO
+════════════════════════════════════════════════════════════ */
+var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
+var suprimirAutoguardado = true;
 var guardarTimer = null;
 var guardadoEnCurso = false;
 var guardadoPendiente = false;
 
-function setEstadoGrupo(msg, tipo){
-  var el = document.getElementById('grupo-estado');
-  el.textContent = msg;
-  el.className = tipo || '';
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function bloquearApp(bloqueada){
-  document.getElementById('app-card').classList.toggle('app-locked', bloqueada);
+var toastTimer;
+function toast(msg, err){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.className = 'toast' + (err?' err':''); }, 3000);
 }
 
-function cargarGrupo(){
-  var ciclo = document.getElementById('in-ciclo').value.trim();
-  var numGrupo = document.getElementById('in-numgrupo').value.trim();
-  var coordinador = document.getElementById('in-coordinador').value.trim();
-  if(!ciclo || !numGrupo || !coordinador){
-    setEstadoGrupo('Completa ciclo, N° de grupo y coordinador(a) para continuar.', 'err');
-    return;
-  }
-  setEstadoGrupo('Buscando tu grupo…');
-  document.getElementById('btn-cargar').disabled = true;
-  jsonpRequest({ accion: 'listar', ciclo: ciclo, numero_grupo: numGrupo }, function(resp){
-    document.getElementById('btn-cargar').disabled = false;
+function mostrarTab(cual){
+  document.getElementById('vistaTrabajo').style.display = cual==='trabajo' ? 'block' : 'none';
+  document.getElementById('vistaLista').style.display   = cual==='lista'   ? 'block' : 'none';
+  document.getElementById('tabTrabajo').classList.toggle('on', cual==='trabajo');
+  document.getElementById('tabLista').classList.toggle('on', cual==='lista');
+  if(cual === 'lista') cargarLista();
+}
+
+function renderGrupoBar(){
+  var bar = document.getElementById('grupoBar');
+  if(!grupo.cargado){ bar.innerHTML = ''; return; }
+  bar.innerHTML =
+    '<div class="grupoBar">'+
+      '<div class="info">'+
+        (grupo.ciclo ? '<span class="cy">'+esc(grupo.ciclo)+'</span>' : '')+
+        '<span><b>Grupo '+esc(grupo.numero_grupo||'—')+'</b></span>'+
+        '<span>'+esc(grupo.coordinador||'—')+'</span>'+
+        (grupo.id ? '<span style="color:var(--teal);font-size:12px;">● guardado</span>'
+                  : '<span style="color:#8a948f;font-size:12px;">○ sin guardar</span>')+
+        '<span id="estadoGuardado" style="font-size:12px;color:#8a948f;"></span>'+
+      '</div>'+
+      '<div class="acts">'+
+        '<button class="btnMini" onclick="editarDatosGrupo()">Editar datos</button>'+
+        '<button class="btnSave" onclick="guardarAhora()">Guardar ahora</button>'+
+      '</div>'+
+    '</div>';
+}
+
+function setEstadoGuardado(msg, tipo){
+  var el = document.getElementById('estadoGuardado');
+  if(!el) return;
+  el.textContent = msg ? '· ' + msg : '';
+  el.style.color = tipo==='err' ? '#9a3b2c' : (tipo==='ok' ? 'var(--teal)' : '#8a948f');
+}
+
+/* ── Registro del grupo ── */
+function arrancarApp(){
+  var sel = document.getElementById('f_ciclo');
+  sel.innerHTML = '<option value="">Selecciona el ciclo…</option>' +
+    CICLOS.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+  document.getElementById('txtCurso').textContent    = CURSO_FIJO;
+  document.getElementById('txtProfesor').textContent = PROFESOR_FIJO;
+  renderAll();
+  switchView('network');
+  mostrarTab('trabajo');
+}
+
+function editarDatosGrupo(){
+  document.getElementById('registroCard').style.display = 'block';
+  document.getElementById('f_ciclo').value  = grupo.ciclo;
+  document.getElementById('f_ngrupo').value = grupo.numero_grupo;
+  document.getElementById('f_coord').value  = grupo.coordinador;
+  document.getElementById('f_correo2').value = grupo.correoCompanero;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function iniciarRed(){
+  var ciclo  = document.getElementById('f_ciclo').value.trim();
+  var ngrupo = document.getElementById('f_ngrupo').value.trim();
+  var coord  = document.getElementById('f_coord').value.trim();
+  var comp   = document.getElementById('f_correo2').value.trim().toLowerCase();
+
+  if(!ciclo)  return toast('Selecciona el ciclo', true);
+  if(!ngrupo) return toast('Indica el N° de grupo', true);
+  if(!coord)  return toast('Indica el/la coordinador(a) del grupo', true);
+
+  var btn = document.getElementById('btnIniciar');
+  btn.disabled = true; btn.textContent = 'Buscando…';
+
+  jsonpCall({ accion:'buscar', ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
+    btn.disabled = false; btn.textContent = 'Iniciar red →';
     if(!resp || !resp.ok){
-      setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
+      toast('No se pudo conectar con el servidor' + ((resp&&resp.error)?': '+resp.error:''), true);
       return;
     }
-    var registros = resp.records || [];
-    var encontrado = null;
-    for(var i=0;i<registros.length;i++){
-      var r = registros[i];
-      if((r.ciclo||'').trim().toLowerCase() === ciclo.toLowerCase()
-         && (r.numero_grupo||'').trim().toLowerCase() === numGrupo.toLowerCase()){
-        encontrado = r; break;
-      }
-    }
-    grupo.ciclo = ciclo; grupo.numero_grupo = numGrupo; grupo.coordinador = coordinador;
-    if(encontrado){
-      grupo.id = encontrado.id;
-      aplicarEstadoCargado_(encontrado.estructura);
-      setEstadoGrupo('Grupo encontrado. Trabajo cargado ✓', 'ok');
+    grupo.ciclo = ciclo; grupo.numero_grupo = ngrupo;
+    grupo.coordinador = coord; grupo.correoCompanero = comp;
+
+    if(resp.record){
+      grupo.id = resp.record.id;
+      aplicarEstadoCargado_(resp.record.estructura);
+      toast('Red encontrada — continúa la edición');
     } else {
       grupo.id = null;
-      setEstadoGrupo('Grupo nuevo — se creará al guardar los primeros cambios.', 'ok');
+      toast('Red nueva — se guardará con tus primeros cambios');
     }
     grupo.cargado = true;
-    bloquearApp(false);
     suprimirAutoguardado = false;
-    cargarGuardadas();
-  }, function(){
-    document.getElementById('btn-cargar').disabled = false;
-    setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
+    document.getElementById('registroCard').style.display = 'none';
+    document.getElementById('appCard').style.display = 'block';
+    renderGrupoBar();
+  }, function(f){
+    btn.disabled = false; btn.textContent = 'Iniciar red →';
+    toast('Error de red al buscar. ' + textoFallo(f), true);
   });
 }
 
+function nuevaRed(){
+  var hayAlgo = !!(grupo.id || data.length || grupo.coordinador);
+  if(hayAlgo && !confirm('Vas a empezar una red NUEVA, en blanco.\n\n'+
+     'Lo que tengas en pantalla sin guardar se pierde. ¿Continuar?')) return;
+  clearTimeout(guardarTimer); guardarTimer = null;
+  suprimirAutoguardado = true;
+  grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
+  data = []; idc = 0;
+  document.getElementById('qa-pregunta').value = '';
+  document.getElementById('f_ciclo').value = '';
+  document.getElementById('f_ngrupo').value = '';
+  document.getElementById('f_coord').value = '';
+  document.getElementById('f_correo2').value = '';
+  document.getElementById('registroCard').style.display = 'block';
+  document.getElementById('appCard').style.display = 'none';
+  renderGrupoBar();
+  renderAll();
+  mostrarTab('trabajo');
+  toast('Red nueva — empieza por los datos del grupo');
+}
+
+/* ── Carga del estado guardado ── */
 function aplicarEstadoCargado_(estructuraTxt){
   var estado = null;
   if(estructuraTxt){
-    try{ estado = JSON.parse(estructuraTxt); } catch(e){ estado = null; }
+    try{ estado = JSON.parse(estructuraTxt); }catch(e){ estado = null; }
   }
   if(!estado){ renderAll(); return; }
   document.getElementById('qa-pregunta').value = estado.pregunta || '';
@@ -381,16 +571,16 @@ function reindexarIds_(enfoques){
     var n = parseInt(String(id).replace(/[^0-9]/g,''), 10);
     if(!isNaN(n) && n > maxNum) maxNum = n;
   }
-  enfoques.forEach(function(e){
+  (enfoques||[]).forEach(function(e){
     track(e.id);
-    e.conceptos.forEach(function(c){
+    (e.conceptos||[]).forEach(function(c){
       track(c.id);
-      c.instrumentos.forEach(function(i){ track(i.id); });
-      c.preguntas.forEach(function(p){
+      (c.instrumentos||[]).forEach(function(i){ track(i.id); });
+      (c.preguntas||[]).forEach(function(p){
         track(p.id);
-        p.procedimientos.forEach(function(pr){
+        (p.procedimientos||[]).forEach(function(pr){
           track(pr.id);
-          pr.herramientas.forEach(function(h){ track(h.id); });
+          (pr.herramientas||[]).forEach(function(h){ track(h.id); });
         });
       });
     });
@@ -398,7 +588,7 @@ function reindexarIds_(enfoques){
   idc = maxNum;
 }
 
-/* ── Serialización de "Otros elementos" (tabla libre) ── */
+/* ── Serialización ── */
 function serializarOtros_(){
   var filas = [];
   document.querySelectorAll('#qa-tbody tr').forEach(function(tr){
@@ -417,8 +607,6 @@ function restaurarOtros_(filas){
     last.children[1].textContent = f.analisis || '';
   });
 }
-
-/* ── Serialización del Canvas de experimentos ── */
 function serializarCanvas_(){
   var tarjetas = [];
   document.querySelectorAll('#exp-grid .exp-card').forEach(function(card){
@@ -440,28 +628,23 @@ function restaurarCanvas_(tarjetas){
   });
 }
 
-/* ── Guardado ── */
 /* Quita las claves auxiliares del diagrama (_y) antes de guardar:
-   son posiciones que se recalculan en cada render, no deben ir a la base. */
+   son posiciones que se recalculan en cada render, no van a la base. */
 function limpiarParaGuardar_(enfoques){
   return (enfoques||[]).map(function(e){
     return {
-      id: e.id, text: e.text,
-      conceptos: (e.conceptos||[]).map(function(c){
+      id:e.id, text:e.text,
+      conceptos:(e.conceptos||[]).map(function(c){
         return {
-          id: c.id, text: c.text,
-          instrumentos: (c.instrumentos||[]).map(function(i){
-            return { id: i.id, text: i.text };
-          }),
-          preguntas: (c.preguntas||[]).map(function(p){
+          id:c.id, text:c.text,
+          instrumentos:(c.instrumentos||[]).map(function(i){ return { id:i.id, text:i.text }; }),
+          preguntas:(c.preguntas||[]).map(function(p){
             return {
-              id: p.id, text: p.text,
-              procedimientos: (p.procedimientos||[]).map(function(pr){
+              id:p.id, text:p.text,
+              procedimientos:(p.procedimientos||[]).map(function(pr){
                 return {
-                  id: pr.id, text: pr.text,
-                  herramientas: (pr.herramientas||[]).map(function(h){
-                    return { id: h.id, text: h.text };
-                  })
+                  id:pr.id, text:pr.text,
+                  herramientas:(pr.herramientas||[]).map(function(h){ return { id:h.id, text:h.text }; })
                 };
               })
             };
@@ -480,62 +663,172 @@ function estadoCompleto_(){
     canvas: serializarCanvas_()
   };
 }
+
+/* ── Autoguardado ── */
 function marcarCambio(){
   if(suprimirAutoguardado || !grupo.cargado) return;
-  setEstadoGrupo('Escribiendo…');
+  setEstadoGuardado('escribiendo…');
   clearTimeout(guardarTimer);
   guardarTimer = setTimeout(guardarAhora, 1400);
 }
-function guardarAhora(){
-  /* Candado: si ya hay un guardado en vuelo, no lanzamos otro.
-     Sin esto, dos cambios seguidos antes de la primera respuesta crearían
-     DOS registros para el mismo grupo (el id aún no existe). */
-  if(guardadoEnCurso){ guardadoPendiente = true; return; }
-  guardadoEnCurso = true;
-  guardadoPendiente = false;
 
-  var estructura = JSON.stringify(estadoCompleto_());
-  setEstadoGrupo('Guardando…');
+function guardarAhora(){
+  if(!grupo.cargado) return;
+  /* Candado: si ya hay un guardado en vuelo, no lanzamos otro. Sin esto,
+     dos cambios seguidos antes de la primera respuesta crearían DOS
+     registros para el mismo grupo (el id aún no existe). */
+  if(guardadoEnCurso){ guardadoPendiente = true; return; }
+  guardadoEnCurso = true; guardadoPendiente = false;
+  clearTimeout(guardarTimer); guardarTimer = null;
+
+  setEstadoGuardado('guardando…');
+  var correos = [SESION.email, grupo.correoCompanero]
+                  .filter(function(x){ return x; }).join(', ');
   var params = {
     accion: grupo.id ? 'actualizar' : 'crear',
     id: grupo.id || '',
     ciclo: grupo.ciclo,
     numero_grupo: grupo.numero_grupo,
     coordinador: grupo.coordinador,
-    estructura: estructura
+    correos: correos,
+    estructura: JSON.stringify(estadoCompleto_())
   };
-  postRequest(params, function(resp){
+
+  postCall(params, function(resp){
     guardadoEnCurso = false;
     if(resp && resp.ok){
       var eraNuevo = !grupo.id;
       if(!grupo.id && resp.record && resp.record.id){
         grupo.id = resp.record.id;
+        renderGrupoBar();
       }
-      setEstadoGrupo('Guardado ✓ · ' + new Date().toLocaleTimeString(), 'ok');
-      /* Solo se refresca la lista cuando aparece un grupo nuevo; hacerlo en
-         cada autoguardado dispararía una consulta por cada tecla escrita. */
-      if(eraNuevo) cargarGuardadas();
+      setEstadoGuardado('guardado ' + new Date().toLocaleTimeString(), 'ok');
+      if(eraNuevo) toast('✓ Red guardada');
     } else {
-      setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
+      setEstadoGuardado('no se pudo guardar', 'err');
+      toast('Error al guardar: ' + ((resp&&resp.error)||'desconocido'), true);
     }
     if(guardadoPendiente) guardarAhora();
   }, function(){
     guardadoEnCurso = false;
-    setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
+    setEstadoGuardado('no se pudo guardar', 'err');
   });
 }
 
-/* Aviso si el usuario cierra la pestaña con cambios sin guardar */
+/* Aviso si se cierra la pestaña con cambios sin guardar */
 window.addEventListener('beforeunload', function(e){
   if(guardadoEnCurso || guardadoPendiente || guardarTimer){
-    e.preventDefault();
-    e.returnValue = '';
+    e.preventDefault(); e.returnValue = '';
   }
 });
 
-/* ════════════════════════════════
-   ESTADO
-════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   REDES GUARDADAS
+════════════════════════════════════════════════════════════ */
+function fechaCorta_(iso){
+  if(!iso) return '';
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function cargarLista(){
+  var cont = document.getElementById('listaCont');
+  cont.innerHTML = '<p class="note">Cargando…</p>';
+  jsonpCall({ accion:'listar' }, function(res){
+    if(!res || !res.ok){
+      cont.innerHTML = '<p class="hintWarn">No se pudo cargar la lista'+
+                       ((res&&res.error)?': '+esc(res.error):'')+'.</p>';
+      return;
+    }
+    var gs = res.grupos || [];
+    if(!gs.length){
+      cont.innerHTML = '<p class="note">Aún no hay redes guardadas'+
+        (SESION.docente ? '.' : ' para tu grupo. Crea la tuya desde «Red en edición».')+'</p>';
+      return;
+    }
+    var h = '';
+    gs.forEach(function(g){
+      var enEdicion = grupo.id && g.id === grupo.id;
+      var etiqueta  = (g.ciclo?g.ciclo+' · ':'') + 'Grupo ' + (g.numero_grupo||'—') +
+                      (g.coordinador?' · '+g.coordinador:'');
+      h += '<div class="listItem">'+
+           '<div class="listMeta">'+
+             (g.ciclo?'<span class="badge">'+esc(g.ciclo)+'</span>':'')+
+             '<span><b>Grupo '+esc(g.numero_grupo||'—')+'</b></span>'+
+             '<span>'+esc(g.coordinador||'—')+'</span>'+
+             '<span>'+esc(fechaCorta_(g.actualizado))+'</span>'+
+             (enEdicion?'<span style="color:var(--teal);">● en edición</span>':'')+
+           '</div>'+
+           '<div class="listTema">'+esc(g.pregunta || '(sin pregunta general)')+'</div>'+
+           '<div class="listPg">'+g.nEnfoques+' enfoques · '+g.nConceptos+
+             ' conceptos · '+g.nInstrumentos+' instrumentos</div>'+
+           '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
+             '<button class="btnMini" onclick="abrirRed(&quot;'+esc(g.id)+'&quot;)"'+
+               (enEdicion?' disabled':'')+'>'+(enEdicion?'En edición':'Abrir →')+'</button>'+
+             '<button class="btnDel" onclick="eliminarRed(&quot;'+esc(g.id)+'&quot;,&quot;'+
+               esc(etiqueta)+'&quot;)">Eliminar</button>'+
+           '</div></div>';
+    });
+    cont.innerHTML = h;
+  }, function(f){
+    cont.innerHTML = '<p class="hintWarn">Error de red al cargar.<br><small>'+
+                     esc(textoFallo(f))+'</small></p>';
+  });
+}
+
+function abrirRed(recId){
+  if(guardadoEnCurso || guardadoPendiente || guardarTimer){
+    if(!confirm('Hay cambios sin terminar de guardar en la red actual. ¿Cambiar de red de todos modos?')) return;
+  }
+  toast('Cargando red…');
+  jsonpCall({ accion:'registro', id:recId }, function(res){
+    if(!res || !res.ok || !res.record){
+      toast('No se pudo cargar la red' + ((res&&res.error)?': '+res.error:''), true);
+      return;
+    }
+    clearTimeout(guardarTimer); guardarTimer = null;
+    suprimirAutoguardado = true;
+    var r = res.record;
+    grupo.id = r.id;
+    grupo.ciclo = r.ciclo;
+    grupo.numero_grupo = r.numero_grupo;
+    grupo.coordinador = r.coordinador;
+    grupo.correoCompanero = String(r.correos||'').toLowerCase()
+        .split(/[;,\s]+/).filter(function(x){ return x && x !== SESION.email; })[0] || '';
+    aplicarEstadoCargado_(r.estructura);
+    grupo.cargado = true;
+    suprimirAutoguardado = false;
+    document.getElementById('registroCard').style.display = 'none';
+    document.getElementById('appCard').style.display = 'block';
+    renderGrupoBar();
+    mostrarTab('trabajo');
+    switchView('network');
+    window.scrollTo({ top:0, behavior:'smooth' });
+    toast('Red cargada — continúa la edición');
+  }, function(f){
+    toast('Error de red al cargar. ' + textoFallo(f), true);
+  });
+}
+
+function eliminarRed(recId, etiqueta){
+  if(!confirm('Vas a ELIMINAR esta red.\n\n' + etiqueta +
+     '\n\nEsta acción no se puede deshacer. ¿Continuar?')) return;
+  toast('Eliminando…');
+  jsonpCall({ accion:'eliminar', id:recId }, function(res){
+    if(!res || !res.ok){
+      toast('No se pudo eliminar' + ((res&&res.error)?': '+res.error:''), true);
+      return;
+    }
+    if(grupo.id === recId){ grupo.id = null; renderGrupoBar(); }
+    toast('✓ Red eliminada');
+    cargarLista();
+  }, function(){
+    toast('Error de red al eliminar', true);
+  });
+}
+
+
 var data = [];
 var idc  = 0;
 function uid(p){ idc++; return p + idc; }
@@ -667,106 +960,6 @@ function makeChildren(items, buildFn){
 function renderAll(){ renderNetwork(); renderTable(); marcarCambio(); }
 
 /* ── Red semántica ── */
-/* ════════════════════════════════
-   REDES GUARDADAS
-════════════════════════════════ */
-function cargarGuardadas(){
-  var cuerpo = document.getElementById('guardadas-cuerpo');
-  var btn = document.getElementById('btn-refrescar');
-  btn.disabled = true;
-  cuerpo.innerHTML = '<p class="guardadas-msg">Cargando…</p>';
-  jsonpRequest({ accion: 'listar_resumen' }, function(resp){
-    btn.disabled = false;
-    if(!resp || !resp.ok){
-      cuerpo.innerHTML = '<p class="guardadas-msg">No se pudo cargar la lista. Usa «Actualizar» para reintentar.</p>';
-      return;
-    }
-    pintarGuardadas_(resp.grupos || []);
-  }, function(){
-    btn.disabled = false;
-    cuerpo.innerHTML = '<p class="guardadas-msg">No se pudo cargar la lista. Usa «Actualizar» para reintentar.</p>';
-  });
-}
-
-function fechaCorta_(iso){
-  if(!iso) return '';
-  var d = new Date(iso);
-  if(isNaN(d.getTime())) return '';
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-
-function pintarGuardadas_(grupos){
-  var cuerpo = document.getElementById('guardadas-cuerpo');
-  if(grupos.length === 0){
-    cuerpo.innerHTML = '<p class="guardadas-msg">Todavía no hay redes guardadas. La primera se creará cuando un grupo ingrese y empiece a trabajar.</p>';
-    return;
-  }
-  var tabla = document.createElement('table');
-  tabla.id = 'guardadas-tabla';
-  tabla.innerHTML = '<thead><tr><th>Grupo</th><th>Contenido</th><th>Última edición</th><th></th></tr></thead>';
-  var tbody = document.createElement('tbody');
-
-  grupos.forEach(function(g){
-    var tr = document.createElement('tr');
-    if(grupo.id && g.id === grupo.id) tr.className = 'fila-activa';
-
-    var td1 = document.createElement('td');
-    td1.innerHTML = '<div class="g-grupo">' + escapeHtml_(g.ciclo) + ' · Grupo ' + escapeHtml_(g.numero_grupo) + '</div>'
-                  + '<div class="g-sub">' + escapeHtml_(g.coordinador || 'Sin coordinador') + '</div>';
-
-    var td2 = document.createElement('td');
-    td2.className = 'g-conteo';
-    td2.textContent = g.nEnfoques + ' enf · ' + g.nConceptos + ' conc · ' + g.nInstrumentos + ' instr';
-
-    var td3 = document.createElement('td');
-    td3.className = 'g-sub';
-    td3.textContent = fechaCorta_(g.actualizado);
-
-    var td4 = document.createElement('td');
-    var btn = document.createElement('button');
-    btn.className = 'g-abrir';
-    btn.textContent = (grupo.id && g.id === grupo.id) ? 'En edición' : 'Abrir';
-    btn.disabled = !!(grupo.id && g.id === grupo.id);
-    btn.addEventListener('click', function(){ abrirGuardada_(g); });
-    td4.appendChild(btn);
-
-    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
-    tbody.appendChild(tr);
-  });
-  tabla.appendChild(tbody);
-  cuerpo.innerHTML = '';
-  cuerpo.appendChild(tabla);
-}
-
-function escapeHtml_(s){
-  return String(s == null ? '' : s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* Abre una red guardada: rellena la barra de grupo y reutiliza cargarGrupo(),
-   que es el único camino que trae la estructura completa desde QuintaDB. */
-function abrirGuardada_(g){
-  if(guardadoEnCurso || guardadoPendiente || guardarTimer){
-    if(!confirm('Hay cambios sin terminar de guardar en el grupo actual. ¿Cambiar de grupo de todos modos?')) return;
-  }
-  clearTimeout(guardarTimer); guardarTimer = null;
-  suprimirAutoguardado = true;
-  grupo.cargado = false;
-  grupo.id = null;
-  var selCiclo = document.getElementById('in-ciclo');
-  /* Si el ciclo guardado no está entre las opciones (p. ej. un ciclo antiguo),
-     se agrega para que igual se pueda abrir el registro. */
-  if(g.ciclo && !Array.prototype.some.call(selCiclo.options, function(o){ return o.value === g.ciclo; })){
-    var op = document.createElement('option');
-    op.value = g.ciclo; op.textContent = g.ciclo;
-    selCiclo.appendChild(op);
-  }
-  selCiclo.value = g.ciclo || '';
-  document.getElementById('in-numgrupo').value    = g.numero_grupo || '';
-  document.getElementById('in-coordinador').value = g.coordinador || '';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  cargarGrupo();
-}
 
 /* ════════════════════════════════
    DIAGRAMA DE LA RED SEMÁNTICA
@@ -1119,8 +1312,8 @@ function switchView(view){
   ['network','table','canvas'].forEach(function(v){
     document.getElementById('view-' + v).style.display = (v === view ? 'block' : 'none');
   });
-  document.querySelectorAll('.tab-btn').forEach(function(btn){
-    btn.classList.toggle('tab-active', btn.getAttribute('data-view') === view);
+  document.querySelectorAll('.vtab').forEach(function(btn){
+    btn.classList.toggle('on', btn.getAttribute('data-view') === view);
   });
 }
 /* ── Listeners de autoguardado (delegados: cubren elementos creados dinámicamente) ── */
@@ -1128,9 +1321,14 @@ document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
 document.getElementById('qa-tbody').addEventListener('input', marcarCambio);
 document.getElementById('exp-grid').addEventListener('input', marcarCambio);
 
-renderAll();
-switchView('network');
-cargarGuardadas();
+
+/* ── Listeners de autoguardado (delegados: cubren elementos dinámicos) ── */
+document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
+document.getElementById('qa-tbody').addEventListener('input', marcarCambio);
+document.getElementById('exp-grid').addEventListener('input', marcarCambio);
+
+/* init: la portada de ingreso tapa la app hasta que el proxy valide la cuenta */
+iniciarGoogle();
 </script>
 </body>
 </html>
