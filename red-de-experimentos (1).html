@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red de Experimentos · URP</title>
+<style>
+  :root{
+    --color-background-primary:#ffffff;
+    --color-background-secondary:#f5f4f0;
+    --color-background-tertiary:#eeede6;
+    --color-text-primary:#1a1a18;
+    --color-text-secondary:#5f5e5a;
+    --color-text-tertiary:#8a8980;
+    --color-text-info:#185fa5;
+    --color-border-tertiary:rgba(0,0,0,0.14);
+    --color-border-secondary:rgba(0,0,0,0.26);
+    --border-radius-md:8px;
+    --border-radius-lg:12px;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --color-background-primary:#1e1e1c;
+      --color-background-secondary:#292926;
+      --color-background-tertiary:#161615;
+      --color-text-primary:#ECEAE3;
+      --color-text-secondary:#b4b2a9;
+      --color-text-tertiary:#85847c;
+      --color-text-info:#85b7eb;
+      --color-border-tertiary:rgba(255,255,255,0.16);
+      --color-border-secondary:rgba(255,255,255,0.28);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--color-background-tertiary);font-family:var(--font-sans);color:var(--color-text-primary);}
+  .page{max-width:800px;margin:0 auto;padding:32px 20px 64px;}
+  header{margin-bottom:1.5rem;}
+  header h1{font-size:20px;font-weight:500;margin:0 0 6px;}
+  header p{font-size:14px;color:var(--color-text-secondary);margin:0;line-height:1.5;}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;}
+  button{font-family:inherit;font-size:14px;padding:7px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);cursor:pointer;}
+  button:hover{background:var(--color-background-secondary);}
+  button:active{transform:scale(0.98);}
+  input,textarea{font-family:inherit;font-size:14px;padding:6px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-primary);}
+  input{height:36px;}
+  input:focus,textarea:focus,[contenteditable]:focus{outline:2px solid var(--color-text-info);outline-offset:1px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  /* TABS */
+  .tabs{display:flex;gap:4px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem;flex-wrap:wrap;}
+  .tab-btn{font-size:14px;padding:8px 14px;border-radius:var(--border-radius-md) var(--border-radius-md) 0 0;border:0.5px solid transparent;}
+  .tab-active{font-weight:500;color:var(--color-text-info);border-bottom:2px solid var(--color-text-info);}
+
+  /* SVG */
+  .th{font-family:var(--font-sans);font-size:14px;font-weight:500;fill:var(--color-text-primary);}
+  .ts{font-family:var(--font-sans);font-size:12px;fill:var(--color-text-secondary);}
+  .node{cursor:pointer;}
+  .node:hover{opacity:0.85;}
+  .c-purple circle{fill:#EEEDFE;stroke:#534AB7;} .c-purple text{fill:#26215C;}
+  .c-teal   circle{fill:#E1F5EE;stroke:#0F6E56;} .c-teal   text{fill:#04342C;}
+  .c-coral  circle{fill:#FAECE7;stroke:#993C1D;} .c-coral  text{fill:#4A1B0C;}
+  @media(prefers-color-scheme:dark){
+    .c-purple circle{fill:#3C3489;stroke:#AFA9EC;} .c-purple text{fill:#CECBF6;}
+    .c-teal   circle{fill:#085041;stroke:#5DCAA5;} .c-teal   text{fill:#9FE1CB;}
+    .c-coral  circle{fill:#712B13;stroke:#F0997B;} .c-coral  text{fill:#F5C4B3;}
+  }
+
+  /* DOTS */
+  .net-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .dot-purple{background:#534AB7;} .dot-teal{background:#0F6E56;} .dot-coral{background:#993C1D;}
+  .dot-pink{background:#993556;}   .dot-amber{background:#9a6b00;} .dot-blue{background:#3568b0;}
+
+  /* TREE */
+  .tree-root-add{display:flex;gap:6px;margin-top:14px;}
+  .tree-root-add input{flex:1;}
+  .tree-children{margin-left:18px;padding-left:14px;border-left:0.5px solid var(--color-border-tertiary);margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+  .tree-children.root{margin-left:0;padding-left:0;border-left:none;}
+  .tree-item{border-radius:var(--border-radius-md);padding:8px 10px;}
+  .tree-item.l1{background:var(--color-background-secondary);}
+  .tree-item.l2{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);}
+  .tree-item.l3{background:var(--color-background-secondary);}
+  .tree-item.l4{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);}
+  .tree-item.l5{background:var(--color-background-secondary);}
+  .tree-head{display:flex;align-items:center;gap:6px;font-size:13px;}
+  .tree-text{flex:1;font-weight:500;}
+  .tree-badge{font-size:11px;color:var(--color-text-tertiary);white-space:nowrap;}
+  .tree-del{border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:14px;padding:0 4px;}
+  .tree-add{display:flex;gap:6px;margin-top:8px;}
+  .tree-add input{flex:1;height:30px;font-size:13px;}
+  .tree-add button{padding:3px 10px;font-size:13px;}
+
+  /* TABLA */
+  .qa-question{margin-bottom:1.25rem;}
+  .qa-label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;}
+  #qa-pregunta{width:100%;}
+  .qa-section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin:18px 0 10px;}
+  .qa-hint-sub{font-size:12px;font-weight:400;color:var(--color-text-tertiary);}
+  .qa-empty{padding:18px;text-align:center;}
+  .qa-empty p{font-size:13px;color:var(--color-text-secondary);margin-bottom:10px;}
+  #qa-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;margin-bottom:10px;}
+  #qa-table th,#qa-table td{border:0.5px solid var(--color-border-tertiary);padding:8px;text-align:left;vertical-align:top;}
+  #qa-table th{background:var(--color-background-secondary);font-weight:500;font-size:13px;}
+  #qa-table td[contenteditable]:empty:before{content:attr(data-placeholder);color:var(--color-text-tertiary);}
+  .qa-del{padding:2px 8px;border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:15px;}
+
+  /* CANVAS */
+  .exp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+  .exp-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;}
+  .exp-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px;}
+  .exp-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);}
+  .exp-del{padding:0 6px;border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:15px;}
+  .exp-card textarea{width:100%;resize:vertical;}
+  .add-section-btn{margin-top:12px;}
+
+  /* GRUPO / GUARDADO */
+  #grupo-bar{margin-bottom:14px;}
+  .grupo-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+  .grupo-field{flex:1;min-width:110px;}
+  .grupo-field.wide{flex:2;min-width:180px;}
+  .grupo-field select,.grupo-field input{width:100%;}
+  #grupo-estado{font-size:12px;color:var(--color-text-tertiary);margin:8px 0 0;}
+  #grupo-estado.err{color:#a5341f;}
+  #grupo-estado.ok{color:#0f6e56;}
+  .app-locked{opacity:.4;pointer-events:none;filter:grayscale(45%);}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Red de Experimentos</h1>
+    <p>Red semántica · Tabla de análisis de pregunta · Canvas de experimentos — Taller de Investigación en Ingeniería I.</p>
+  </header>
+
+  <div class="card" id="grupo-bar">
+    <div class="grupo-row">
+      <div class="grupo-field">
+        <label class="qa-label" for="in-ciclo">Ciclo</label>
+        <select id="in-ciclo">
+          <option value="">Selecciona…</option>
+          <option>2026-2</option>
+          <option>2027-1</option>
+          <option>2027-2</option>
+          <option>2028-1</option>
+          <option>2028-2</option>
+          <option>2029-1</option>
+          <option>2029-2</option>
+        </select>
+      </div>
+      <div class="grupo-field">
+        <label class="qa-label" for="in-numgrupo">N° de grupo</label>
+        <input id="in-numgrupo" placeholder="ej. 3">
+      </div>
+      <div class="grupo-field wide">
+        <label class="qa-label" for="in-coordinador">Coordinador(a)</label>
+        <input id="in-coordinador" placeholder="Nombre del coordinador del grupo">
+      </div>
+      <button id="btn-cargar" onclick="cargarGrupo()">Ingresar</button>
+    </div>
+    <p id="grupo-estado"></p>
+  </div>
+
+  <div class="card app-locked" id="app-card">
+    <h2 class="sr-only">Herramienta con tres vistas: red semántica, tabla de análisis y canvas de experimentos.</h2>
+
+    <div class="tabs">
+      <button class="tab-btn" data-view="network" onclick="switchView('network')">Red semántica</button>
+      <button class="tab-btn" data-view="table"   onclick="switchView('table')">Tabla de análisis de pregunta</button>
+      <button class="tab-btn" data-view="canvas"  onclick="switchView('canvas')">Canvas de experimentos</button>
+    </div>
+
+    <!-- ══════════════ VISTA 1: RED SEMÁNTICA ══════════════ -->
+    <div id="view-network">
+      <svg width="100%" viewBox="0 0 680 380" role="img">
+        <title>Red semántica jerárquica</title>
+        <desc>Enfoques → Conceptos → Instrumentos de la literatura</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <line x1="234" y1="104" x2="446" y2="104" marker-end="url(#arrow)" style="stroke:var(--color-border-secondary);stroke-width:1.5"/>
+        <line x1="464" y1="148" x2="386" y2="224" marker-end="url(#arrow)" style="stroke:var(--color-border-secondary);stroke-width:1.5"/>
+        <g class="node c-purple" onclick="focusRootInput()">
+          <circle cx="170" cy="104" r="64" stroke-width="0.5"/>
+          <text class="th" x="170" y="104" text-anchor="middle" dominant-baseline="central">Enfoques</text>
+        </g>
+        <g class="c-teal">
+          <circle cx="510" cy="104" r="64" stroke-width="0.5"/>
+          <text class="th" x="510" y="104" text-anchor="middle" dominant-baseline="central">Conceptos</text>
+        </g>
+        <g class="c-coral">
+          <circle cx="340" cy="268" r="64" stroke-width="0.5"/>
+          <text class="th" x="340" y="268" text-anchor="middle" dominant-baseline="central">Instrumentos</text>
+        </g>
+        <text id="proc-count" class="ts" x="340" y="352" text-anchor="middle">0 registrados</text>
+      </svg>
+
+      <div class="tree-root-add">
+        <input id="in-enfoques" placeholder="Agregar enfoque…">
+        <button onclick="addEnfoqueTop()">+ Agregar enfoque</button>
+      </div>
+      <div id="enfoques-list" class="tree-children root"></div>
+    </div>
+
+    <!-- ══════════════ VISTA 2: TABLA ══════════════ -->
+    <div id="view-table">
+      <div class="qa-question">
+        <label class="qa-label" for="qa-pregunta">Pregunta de investigación general</label>
+        <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
+      </div>
+
+      <div class="qa-section-title">
+        Desglose
+        <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta / Instrumento</span>
+      </div>
+      <div id="qa-breakdown"></div>
+
+      <div class="qa-section-title">Otros elementos de la pregunta</div>
+      <table id="qa-table">
+        <colgroup><col style="width:28%"><col style="width:62%"><col style="width:10%"></colgroup>
+        <thead><tr><th>Elemento</th><th>Análisis</th><th></th></tr></thead>
+        <tbody id="qa-tbody">
+          <tr><td contenteditable="true">Población o unidad de análisis</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+          <tr><td contenteditable="true">Contexto o escenario</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+          <tr><td contenteditable="true">Justificación / relevancia</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
+        </tbody>
+      </table>
+      <button onclick="addQaRow()">+ Agregar fila</button>
+    </div>
+
+    <!-- ══════════════ VISTA 3: CANVAS ══════════════ -->
+    <div id="view-canvas">
+      <div class="exp-grid" id="exp-grid">
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Hipótesis</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="¿Qué esperas comprobar?"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Objetivo del experimento</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="¿Qué quieres lograr?"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable independiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué vas a manipular"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Variable dependiente</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué vas a medir"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Procedimiento / pasos</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Pasos a seguir"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Materiales y herramientas</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué necesitas"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Resultados esperados</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué crees que pasará"></textarea></div>
+        <div class="exp-card"><div class="exp-card-head"><div class="exp-title" contenteditable="true">Resultados obtenidos / conclusión</div><button class="exp-del" onclick="this.closest('.exp-card').remove()">×</button></div><textarea rows="3" placeholder="Qué obtuviste realmente"></textarea></div>
+      </div>
+      <button class="add-section-btn" onclick="addExpCard()">+ Agregar sección</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   CONEXIÓN QuintaDB (vía proxy Apps Script)
+════════════════════════════════ */
+var PROXY_URL = 'https://script.google.com/macros/s/AKfycbwNt7zJot7yFkHyah_7txPW__KCkyit234wejd5P3duemBImFYi7mIr0hkHYev8bZ4Feg/exec';
+
+var jsonpN = 0;
+function jsonpRequest(params, onSuccess, onError){
+  var cb = 'rdx_cb_' + (jsonpN++) + '_' + Date.now();
+  var script = document.createElement('script');
+  window[cb] = function(resp){
+    delete window[cb];
+    script.remove();
+    onSuccess(resp);
+  };
+  var qs = Object.keys(params).map(function(k){
+    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k] == null ? '' : params[k]);
+  }).join('&');
+  script.src = PROXY_URL + '?' + qs + '&callback=' + cb;
+  script.onerror = function(){ delete window[cb]; script.remove(); onError && onError(); };
+  document.body.appendChild(script);
+}
+
+/* ════════════════════════════════
+   ESTADO DE GRUPO Y AUTOGUARDADO
+════════════════════════════════ */
+var grupo = { id: null, ciclo: '', numero_grupo: '', coordinador: '', cargado: false };
+var suprimirAutoguardado = true; // evita disparar guardado durante la carga inicial
+var guardarTimer = null;
+
+function setEstadoGrupo(msg, tipo){
+  var el = document.getElementById('grupo-estado');
+  el.textContent = msg;
+  el.className = tipo || '';
+}
+
+function bloquearApp(bloqueada){
+  document.getElementById('app-card').classList.toggle('app-locked', bloqueada);
+}
+
+function cargarGrupo(){
+  var ciclo = document.getElementById('in-ciclo').value.trim();
+  var numGrupo = document.getElementById('in-numgrupo').value.trim();
+  var coordinador = document.getElementById('in-coordinador').value.trim();
+  if(!ciclo || !numGrupo || !coordinador){
+    setEstadoGrupo('Completa ciclo, N° de grupo y coordinador(a) para continuar.', 'err');
+    return;
+  }
+  setEstadoGrupo('Buscando tu grupo…');
+  document.getElementById('btn-cargar').disabled = true;
+  jsonpRequest({ accion: 'listar' }, function(resp){
+    document.getElementById('btn-cargar').disabled = false;
+    if(!resp || !resp.ok){
+      setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
+      return;
+    }
+    var registros = resp.records || [];
+    var encontrado = null;
+    for(var i=0;i<registros.length;i++){
+      var r = registros[i];
+      if((r.ciclo||'').trim().toLowerCase() === ciclo.toLowerCase()
+         && (r.numero_grupo||'').trim().toLowerCase() === numGrupo.toLowerCase()){
+        encontrado = r; break;
+      }
+    }
+    grupo.ciclo = ciclo; grupo.numero_grupo = numGrupo; grupo.coordinador = coordinador;
+    if(encontrado){
+      grupo.id = encontrado.id;
+      aplicarEstadoCargado_(encontrado.estructura);
+      setEstadoGrupo('Grupo encontrado. Trabajo cargado ✓', 'ok');
+    } else {
+      grupo.id = null;
+      setEstadoGrupo('Grupo nuevo — se creará al guardar los primeros cambios.', 'ok');
+    }
+    grupo.cargado = true;
+    bloquearApp(false);
+    suprimirAutoguardado = false;
+  }, function(){
+    document.getElementById('btn-cargar').disabled = false;
+    setEstadoGrupo('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 'err');
+  });
+}
+
+function aplicarEstadoCargado_(estructuraTxt){
+  var estado = null;
+  if(estructuraTxt){
+    try{ estado = JSON.parse(estructuraTxt); } catch(e){ estado = null; }
+  }
+  if(!estado){ renderAll(); return; }
+  document.getElementById('qa-pregunta').value = estado.pregunta || '';
+  data = estado.enfoques || [];
+  reindexarIds_(data);
+  restaurarOtros_(estado.otrosElementos || []);
+  restaurarCanvas_(estado.canvas || []);
+  renderAll();
+}
+
+/* Evita colisiones de id al reanudar la edición sobre datos cargados */
+function reindexarIds_(enfoques){
+  var maxNum = 0;
+  function track(id){
+    var n = parseInt(String(id).replace(/[^0-9]/g,''), 10);
+    if(!isNaN(n) && n > maxNum) maxNum = n;
+  }
+  enfoques.forEach(function(e){
+    track(e.id);
+    e.conceptos.forEach(function(c){
+      track(c.id);
+      c.instrumentos.forEach(function(i){ track(i.id); });
+      c.preguntas.forEach(function(p){
+        track(p.id);
+        p.procedimientos.forEach(function(pr){
+          track(pr.id);
+          pr.herramientas.forEach(function(h){ track(h.id); });
+        });
+      });
+    });
+  });
+  idc = maxNum;
+}
+
+/* ── Serialización de "Otros elementos" (tabla libre) ── */
+function serializarOtros_(){
+  var filas = [];
+  document.querySelectorAll('#qa-tbody tr').forEach(function(tr){
+    var tds = tr.querySelectorAll('td');
+    filas.push({ elemento: tds[0].textContent, analisis: tds[1].textContent });
+  });
+  return filas;
+}
+function restaurarOtros_(filas){
+  var tbody = document.getElementById('qa-tbody');
+  tbody.innerHTML = '';
+  filas.forEach(function(f){
+    addQaRow();
+    var last = tbody.lastElementChild;
+    last.children[0].textContent = f.elemento || '';
+    last.children[1].textContent = f.analisis || '';
+  });
+}
+
+/* ── Serialización del Canvas de experimentos ── */
+function serializarCanvas_(){
+  var tarjetas = [];
+  document.querySelectorAll('#exp-grid .exp-card').forEach(function(card){
+    tarjetas.push({
+      titulo: card.querySelector('.exp-title').textContent,
+      contenido: card.querySelector('textarea').value
+    });
+  });
+  return tarjetas;
+}
+function restaurarCanvas_(tarjetas){
+  var grid = document.getElementById('exp-grid');
+  grid.innerHTML = '';
+  tarjetas.forEach(function(t){
+    addExpCard();
+    var last = grid.lastElementChild;
+    last.querySelector('.exp-title').textContent = t.titulo || '';
+    last.querySelector('textarea').value = t.contenido || '';
+  });
+}
+
+/* ── Guardado ── */
+function estadoCompleto_(){
+  return {
+    pregunta: document.getElementById('qa-pregunta').value,
+    enfoques: data,
+    otrosElementos: serializarOtros_(),
+    canvas: serializarCanvas_()
+  };
+}
+function marcarCambio(){
+  if(suprimirAutoguardado || !grupo.cargado) return;
+  setEstadoGrupo('Escribiendo…');
+  clearTimeout(guardarTimer);
+  guardarTimer = setTimeout(guardarAhora, 1400);
+}
+function guardarAhora(){
+  var estructura = JSON.stringify(estadoCompleto_());
+  setEstadoGrupo('Guardando…');
+  var params = {
+    accion: grupo.id ? 'actualizar' : 'crear',
+    id: grupo.id || '',
+    ciclo: grupo.ciclo,
+    numero_grupo: grupo.numero_grupo,
+    coordinador: grupo.coordinador,
+    estructura: estructura
+  };
+  jsonpRequest(params, function(resp){
+    if(resp && resp.ok){
+      if(!grupo.id && resp.record && resp.record.id){
+        grupo.id = resp.record.id;
+      }
+      setEstadoGrupo('Guardado ✓ · ' + new Date().toLocaleTimeString(), 'ok');
+    } else {
+      setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
+    }
+  }, function(){
+    setEstadoGrupo('No se pudo guardar. Se reintentará con el próximo cambio.', 'err');
+  });
+}
+
+/* ════════════════════════════════
+   ESTADO
+════════════════════════════════ */
+var data = [];
+var idc  = 0;
+function uid(p){ idc++; return p + idc; }
+function focusRootInput(){ document.getElementById('in-enfoques').focus(); }
+
+/* ── helpers de búsqueda ── */
+function findIn(arr, id){ return arr.find(function(x){ return x.id === id; }); }
+
+function findConcepto(cid){
+  for(var i=0;i<data.length;i++){
+    var c = findIn(data[i].conceptos, cid); if(c) return c;
+  } return null;
+}
+function findPregunta(pid){
+  for(var i=0;i<data.length;i++)
+    for(var j=0;j<data[i].conceptos.length;j++){
+      var p = findIn(data[i].conceptos[j].preguntas, pid); if(p) return p;
+    }
+  return null;
+}
+function findProcedimiento(prid){
+  for(var i=0;i<data.length;i++)
+    for(var j=0;j<data[i].conceptos.length;j++)
+      for(var k=0;k<data[i].conceptos[j].preguntas.length;k++){
+        var pr = findIn(data[i].conceptos[j].preguntas[k].procedimientos, prid); if(pr) return pr;
+      }
+  return null;
+}
+
+/* ── CRUD enfoques ── */
+function addEnfoqueTop(){
+  var inp = document.getElementById('in-enfoques'), v = inp.value.trim(); if(!v) return;
+  data.push({id:uid('e'), text:v, conceptos:[]}); inp.value=''; inp.focus(); renderAll();
+}
+function removeEnfoque(id){ data = data.filter(function(e){ return e.id !== id; }); renderAll(); }
+
+/* ── CRUD conceptos ── */
+function addConcepto(eid, text){
+  var e = findIn(data, eid); if(!e) return;
+  e.conceptos.push({id:uid('c'), text:text, instrumentos:[], preguntas:[]}); renderAll();
+}
+function removeConcepto(eid, cid){
+  var e = findIn(data, eid); if(!e) return;
+  e.conceptos = e.conceptos.filter(function(c){ return c.id !== cid; }); renderAll();
+}
+
+/* ── CRUD instrumentos ── */
+function addInstrumento(cid, text){
+  var c = findConcepto(cid); if(!c) return;
+  c.instrumentos.push({id:uid('i'), text:text}); renderAll();
+}
+function removeInstrumento(cid, iid){
+  var c = findConcepto(cid); if(!c) return;
+  c.instrumentos = c.instrumentos.filter(function(i){ return i.id !== iid; }); renderAll();
+}
+
+/* ── CRUD preguntas ── */
+function addPregunta(cid, text){
+  var c = findConcepto(cid); if(!c) return;
+  c.preguntas.push({id:uid('p'), text:text, procedimientos:[]}); renderAll();
+}
+function removePregunta(cid, pid){
+  var c = findConcepto(cid); if(!c) return;
+  c.preguntas = c.preguntas.filter(function(p){ return p.id !== pid; }); renderAll();
+}
+
+/* ── CRUD procedimientos ── */
+function addProcedimiento(pid, text){
+  var p = findPregunta(pid); if(!p) return;
+  p.procedimientos.push({id:uid('pr'), text:text, herramientas:[]}); renderAll();
+}
+function removeProcedimiento(pid, prid){
+  var p = findPregunta(pid); if(!p) return;
+  p.procedimientos = p.procedimientos.filter(function(pr){ return pr.id !== prid; }); renderAll();
+}
+
+/* ── CRUD herramientas ── */
+function addHerramienta(prid, text){
+  var pr = findProcedimiento(prid); if(!pr) return;
+  pr.herramientas.push({id:uid('h'), text:text}); renderAll();
+}
+function removeHerramienta(prid, hid){
+  var pr = findProcedimiento(prid); if(!pr) return;
+  pr.herramientas = pr.herramientas.filter(function(h){ return h.id !== hid; }); renderAll();
+}
+
+function totalInstrumentos(){
+  var t = 0;
+  data.forEach(function(e){ e.conceptos.forEach(function(c){ t += c.instrumentos.length; }); });
+  return t;
+}
+
+/* ════════════════════════════════
+   HELPERS DE DOM
+════════════════════════════════ */
+function makeHead(dotClass, text, badge, delFn){
+  var head = document.createElement('div'); head.className = 'tree-head';
+  var dot  = document.createElement('span'); dot.className  = 'net-dot ' + dotClass;
+  var span = document.createElement('span'); span.className = 'tree-text'; span.textContent = text;
+  head.appendChild(dot); head.appendChild(span);
+  if(badge != null){
+    var b = document.createElement('span'); b.className = 'tree-badge'; b.textContent = badge; head.appendChild(b);
+  }
+  if(delFn){
+    var d = document.createElement('button'); d.className = 'tree-del'; d.textContent = '×';
+    d.addEventListener('click', delFn); head.appendChild(d);
+  }
+  return head;
+}
+function makeAddRow(placeholder, onSubmit){
+  var row = document.createElement('div'); row.className = 'tree-add';
+  var inp = document.createElement('input'); inp.placeholder = placeholder;
+  var btn = document.createElement('button'); btn.textContent = '+';
+  function go(){ var v = inp.value.trim(); if(!v) return; onSubmit(v); }
+  btn.addEventListener('click', go);
+  inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); go(); } });
+  row.appendChild(inp); row.appendChild(btn);
+  return row;
+}
+function makeChildren(items, buildFn){
+  var wrap = document.createElement('div'); wrap.className = 'tree-children';
+  items.forEach(function(item){ wrap.appendChild(buildFn(item)); });
+  return wrap;
+}
+
+/* ════════════════════════════════
+   RENDER
+════════════════════════════════ */
+function renderAll(){ renderNetwork(); renderTable(); marcarCambio(); }
+
+/* ── Red semántica ── */
+function renderNetwork(){
+  var list = document.getElementById('enfoques-list'); list.innerHTML = '';
+  data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+  var t = totalInstrumentos();
+  document.getElementById('proc-count').textContent = t + (t === 1 ? ' registrado' : ' registrados');
+}
+function buildNetEnfoque(e){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
+  wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc', function(){ removeEnfoque(e.id); }));
+  wrap.appendChild(makeAddRow('Agregar concepto…', function(v){ addConcepto(e.id, v); }));
+  wrap.appendChild(makeChildren(e.conceptos, function(c){ return buildNetConcepto(e.id, c); }));
+  return wrap;
+}
+function buildNetConcepto(eid, c){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
+  wrap.appendChild(makeHead('dot-teal', c.text, c.instrumentos.length + ' instr', function(){ removeConcepto(eid, c.id); }));
+  wrap.appendChild(makeAddRow('Agregar instrumento (ej. Escala de Rosenberg, 1965)…', function(v){ addInstrumento(c.id, v); }));
+  wrap.appendChild(makeChildren(c.instrumentos, function(i){ return buildNetInstrumento(c.id, i); }));
+  return wrap;
+}
+function buildNetInstrumento(cid, inst){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
+  wrap.appendChild(makeHead('dot-coral', inst.text, null, function(){ removeInstrumento(cid, inst.id); }));
+  return wrap;
+}
+
+/* ── Tabla de análisis ── */
+function renderTable(){
+  var container = document.getElementById('qa-breakdown'); container.innerHTML = '';
+  if(data.length === 0){
+    var empty = document.createElement('div'); empty.className = 'qa-empty';
+    var p = document.createElement('p'); p.textContent = 'Todavía no hay enfoques. Agrégalos primero en la pestaña Red semántica.';
+    var btn = document.createElement('button'); btn.textContent = 'Ir a red semántica';
+    btn.addEventListener('click', function(){ switchView('network'); });
+    empty.appendChild(p); empty.appendChild(btn); container.appendChild(empty); return;
+  }
+  data.forEach(function(e){ container.appendChild(buildTblEnfoque(e)); });
+}
+function buildTblEnfoque(e){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l1'; wrap.style.marginBottom = '12px';
+  wrap.appendChild(makeHead('dot-purple', e.text, null, null));
+  var kids = document.createElement('div'); kids.className = 'tree-children';
+  if(e.conceptos.length === 0){
+    var h = document.createElement('p');
+    h.style.cssText = 'font-size:12px;color:var(--color-text-tertiary);margin:6px 0 0;';
+    h.textContent = 'Sin conceptos todavía.'; kids.appendChild(h);
+  }
+  e.conceptos.forEach(function(c){ kids.appendChild(buildTblConcepto(e.id, c)); });
+  wrap.appendChild(kids);
+  return wrap;
+}
+function buildTblConcepto(eid, c){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
+  wrap.appendChild(makeHead('dot-teal', c.text, null, null));
+
+  /* instrumentos de literatura como referencia */
+  if(c.instrumentos.length > 0){
+    var ref  = document.createElement('div'); ref.style.cssText = 'margin:6px 0 4px;';
+    var lbl  = document.createElement('div');
+    lbl.style.cssText = 'font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px;';
+    lbl.textContent = 'Instrumentos de la literatura:';
+    var chips = document.createElement('div'); chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;';
+    c.instrumentos.forEach(function(i){
+      var chip = document.createElement('span');
+      chip.style.cssText = 'font-size:12px;padding:2px 8px;border-radius:999px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);';
+      chip.textContent = i.text; chips.appendChild(chip);
+    });
+    ref.appendChild(lbl); ref.appendChild(chips); wrap.appendChild(ref);
+  }
+
+  /* preguntas */
+  var kids = document.createElement('div'); kids.className = 'tree-children';
+  c.preguntas.forEach(function(p){ kids.appendChild(buildTblPregunta(c.id, p)); });
+  wrap.appendChild(kids);
+  wrap.appendChild(makeAddRow('Agregar pregunta para este concepto…', function(v){ addPregunta(c.id, v); }));
+  return wrap;
+}
+function buildTblPregunta(cid, p){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
+  wrap.appendChild(makeHead('dot-pink', p.text, p.procedimientos.length + ' proc', function(){ removePregunta(cid, p.id); }));
+  var kids = document.createElement('div'); kids.className = 'tree-children';
+  p.procedimientos.forEach(function(pr){ kids.appendChild(buildTblProcedimiento(p.id, pr)); });
+  wrap.appendChild(kids);
+  wrap.appendChild(makeAddRow('Agregar procedimiento para esta pregunta…', function(v){ addProcedimiento(p.id, v); }));
+  return wrap;
+}
+function buildTblProcedimiento(pid, pr){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l4';
+  wrap.appendChild(makeHead('dot-amber', pr.text, pr.herramientas.length + ' herr', function(){ removeProcedimiento(pid, pr.id); }));
+  var kids = document.createElement('div'); kids.className = 'tree-children';
+  pr.herramientas.forEach(function(h){ kids.appendChild(buildTblHerramienta(pr.id, h)); });
+  wrap.appendChild(kids);
+  wrap.appendChild(makeAddRow('Agregar herramienta o instrumento…', function(v){ addHerramienta(pr.id, v); }));
+  return wrap;
+}
+function buildTblHerramienta(prid, h){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l5';
+  wrap.appendChild(makeHead('dot-blue', h.text, null, function(){ removeHerramienta(prid, h.id); }));
+  return wrap;
+}
+
+/* ── Tabla libre ── */
+document.getElementById('in-enfoques').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ e.preventDefault(); addEnfoqueTop(); }
+});
+function addQaRow(){
+  var tbody = document.getElementById('qa-tbody');
+  var tr    = document.createElement('tr');
+  var t1    = document.createElement('td'); t1.contentEditable = 'true'; t1.setAttribute('data-placeholder','Nuevo elemento');
+  var t2    = document.createElement('td'); t2.contentEditable = 'true'; t2.setAttribute('data-placeholder','Escribe tu análisis…');
+  var t3    = document.createElement('td');
+  var d     = document.createElement('button'); d.className = 'qa-del'; d.textContent = '×';
+  d.addEventListener('click', function(){ tr.remove(); marcarCambio(); });
+  t3.appendChild(d); tr.appendChild(t1); tr.appendChild(t2); tr.appendChild(t3);
+  tbody.appendChild(tr); t1.focus();
+}
+
+/* ── Canvas ── */
+function addExpCard(){
+  var grid  = document.getElementById('exp-grid');
+  var card  = document.createElement('div'); card.className = 'exp-card';
+  var head  = document.createElement('div'); head.className = 'exp-card-head';
+  var title = document.createElement('div'); title.className = 'exp-title'; title.contentEditable = 'true'; title.textContent = 'Nueva sección';
+  var del   = document.createElement('button'); del.className = 'exp-del'; del.textContent = '×';
+  del.addEventListener('click', function(){ card.remove(); marcarCambio(); });
+  head.appendChild(title); head.appendChild(del);
+  var ta = document.createElement('textarea'); ta.rows = 3; ta.placeholder = 'Escribe aquí…';
+  card.appendChild(head); card.appendChild(ta);
+  grid.appendChild(card); title.focus();
+}
+
+/* ── Navegación ── */
+function switchView(view){
+  ['network','table','canvas'].forEach(function(v){
+    document.getElementById('view-' + v).style.display = (v === view ? 'block' : 'none');
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.classList.toggle('tab-active', btn.getAttribute('data-view') === view);
+  });
+}
+/* ── Listeners de autoguardado (delegados: cubren elementos creados dinámicamente) ── */
+document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
+document.getElementById('qa-tbody').addEventListener('input', marcarCambio);
+document.getElementById('exp-grid').addEventListener('input', marcarCambio);
+
+renderAll();
+switchView('network');
+</script>
+</body>
+</html>
