@@ -118,6 +118,29 @@
   .authErr{color:#a8501e;font-size:13px;margin-top:14px;}
   .userBar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:#6a746f;margin-bottom:10px;}
   .userBar b{color:var(--ink);}
+  /* tabla de análisis de preguntas */
+  #qa-analisis{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px;}
+  #qa-analisis th{background:var(--ink);color:#fff;font-weight:500;font-size:13px;padding:9px 10px;
+                  text-align:left;vertical-align:bottom;}
+  #qa-analisis th .th-sub{display:block;font-weight:400;font-size:11.5px;opacity:.75;margin-top:2px;}
+  #qa-analisis td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;}
+  #qa-analisis tr.fila-enfoque td{background:#eceaf8;border-color:#c9c4e8;font-size:14.5px;
+                                  color:#26215C;padding:8px 10px;}
+  .celda-concepto{background:#f4faf8;}
+  .concepto-txt{font-weight:500;color:#04342C;}
+  .concepto-sub{font-size:12px;color:#8a948f;margin-top:4px;}
+  .qa-sin{font-size:13px;color:#8a948f;font-style:italic;background:#fafbf9;}
+  .li-item{display:flex;gap:4px;align-items:flex-start;margin-bottom:5px;}
+  .li-txt{flex:1;border:1px solid var(--line);border-radius:3px;padding:5px 8px;
+          font-size:13.5px;line-height:1.4;background:#fff;min-height:20px;}
+  .li-txt:focus{outline:none;border-color:var(--teal);}
+  .li-q .li-txt{border-left:3px solid #a33e6d;}
+  .li-a .li-txt{border-left:3px solid #3a6ea5;color:#2b3d52;}
+  .qa-resumen{font-size:12.5px;color:#8a948f;margin:6px 0 0;}
+  .celda-lista .tree-add{margin-top:2px;}
+  .celda-lista .tree-add input{font-size:13px;padding:5px 8px;}
+  .celda-lista .tree-add button{font-size:13px;padding:4px 9px;}
+
   /* ejemplo de referencia */
   .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:12px 16px;margin:0 0 14px;
          font-size:14.5px;color:#555f5a;line-height:1.55;border-radius:3px;}
@@ -131,6 +154,8 @@
   .ej-n2{color:#04342C;margin-left:14px;margin-top:4px;}
   .ej-n3{color:#4A1B0C;margin-left:30px;}
   .ej-n4{color:#6a5410;margin-left:48px;font-size:12.5px;}
+  .ej-q{color:#7a2547;margin-left:30px;font-size:12.5px;font-style:italic;margin-top:3px;}
+  .ej-a{color:#2b3d52;margin-left:30px;font-size:12px;margin-bottom:4px;}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
   @media(max-width:680px){.row2{grid-template-columns:1fr;}}
 </style>
@@ -236,8 +261,8 @@
         <label for="qa-pregunta">Pregunta de investigación general</label>
         <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
 
-        <div class="qa-section-title">Desglose
-          <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta</span>
+        <div class="qa-section-title">Análisis por concepto
+          <span class="qa-hint-sub">— los conceptos vienen de tu red semántica; aquí les añades las preguntas que hay detrás y los autores consultados</span>
         </div>
         <div id="qa-breakdown"></div>
 
@@ -599,13 +624,8 @@ function reindexarIds_(enfoques){
         track(pr.id);
         (pr.herrs||[]).forEach(function(h){ track(h.id); });
       });
-      (c.preguntas||[]).forEach(function(p){
-        track(p.id);
-        (p.procedimientos||[]).forEach(function(pr){
-          track(pr.id);
-          (pr.herramientas||[]).forEach(function(h){ track(h.id); });
-        });
-      });
+      (c.preguntas||[]).forEach(function(q){ track(q.id); });
+      (c.autores||[]).forEach(function(a){ track(a.id); });
     });
   });
   idc = maxNum;
@@ -666,17 +686,8 @@ function limpiarParaGuardar_(enfoques){
               herrs:(pr.herrs||[]).map(function(h){ return { id:h.id, text:h.text }; })
             };
           }),
-          preguntas:(c.preguntas||[]).map(function(p){
-            return {
-              id:p.id, text:p.text,
-              procedimientos:(p.procedimientos||[]).map(function(pr){
-                return {
-                  id:pr.id, text:pr.text,
-                  herramientas:(pr.herramientas||[]).map(function(h){ return { id:h.id, text:h.text }; })
-                };
-              })
-            };
-          })
+          preguntas:(c.preguntas||[]).map(function(q){ return { id:q.id, text:q.text }; }),
+          autores:(c.autores||[]).map(function(a){ return { id:a.id, text:a.text }; })
         };
       })
     };
@@ -752,16 +763,31 @@ window.addEventListener('beforeunload', function(e){
 
 
 /* ════════════════════════════════════════════════════════════
-   EJEMPLO DE REFERENCIA
-   Estructura tomada de un canvas de experimentos real del curso
-   (Grupo 4, TII I). Se conservan solo las cuatro columnas que
-   alimentan la red; la empresa se mantiene en reserva.
-       Metodología de solución → Enfoque
-       Etapa                   → Concepto
-       Sub etapa               → Procedimiento
-       Entregable/producto     → Herramienta
+   EJEMPLO DE REFERENCIA — LAS DOS FASES ENLAZADAS
+   Tomado de la tabla de análisis de preguntas del Objetivo General
+   de un trabajo real del curso (Grupo 4, TII I). El propio grupo
+   declaró el mapeo en los encabezados de su tabla:
+       Postura técnica              → Enfoque
+       Preguntas y conceptos        → Concepto + Preguntas (fase 2)
+       Autor (consultado)           → Autor (fase 2)
+       Herramienta para implementar → Procedimiento + Herramienta
+   Los MISMOS conceptos alimentan las dos fases: por eso al cargar
+   el ejemplo se llenan a la vez la red semántica y la tabla.
+   La empresa se mantiene en reserva.
 ════════════════════════════════════════════════════════════ */
-var EJEMPLO_RED = [{"t":"Gestión por Procesos (BPMN AS-IS / TO-BE) + Valoración de FCE (Factores Críticos de Éxito) Ambiente micro y macro","c":[{"t":"Diagnóstico AS-IS y Valoración de FCE","p":[{"t":"Levantamiento de actividades,tiempos y responsables / (herramientas","h":["Ficha de registro AS-IS (actividades, tiempos, responsables)"]},{"t":"Identificación de puntos de reproceso y esperas","h":["Mapa de flujo AS-IS con puntos críticos de reproceso marcados"]},{"t":"Valoración de FCE micro: alcance, alineación, recursos, variabilidad, automatización, indicadores de TI","h":["Mapa de FCE priorizados (radar chart)"]},{"t":"Valoración de FCE macro: innovación","h":["Lista de FCE críticos nivel 1 (micro) y nivel 2 (macro) con puntajes"]}]},{"t":"Modelado TO-BE (proceso mejorado)","p":[{"t":"Rediseño del flujo de actividades eliminando etapas sin valor agregado","h":["Diagrama BPMN AS-IS (proceso actual documentado) y TO-BE"]},{"t":"Asignación de responsables y tiempos objetivo por etapa","h":["Diagrama BPMN TO-BE (proceso mejorado con responsables y tiempos objetivo)"]},{"t":"Incorporación de FCE priorizados al diseño TO-BE","h":["Tabla comparativa de tiempos AS-IS vs TO-BE por etapa"]},{"t":"Notación BPMN gráfica legible para todos los actores","h":["Informe de validación del TO-BE con los FCE nivel 1 y 2"]}]},{"t":"Estandarización y documentación formal","p":[{"t":"Formalización del flujo de actividades aprobado","h":["Procedimiento documentado y validado — SOP del proceso de adquisición"]},{"t":"Definición de responsables por etapa y nivel de autorización","h":["Matriz de responsabilidades (RACI) del proceso"]},{"t":"Documentación de requisitos mínimos del proveedor","h":["Ficha de requisitos mínimos del proveedor (criterios de homologación)"]},{"t":"Registro de acuerdos de nivel de servicio (SLA)","h":["Ficha de acuerdos"]}]},{"t":"Implementación y medición del tiempo de ciclo","p":[{"t":"Capacitación al equipo en el nuevo proceso BPMN","h":["Plan de capacitación ejecutado con registro de asistencia"]},{"t":"Ejecución del proceso estandarizado (74 órdenes de compra post-test)","h":["Registro de tiempos de ciclo por orden (74 registros post-test)"]},{"t":"Registro de tiempos de ciclo por orden","h":["Reporte de reducción del tiempo de ciclo pre vs post"]},{"t":"Cálculo del indicador de reducción (1 − TCC / TCA) × 100","h":["Gráfico comparativo AS-IS vs TO-BE (Power BI)"]}]},{"t":"Verificación de FCE y mejora continua","p":[{"t":"Revisión del grado de cobertura de FCE micro en el proceso estandarizado","h":["Reporte de cobertura de FCE micro"]},{"t":"Revisión de FCE macro (innovación) incorporados","h":["Reporte de cobertura de FCE macro incorporados al TO-BE"]},{"t":"Aplicación del ciclo PHVA para ajustes","h":["Diagrama TO-BE actualizado (versión 2)"]},{"t":"Actualización del diagrama TO-BE con mejoras detectadas","h":["Acta de cierre de la etapa de estandarización"]}]},{"t":"Reporte final de estandarización","p":[{"t":"Consolidación de resultados de la estandarización","h":["Informe final de estandarización con indicadores pre vs post"]},{"t":"Comparativo de indicadores pre vs post BPMN","h":["Gráfico comparativo de tiempos de ciclo pre vs post (Power BI)"]},{"t":"Presentación de hallazgos al área de ingeniería","h":["Presentación ejecutiva de resultados para la gerencia"]},{"t":"Recomendaciones para la siguiente fase (OE2)","h":["Plan de acción para OE2 (automatización)"]}]}]},{"t":"Estrategia de interoperabilidad TAPP - BCRP","c":[{"t":"Diagnóstico de tareas repetitivas y fuentes de información dispersa","p":[{"t":"Identificación de tareas repetitivas automatizables (procesamiento de órdenes, conciliación de facturas)","h":["Listado de tareas repetitivas priorizadas para automatizar"]},{"t":"Mapeo de fuentes de información dispersas (Excel, Outlook, SAP)","h":["Mapa de fuentes de información dispersa (diagrama de flujo)"]},{"t":"Definición de parámetros mínimos para la automatización","h":["Ficha de parámetros mínimos de automatización"]}]},{"t":"Transferencia de conocimientos y capacitación","p":[{"t":"Capacitación al equipo en el APP piloto","h":["Plan de capacitación aprobado y ejecutado"]},{"t":"Sensibilización sobre integración de sistemas (ERP / Power BI)","h":["Registro de asistencia y evaluaciones de comprensión del equipo"]}]},{"t":"Configuración e implementación de la APP piloto (RPA + ERP)","p":[{"t":"Configuración de la APP piloto para el procesamiento automático de órdenes","h":["APP piloto configurada y conectada al sistema ERP (acta de configuración)"]},{"t":"Integración de la APP con el sistema ERP/SAP","h":["Diagrama de integración de sistemas: APP + ERP + Power BI"]},{"t":"Centralización de datos (eliminación de Excel y Outlook como fuentes únicas)","h":["Manual de configuración técnica de la APP piloto"]},{"t":"Configuración de perfiles de acceso por usuario","h":["Matriz de perfiles de acceso por usuario definida y aprobada"]}]},{"t":"Despliegue y prueba piloto (74 órdenes de compra)","p":[{"t":"Ejecución de la prueba piloto con 74 órdenes de compra reales","h":["Reporte de prueba piloto (errores detectados y corregidos)"]},{"t":"Registro de errores y reprocesos durante la prueba","h":["Registro comparativo de reprocesos y errores antes vs durante piloto"]},{"t":"Ajuste y corrección de la APP según resultados","h":["Informe de ajustes realizados a la APP tras la prueba piloto"]}]},{"t":"Formalización y estandarización de la APP como herramienta oficial","p":[{"t":"Validación final de la APP","h":["APP piloto aprobada como herramienta oficial (acta de aprobación firmada)"]},{"t":"Actualización del diagrama TO-BE con flujos automatizados","h":["Diagrama TO-BE actualizado con flujos automatizados integrados"]}]},{"t":"Reporte final de integración y automatización","p":[{"t":"Consolidación del % de reducción de reprocesos y errores documentarios","h":["Informe final de automatización con indicadores pre vs post"]},{"t":"Análisis comparativo: proceso manual vs proceso automatizado","h":["Gráfico comparativo de reprocesos y errores (Power BI)"]}]}]},{"t":"Implementación de KPIs logísticos (Modelo SCOR + ciclo PHVA)","c":[{"t":"Diagnóstico del estado actual de medición (0% cobertura KPI)","p":[{"t":"Levantamiento de datos históricos disponibles (74 órdenes pre-test)","h":["Base de datos histórica de 74 órdenes pre-test"]},{"t":"Definición del alcance del sistema de KPIs","h":["Alcance del sistema de KPIs aprobado"]}]},{"t":"Diseño del modelo de KPIs (Modelo SCOR)","p":[{"t":"Definición de cada KPI: qué medir, fórmula, frecuencia y responsable","h":["Ficha de indicadores KPI (1 ficha por indicador)"]},{"t":"KPIs de tiempo de ciclo: (1 − TCC/TCA) × 100","h":["Modelo SCOR adaptado al proceso de adquisición"]},{"t":"KPIs de reprocesos: (1 − RE post/RE pre) × 100","h":["Diccionario de KPIs del proceso de adquisición"]},{"t":"KPI de cobertura: (Procesos con KPI / Total procesos) × 100","h":["Informe de validación del modelo de KPIs con el jefe de logística"]}]},{"t":"Implementación del dashboard de seguimiento KPI","p":[{"t":"Construcción del dashboard en Power BI / Excel","h":["Dashboard de seguimiento KPI operativo (Power BI)"]},{"t":"Conexión del dashboard con el sistema ERP y la APP piloto (OE2)","h":["Conexión activa: Dashboard ↔ ERP ↔ APP"]}]},{"t":"Medición pre-test (línea base: 0% cobertura KPI)","p":[{"t":"Registro de KPIs en los 6 meses antes de la implementación (meses 1-6)","h":["Reporte de KPIs pre-test: tiempo de ciclo promedio, N° de reprocesos, % pedidos a tiempo y cobertura KPI: 0%"]},{"t":"Cálculo de los indicadores con los 74 registros pre-test","h":["Gráfico de línea base (Power BI)"]},{"t":"Documentación de la línea base para comparación","h":["Informe de línea base pre-test consolidado y aprobado"]}]},{"t":"Medición post-test : aplicación del ciclo PHVA","p":[{"t":"Seguimiento con KPIs durante los 6 meses post-implementación (meses 7-12)","h":["Reporte de KPIs post-test (reducción tiempo ciclo, reprocesos, pedidos a tiempo, cobertura meta 60%)"]},{"t":"Cálculo de indicadores con los 74 registros post-test","h":["Gráfico comparativo pre vs post (Power BI)"]},{"t":"Aplicación del ciclo PHVA: Planificar → Hacer → Verificar → Actuar","h":["Acta de revisión PHVA"]},{"t":"Ajuste de KPIs y metas según resultados obtenidos","h":["Informe de ajustes de KPIs y metas tras el ciclo PHVA"]}]},{"t":"Reporte final de seguimiento, control y trazabilidad","p":[{"t":"Consolidación de todos los indicadores pre vs post","h":["Informe final de KPIs con indicadores pre vs post"]},{"t":"Análisis de la brecha residual hacia el 60%","h":["Dashboard final actualizado con todos los KPIs del período completo (Power BI)"]},{"t":"Presentación de resultados a la gerencia de ingeniería","h":["Presentación ejecutiva de resultados del sistema de KPIs para la gerencia"]}]}]}];
+var EJEMPLO_RED = [{"t":"Gestión por procesos y mejora continua","c":[{"t":"Estandarización de procesos, ciclo PHVA y cuellos de botella","q":["¿Cómo la gestión por procesos y la mejora continua permiten reducir el tiempo de atención de entrega de bienes y/o servicios en la empresa?"],"a":["Portero-Poveda et al. (Koinonía, 2022)","Ortíz-Fernández et al. (Gestinar, 2024)","UCV (2022)","PUCP (2021)"],"p":[{"t":"Mapeo del proceso actual de adquisición y rediseño del proceso mejorado con BPMN","h":["Diagrama AS-IS / TO-BE"]}]}]},{"t":"Estandarización del proceso mediante BPMN y valoración de FCE","c":[{"t":"BPMN como lenguaje estándar OMG y valoración de FCE micro y macro","q":["¿Qué actividades del proceso de adquisición requieren estandarización mediante BPMN para reducir el tiempo de ciclo?"],"a":["Espinosa Cruz et al. (SciELO, 2020)","Ciencia & Desarrollo UNJBG (2019)","Revista Regunt (2023)","Ramirez, Paredes, Valque (UPC, 2024)"],"p":[{"t":"Modelado del proceso actual y propuesta mejorada con FCE priorizados integrados al TO-BE","h":["Diagrama AS-IS / TO-BE en notación BPMN","Mapa de FCE — radar chart"]}]}]},{"t":"Automatización RPA e integración de la información (APP piloto + ERP logístico)","c":[{"t":"Automatización de tareas repetitivas y centralización de datos en ERP","q":["¿De qué manera la automatización robótica de procesos (RPA) y la integración de la información impactan en la reducción de reprocesos y errores documentarios?"],"a":["Herrera, Crisóstomo, Dávila (SciELO, 2025)","Tirado & Mecola (UNT, 2024)","USIL (2021) — ERP logístico","UPC (2022) — Digitalización"],"p":[{"t":"Identificación de tareas repetitivas, tiempos y puntos de integración por automatizar","h":["Ficha de registro del proceso actual"]}]}]},{"t":"Control y seguimiento mediante KPIs logísticos (Modelo SCOR + ciclo PHVA)","c":[{"t":"KPI de tiempo de ciclo, de reprocesos y de cobertura de indicadores","q":["¿Qué indicadores clave de desempeño (KPIs) permiten controlar y dar seguimiento al tiempo de entrega de bienes y/o servicios en la empresa?"],"a":["USIL (2021) — KPIs logísticos","López, Sacco, Cavacini (AACINI, 2024)","Zuluaga et al. (Clío América, 2014)","Flores & Noel (USIL, 2025)","ResearchGate (2025) — Modelos KPI"],"p":[{"t":"Definición de qué medir, fórmula exacta, frecuencia, fuente de datos y responsable","h":["Ficha de indicadores KPI","Dashboard Power BI de seguimiento KPI"]}]}]},{"t":"Gestión documental y relación cliente-proveedor (SLA + homologación)","c":[{"t":"Requisitos del cliente, acuerdos SLA y homologación de proveedores","q":["¿Cuáles son las condiciones mínimas del proveedor para cumplir con los requisitos del cliente?","¿Cuál deberá ser la relación cliente-proveedor óptima con SLA formalizados?","¿Cuáles son los parámetros mínimos para lograr la automatización del proceso?"],"a":["LATAM Revista (2022)","UPC (2020) — gestión de compras","Henríquez-Fuente et al. (Dialnet, 2018)","Redalyc (2021)"],"p":[{"t":"Levantamiento con jefe de logística y analistas de compras","h":["Guía de entrevista"]},{"t":"Registro del proceso documental actual con proveedores","h":["Ficha de observación"]},{"t":"Registro de cumplimiento de SLA y homologación","h":["Formulario en línea"]}]}]}];
+
+function contarEjemplo_(){
+  var r = {e:0,c:0,p:0,h:0,q:0,a:0};
+  EJEMPLO_RED.forEach(function(e){
+    r.e++;
+    e.c.forEach(function(c){
+      r.c++; r.q += c.q.length; r.a += c.a.length;
+      c.p.forEach(function(pr){ r.p++; r.h += pr.h.length; });
+    });
+  });
+  return r;
+}
 
 function toggleEjemploRed(){
   var caja = document.getElementById('ej-red');
@@ -774,26 +800,22 @@ function toggleEjemploRed(){
 }
 
 function construirEjemploHTML_(){
-  var nE = EJEMPLO_RED.length, nC = 0, nP = 0, nH = 0;
-  EJEMPLO_RED.forEach(function(e){
-    nC += e.c.length;
-    e.c.forEach(function(c){
-      nP += c.p.length;
-      c.p.forEach(function(pr){ nH += pr.h.length; });
-    });
-  });
-
-  var h = '<b>Cómo se traduce el canvas de experimentos a esta red.</b>'+
-    '<p class="note" style="font-size:13px;margin:6px 0 10px;">Si ya trabajaste tu canvas, '+
-    'cada columna entra en un nivel distinto de la red:</p>'+
-    '<table class="ejParTable"><thead><tr><th>Columna del canvas</th><th>Nivel en la red</th></tr></thead><tbody>'+
-    '<tr><td>Metodología de solución</td><td><b>Enfoque</b></td></tr>'+
-    '<tr><td>Etapas</td><td><b>Concepto</b></td></tr>'+
-    '<tr><td>Sub etapas</td><td><b>Procedimiento</b></td></tr>'+
-    '<tr><td>Entregable / producto</td><td><b>Herramienta</b></td></tr>'+
+  var n = contarEjemplo_();
+  var h = '<b>Las dos fases trabajan sobre los mismos conceptos.</b>'+
+    '<p class="note" style="font-size:13px;margin:6px 0 10px;">En la primera fase construyes la red. '+
+    'En la segunda no vuelves a escribir conceptos: retomas los que ya definiste y les añades '+
+    'las preguntas que hay detrás y los autores que las sustentan.</p>'+
+    '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>Dónde entra</th></tr></thead><tbody>'+
+    '<tr><td>Metodología de solución / Postura técnica</td><td><b>Enfoque</b> — fase 1</td></tr>'+
+    '<tr><td>Etapa / Concepto</td><td><b>Concepto</b> — fase 1, se retoma en fase 2</td></tr>'+
+    '<tr><td>Sub etapa</td><td><b>Procedimiento</b> — fase 1</td></tr>'+
+    '<tr><td>Entregable / producto</td><td><b>Herramienta</b> — fase 1</td></tr>'+
+    '<tr><td>Preguntas</td><td><b>Preguntas</b> — fase 2</td></tr>'+
+    '<tr><td>Autor (consultado)</td><td><b>Autor</b> — fase 2</td></tr>'+
     '</tbody></table>'+
     '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
-    '<b>'+nE+' enfoques · '+nC+' conceptos · '+nP+' procedimientos · '+nH+' herramientas</b>. '+
+    '<b>'+n.e+' enfoques · '+n.c+' conceptos · '+n.p+' procedimientos · '+n.h+' herramientas</b>, '+
+    'y sobre esos mismos conceptos <b>'+n.q+' preguntas y '+n.a+' autores</b>. '+
     'La empresa se mantiene en reserva.</p>'+
     '<div class="ej-arbol">';
 
@@ -805,34 +827,42 @@ function construirEjemploHTML_(){
         h += '<div class="ej-n3">– '+esc(pr.t)+'</div>';
         pr.h.forEach(function(hh){ h += '<div class="ej-n4">→ '+esc(hh)+'</div>'; });
       });
+      c.q.forEach(function(q){ h += '<div class="ej-q">? '+esc(q)+'</div>'; });
+      if(c.a.length) h += '<div class="ej-a">Autores: '+esc(c.a.join(' · '))+'</div>';
     });
   });
   h += '</div>'+
     '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
-    'Cargar este ejemplo en mi red</button>'+
-    '<p class="note" style="font-size:12px;margin:6px 0 0;">Sirve para ver la red completa en el '+
-    'diagrama. Reemplaza lo que tengas en la vista de red semántica.</p>';
+    'Cargar este ejemplo</button>'+
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Llena la red semántica y la tabla de '+
+    'análisis a la vez. Reemplaza lo que tengas en esas dos vistas; el canvas no se toca.</p>';
   return h;
 }
 
-/* Vuelca el ejemplo en el árbol de trabajo, generando ids nuevos */
+/* Vuelca el ejemplo en el árbol de trabajo, generando ids nuevos.
+   Carga las dos fases juntas: la red y las preguntas/autores. */
 function cargarEjemploRed(){
   if(!grupo.cargado){ toast('Primero inicia la red con los datos del grupo', true); return; }
-  if(data.length && !confirm('Vas a reemplazar la red semántica que tienes en pantalla '+
-     'por el ejemplo completo.\n\nLa tabla de análisis y el canvas no se tocan. ¿Continuar?')) return;
+  if(data.length && !confirm('Vas a reemplazar la red semántica y la tabla de análisis '+
+     'por el ejemplo completo.\n\nEl canvas de experimentos no se toca. ¿Continuar?')) return;
   data = EJEMPLO_RED.map(function(e){
-    return { id:uid('e'), text:e.t, preguntas:[], conceptos:e.c.map(function(c){
-      return { id:uid('c'), text:c.t, preguntas:[], procs:c.p.map(function(pr){
-        return { id:uid('pc'), text:pr.t, herrs:pr.h.map(function(hh){
-          return { id:uid('hr'), text:hh };
-        })};
-      })};
+    return { id:uid('e'), text:e.t, conceptos:e.c.map(function(c){
+      return {
+        id:uid('c'), text:c.t,
+        procs: c.p.map(function(pr){
+          return { id:uid('pc'), text:pr.t, herrs:pr.h.map(function(hh){
+            return { id:uid('hr'), text:hh };
+          })};
+        }),
+        preguntas: c.q.map(function(q){ return { id:uid('q'), text:q }; }),
+        autores:   c.a.map(function(a){ return { id:uid('a'), text:a }; })
+      };
     })};
   });
   renderAll();
   document.getElementById('ej-red').style.display = 'none';
   window.scrollTo({ top:0, behavior:'smooth' });
-  toast('Ejemplo cargado — revisa el diagrama');
+  toast('Ejemplo cargado en las dos fases');
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -955,21 +985,6 @@ function findConcepto(cid){
     var c = findIn(data[i].conceptos, cid); if(c) return c;
   } return null;
 }
-function findPregunta(pid){
-  for(var i=0;i<data.length;i++)
-    for(var j=0;j<data[i].conceptos.length;j++){
-      var p = findIn(data[i].conceptos[j].preguntas, pid); if(p) return p;
-    }
-  return null;
-}
-function findProcedimiento(prid){
-  for(var i=0;i<data.length;i++)
-    for(var j=0;j<data[i].conceptos.length;j++)
-      for(var k=0;k<data[i].conceptos[j].preguntas.length;k++){
-        var pr = findIn(data[i].conceptos[j].preguntas[k].procedimientos, prid); if(pr) return pr;
-      }
-  return null;
-}
 
 /* ── CRUD enfoques ── */
 function addEnfoqueTop(){
@@ -1030,38 +1045,38 @@ function migrarInstrumentos_(enfoques){
       }
       delete c.instrumentos;
       (c.procs||[]).forEach(function(pr){ if(!pr.herrs) pr.herrs = []; });
+      /* Las preguntas antiguas colgaban procedimientos y herramientas.
+         Ahora esos niveles viven en la red, así que la pregunta queda plana. */
+      c.preguntas = (c.preguntas||[]).map(function(q){ return { id:q.id, text:q.text }; });
+      if(!c.autores) c.autores = [];
     });
   });
 }
 
-/* ── CRUD preguntas ── */
+/* ── CRUD de la tabla de análisis ──
+   Los conceptos NO se crean aquí: se heredan de la red semántica.
+   En esta fase solo se les añaden preguntas y autores. */
 function addPregunta(cid, text){
   var c = findConcepto(cid); if(!c) return;
-  c.preguntas.push({id:uid('p'), text:text, procedimientos:[]}); renderAll();
+  if(!c.preguntas) c.preguntas = [];
+  c.preguntas.push({id:uid('q'), text:text}); renderAll();
 }
-function removePregunta(cid, pid){
+function removePregunta(cid, qid){
   var c = findConcepto(cid); if(!c) return;
-  c.preguntas = c.preguntas.filter(function(p){ return p.id !== pid; }); renderAll();
+  c.preguntas = (c.preguntas||[]).filter(function(q){ return q.id !== qid; }); renderAll();
 }
-
-/* ── CRUD procedimientos ── */
-function addProcedimiento(pid, text){
-  var p = findPregunta(pid); if(!p) return;
-  p.procedimientos.push({id:uid('pr'), text:text, herramientas:[]}); renderAll();
+function addAutor(cid, text){
+  var c = findConcepto(cid); if(!c) return;
+  if(!c.autores) c.autores = [];
+  c.autores.push({id:uid('a'), text:text}); renderAll();
 }
-function removeProcedimiento(pid, prid){
-  var p = findPregunta(pid); if(!p) return;
-  p.procedimientos = p.procedimientos.filter(function(pr){ return pr.id !== prid; }); renderAll();
+function removeAutor(cid, aid){
+  var c = findConcepto(cid); if(!c) return;
+  c.autores = (c.autores||[]).filter(function(a){ return a.id !== aid; }); renderAll();
 }
-
-/* ── CRUD herramientas ── */
-function addHerramienta(prid, text){
-  var pr = findProcedimiento(prid); if(!pr) return;
-  pr.herramientas.push({id:uid('h'), text:text}); renderAll();
-}
-function removeHerramienta(prid, hid){
-  var pr = findProcedimiento(prid); if(!pr) return;
-  pr.herramientas = pr.herramientas.filter(function(h){ return h.id !== hid; }); renderAll();
+function totalPreguntas(){
+  var t=0; data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){ t += (c.preguntas||[]).length; }); });
+  return t;
 }
 
 function totalProcs(){
@@ -1407,81 +1422,104 @@ function buildNetHerr(pid, h){
   return wrap;
 }
 
-/* ── Tabla de análisis ── */
+/* ── Tabla de análisis de preguntas ──
+   Tres columnas: Concepto | Preguntas | Autor.
+   Los conceptos se HEREDAN de la red semántica: no se crean ni se
+   editan aquí. Así el análisis se hace sobre lo ya construido en la
+   primera fase, y no sobre una lista paralela que se desincroniza. */
 function renderTable(){
-  var container = document.getElementById('qa-breakdown'); container.innerHTML = '';
+  var cont = document.getElementById('qa-breakdown'); cont.innerHTML = '';
   if(data.length === 0){
     var empty = document.createElement('div'); empty.className = 'qa-empty';
-    var p = document.createElement('p'); p.textContent = 'Todavía no hay enfoques. Agrégalos primero en la pestaña Red semántica.';
-    var btn = document.createElement('button'); btn.textContent = 'Ir a red semántica';
+    var p1 = document.createElement('p');
+    p1.textContent = 'Esta tabla se arma sobre los conceptos de tu red semántica, y todavía no hay ninguno.';
+    var btn = document.createElement('button'); btn.className = 'btnMini';
+    btn.textContent = 'Ir a la red semántica';
     btn.addEventListener('click', function(){ switchView('network'); });
-    empty.appendChild(p); empty.appendChild(btn); container.appendChild(empty); return;
-  }
-  data.forEach(function(e){ container.appendChild(buildTblEnfoque(e)); });
-}
-function buildTblEnfoque(e){
-  var wrap = document.createElement('div'); wrap.className = 'tree-item l1'; wrap.style.marginBottom = '12px';
-  wrap.appendChild(makeHead('dot-purple', e.text, null, null));
-  var kids = document.createElement('div'); kids.className = 'tree-children';
-  if(e.conceptos.length === 0){
-    var h = document.createElement('p');
-    h.style.cssText = 'font-size:13.5px;color:var(--color-text-tertiary);margin:6px 0 0;';
-    h.textContent = 'Sin conceptos todavía.'; kids.appendChild(h);
-  }
-  e.conceptos.forEach(function(c){ kids.appendChild(buildTblConcepto(e.id, c)); });
-  wrap.appendChild(kids);
-  return wrap;
-}
-function buildTblConcepto(eid, c){
-  var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
-  wrap.appendChild(makeHead('dot-teal', c.text, null, null));
-
-  /* herramientas ya definidas en la red semántica, como referencia */
-  var herrsRed = [];
-  (c.procs||[]).forEach(function(pr){ (pr.herrs||[]).forEach(function(h){ herrsRed.push(h); }); });
-  if(herrsRed.length > 0){
-    var ref  = document.createElement('div'); ref.style.cssText = 'margin:6px 0 4px;';
-    var lbl  = document.createElement('div');
-    lbl.style.cssText = 'font-size:12.5px;color:#8a948f;margin-bottom:4px;';
-    lbl.textContent = 'Herramientas definidas en la red:';
-    var chips = document.createElement('div'); chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;';
-    herrsRed.forEach(function(i){
-      var chip = document.createElement('span');
-      chip.style.cssText = 'font-size:13.5px;padding:3px 10px;border-radius:999px;background:#FBF3DC;border:1px solid #8A6D1F;color:#3D3009;';
-      chip.textContent = i.text; chips.appendChild(chip);
-    });
-    ref.appendChild(lbl); ref.appendChild(chips); wrap.appendChild(ref);
+    empty.appendChild(p1); empty.appendChild(btn); cont.appendChild(empty); return;
   }
 
-  /* preguntas */
-  var kids = document.createElement('div'); kids.className = 'tree-children';
-  c.preguntas.forEach(function(p){ kids.appendChild(buildTblPregunta(c.id, p)); });
-  wrap.appendChild(kids);
-  wrap.appendChild(makeAddRow('Agregar pregunta para este concepto…', function(v){ addPregunta(c.id, v); }));
-  return wrap;
+  var tabla = document.createElement('table'); tabla.id = 'qa-analisis';
+  tabla.innerHTML = '<thead><tr>'+
+    '<th style="width:30%;">Concepto <span class="th-sub">(de la red semántica)</span></th>'+
+    '<th style="width:42%;">Preguntas</th>'+
+    '<th style="width:28%;">Autor(es) consultado(s)</th>'+
+    '</tr></thead>';
+  var tb = document.createElement('tbody');
+  var sinConceptos = 0;
+
+  data.forEach(function(e){
+    var trE = document.createElement('tr'); trE.className = 'fila-enfoque';
+    var tdE = document.createElement('td'); tdE.colSpan = 3;
+    tdE.innerHTML = '<span class="net-dot dot-purple"></span><b>'+esc(e.text)+'</b>';
+    trE.appendChild(tdE); tb.appendChild(trE);
+
+    var cs = e.conceptos || [];
+    if(cs.length === 0){
+      sinConceptos++;
+      var trV = document.createElement('tr');
+      var tdV = document.createElement('td'); tdV.colSpan = 3; tdV.className = 'qa-sin';
+      tdV.textContent = 'Este enfoque todavía no tiene conceptos en la red semántica.';
+      trV.appendChild(tdV); tb.appendChild(trV);
+      return;
+    }
+    cs.forEach(function(c){ tb.appendChild(filaConcepto_(c)); });
+  });
+
+  tabla.appendChild(tb); cont.appendChild(tabla);
+
+  var res = document.createElement('p'); res.className = 'qa-resumen';
+  var nC = 0; data.forEach(function(e){ nC += (e.conceptos||[]).length; });
+  res.textContent = nC + (nC===1?' concepto heredado':' conceptos heredados') + ' de la red · ' +
+                    totalPreguntas() + (totalPreguntas()===1?' pregunta':' preguntas') + ' registradas';
+  cont.appendChild(res);
 }
-function buildTblPregunta(cid, p){
-  var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
-  wrap.appendChild(makeHead('dot-pink', p.text, p.procedimientos.length + ' proc', function(){ removePregunta(cid, p.id); }));
-  var kids = document.createElement('div'); kids.className = 'tree-children';
-  p.procedimientos.forEach(function(pr){ kids.appendChild(buildTblProcedimiento(p.id, pr)); });
-  wrap.appendChild(kids);
-  wrap.appendChild(makeAddRow('Agregar procedimiento para esta pregunta…', function(v){ addProcedimiento(p.id, v); }));
-  return wrap;
+
+/* Una fila por concepto: el concepto es de solo lectura (viene de la red) */
+function filaConcepto_(c){
+  var tr = document.createElement('tr');
+
+  var tdC = document.createElement('td'); tdC.className = 'celda-concepto';
+  var eti = document.createElement('div'); eti.className = 'concepto-txt';
+  eti.innerHTML = '<span class="net-dot dot-teal"></span>' + esc(c.text);
+  tdC.appendChild(eti);
+  var nP = (c.procs||[]).length;
+  if(nP){
+    var sub = document.createElement('div'); sub.className = 'concepto-sub';
+    sub.textContent = nP + (nP===1?' procedimiento':' procedimientos') + ' en la red';
+    tdC.appendChild(sub);
+  }
+  tr.appendChild(tdC);
+
+  tr.appendChild(celdaLista_(c.preguntas || [], 'q',
+    'Agregar pregunta…',
+    function(v){ addPregunta(c.id, v); },
+    function(id){ removePregunta(c.id, id); }));
+
+  tr.appendChild(celdaLista_(c.autores || [], 'a',
+    'Agregar autor…',
+    function(v){ addAutor(c.id, v); },
+    function(id){ removeAutor(c.id, id); }));
+
+  return tr;
 }
-function buildTblProcedimiento(pid, pr){
-  var wrap = document.createElement('div'); wrap.className = 'tree-item l4';
-  wrap.appendChild(makeHead('dot-amber', pr.text, pr.herramientas.length + ' herr', function(){ removeProcedimiento(pid, pr.id); }));
-  var kids = document.createElement('div'); kids.className = 'tree-children';
-  pr.herramientas.forEach(function(h){ kids.appendChild(buildTblHerramienta(pr.id, h)); });
-  wrap.appendChild(kids);
-  wrap.appendChild(makeAddRow('Agregar herramienta o instrumento…', function(v){ addHerramienta(pr.id, v); }));
-  return wrap;
-}
-function buildTblHerramienta(prid, h){
-  var wrap = document.createElement('div'); wrap.className = 'tree-item l5';
-  wrap.appendChild(makeHead('dot-blue', h.text, null, function(){ removeHerramienta(prid, h.id); }));
-  return wrap;
+
+/* Celda con lista editable: cada elemento se edita en el sitio y el
+   cambio va al modelo sin re-renderizar, para no perder el cursor. */
+function celdaLista_(items, tipo, placeholder, onAdd, onDel){
+  var td = document.createElement('td'); td.className = 'celda-lista';
+  items.forEach(function(it){
+    var fila = document.createElement('div'); fila.className = 'li-item li-' + tipo;
+    var txt  = document.createElement('div');
+    txt.className = 'li-txt'; txt.contentEditable = 'true'; txt.textContent = it.text;
+    txt.addEventListener('input', function(){ it.text = txt.textContent; marcarCambio(); });
+    var del  = document.createElement('button');
+    del.className = 'tree-del'; del.title = 'Eliminar'; del.textContent = '×';
+    del.addEventListener('click', function(){ onDel(it.id); });
+    fila.appendChild(txt); fila.appendChild(del); td.appendChild(fila);
+  });
+  td.appendChild(makeAddRow(placeholder, onAdd));
+  return td;
 }
 
 /* ── Tabla libre ── */
