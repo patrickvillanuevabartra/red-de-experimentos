@@ -118,6 +118,19 @@
   .authErr{color:#a8501e;font-size:13px;margin-top:14px;}
   .userBar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:#6a746f;margin-bottom:10px;}
   .userBar b{color:var(--ink);}
+  /* ejemplo de referencia */
+  .ejBox{background:#f4f6f2;border-left:3px solid var(--amber);padding:12px 16px;margin:0 0 14px;
+         font-size:14.5px;color:#555f5a;line-height:1.55;border-radius:3px;}
+  .ejParTable{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;}
+  .ejParTable th{background:#d8d2c0;color:var(--ink);padding:5px 8px;text-align:left;font-weight:500;}
+  .ejParTable td{border-bottom:1px solid #ddd;padding:5px 8px;}
+  .ej-arbol{max-height:340px;overflow-y:auto;background:#fff;border:1px solid var(--line);
+            border-radius:4px;padding:10px 12px;font-size:13px;line-height:1.5;}
+  .ej-n1{font-weight:600;color:#26215C;margin-top:8px;}
+  .ej-n1:first-child{margin-top:0;}
+  .ej-n2{color:#04342C;margin-left:14px;margin-top:4px;}
+  .ej-n3{color:#4A1B0C;margin-left:30px;}
+  .ej-n4{color:#6a5410;margin-left:48px;font-size:12.5px;}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
   @media(max-width:680px){.row2{grid-template-columns:1fr;}}
 </style>
@@ -139,7 +152,7 @@
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · TALLER DE INVESTIGACIÓN EN INGENIERÍA I</div>
   <h1>De la red semántica al experimento</h1>
-  <p class="sub">Construye la red de enfoques, conceptos e instrumentos; desglosa la pregunta en procedimientos y herramientas; y arma el canvas de experimentos.</p>
+  <p class="sub">Construye la red en cuatro niveles —enfoque, concepto, procedimiento y herramienta—, desglosa la pregunta de investigación y arma el canvas de experimentos.</p>
 
   <div class="userBar" id="userBar" style="display:none;">
     <span id="userTxt"></span>
@@ -204,8 +217,12 @@
       <div id="view-network">
         <div class="net-toolbar">
           <span id="net-resumen" class="net-resumen"></span>
-          <button class="btnMini" id="btn-png" onclick="descargarPNG()">⬇ Descargar PNG</button>
+          <span style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="ejBtn" onclick="toggleEjemploRed()">ver ejemplo</button>
+            <button class="btnMini" id="btn-png" onclick="descargarPNG()">⬇ Descargar PNG</button>
+          </span>
         </div>
+        <div class="ejBox" id="ej-red" style="display:none;"></div>
         <div id="net-wrap"></div>
         <div class="tree-root-add">
           <input id="in-enfoques" placeholder="Agregar enfoque…">
@@ -220,7 +237,7 @@
         <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
 
         <div class="qa-section-title">Desglose
-          <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta / Instrumento</span>
+          <span class="qa-hint-sub">— Enfoque → Concepto → Pregunta → Procedimiento → Herramienta</span>
         </div>
         <div id="qa-breakdown"></div>
 
@@ -557,6 +574,7 @@ function aplicarEstadoCargado_(estructuraTxt){
   if(!estado){ renderAll(); return; }
   document.getElementById('qa-pregunta').value = estado.pregunta || '';
   data = estado.enfoques || [];
+  migrarInstrumentos_(data);
   reindexarIds_(data);
   /* Solo se sobrescriben si el guardado realmente trae esas listas.
      Si no, se conservan las filas y tarjetas por defecto del HTML. */
@@ -577,7 +595,10 @@ function reindexarIds_(enfoques){
     track(e.id);
     (e.conceptos||[]).forEach(function(c){
       track(c.id);
-      (c.instrumentos||[]).forEach(function(i){ track(i.id); });
+      (c.procs||[]).forEach(function(pr){
+        track(pr.id);
+        (pr.herrs||[]).forEach(function(h){ track(h.id); });
+      });
       (c.preguntas||[]).forEach(function(p){
         track(p.id);
         (p.procedimientos||[]).forEach(function(pr){
@@ -639,7 +660,12 @@ function limpiarParaGuardar_(enfoques){
       conceptos:(e.conceptos||[]).map(function(c){
         return {
           id:c.id, text:c.text,
-          instrumentos:(c.instrumentos||[]).map(function(i){ return { id:i.id, text:i.text }; }),
+          procs:(c.procs||[]).map(function(pr){
+            return {
+              id:pr.id, text:pr.text,
+              herrs:(pr.herrs||[]).map(function(h){ return { id:h.id, text:h.text }; })
+            };
+          }),
           preguntas:(c.preguntas||[]).map(function(p){
             return {
               id:p.id, text:p.text,
@@ -724,6 +750,91 @@ window.addEventListener('beforeunload', function(e){
   }
 });
 
+
+/* ════════════════════════════════════════════════════════════
+   EJEMPLO DE REFERENCIA
+   Estructura tomada de un canvas de experimentos real del curso
+   (Grupo 4, TII I). Se conservan solo las cuatro columnas que
+   alimentan la red; la empresa se mantiene en reserva.
+       Metodología de solución → Enfoque
+       Etapa                   → Concepto
+       Sub etapa               → Procedimiento
+       Entregable/producto     → Herramienta
+════════════════════════════════════════════════════════════ */
+var EJEMPLO_RED = [{"t":"Gestión por Procesos (BPMN AS-IS / TO-BE) + Valoración de FCE (Factores Críticos de Éxito) Ambiente micro y macro","c":[{"t":"Diagnóstico AS-IS y Valoración de FCE","p":[{"t":"Levantamiento de actividades,tiempos y responsables / (herramientas","h":["Ficha de registro AS-IS (actividades, tiempos, responsables)"]},{"t":"Identificación de puntos de reproceso y esperas","h":["Mapa de flujo AS-IS con puntos críticos de reproceso marcados"]},{"t":"Valoración de FCE micro: alcance, alineación, recursos, variabilidad, automatización, indicadores de TI","h":["Mapa de FCE priorizados (radar chart)"]},{"t":"Valoración de FCE macro: innovación","h":["Lista de FCE críticos nivel 1 (micro) y nivel 2 (macro) con puntajes"]}]},{"t":"Modelado TO-BE (proceso mejorado)","p":[{"t":"Rediseño del flujo de actividades eliminando etapas sin valor agregado","h":["Diagrama BPMN AS-IS (proceso actual documentado) y TO-BE"]},{"t":"Asignación de responsables y tiempos objetivo por etapa","h":["Diagrama BPMN TO-BE (proceso mejorado con responsables y tiempos objetivo)"]},{"t":"Incorporación de FCE priorizados al diseño TO-BE","h":["Tabla comparativa de tiempos AS-IS vs TO-BE por etapa"]},{"t":"Notación BPMN gráfica legible para todos los actores","h":["Informe de validación del TO-BE con los FCE nivel 1 y 2"]}]},{"t":"Estandarización y documentación formal","p":[{"t":"Formalización del flujo de actividades aprobado","h":["Procedimiento documentado y validado — SOP del proceso de adquisición"]},{"t":"Definición de responsables por etapa y nivel de autorización","h":["Matriz de responsabilidades (RACI) del proceso"]},{"t":"Documentación de requisitos mínimos del proveedor","h":["Ficha de requisitos mínimos del proveedor (criterios de homologación)"]},{"t":"Registro de acuerdos de nivel de servicio (SLA)","h":["Ficha de acuerdos"]}]},{"t":"Implementación y medición del tiempo de ciclo","p":[{"t":"Capacitación al equipo en el nuevo proceso BPMN","h":["Plan de capacitación ejecutado con registro de asistencia"]},{"t":"Ejecución del proceso estandarizado (74 órdenes de compra post-test)","h":["Registro de tiempos de ciclo por orden (74 registros post-test)"]},{"t":"Registro de tiempos de ciclo por orden","h":["Reporte de reducción del tiempo de ciclo pre vs post"]},{"t":"Cálculo del indicador de reducción (1 − TCC / TCA) × 100","h":["Gráfico comparativo AS-IS vs TO-BE (Power BI)"]}]},{"t":"Verificación de FCE y mejora continua","p":[{"t":"Revisión del grado de cobertura de FCE micro en el proceso estandarizado","h":["Reporte de cobertura de FCE micro"]},{"t":"Revisión de FCE macro (innovación) incorporados","h":["Reporte de cobertura de FCE macro incorporados al TO-BE"]},{"t":"Aplicación del ciclo PHVA para ajustes","h":["Diagrama TO-BE actualizado (versión 2)"]},{"t":"Actualización del diagrama TO-BE con mejoras detectadas","h":["Acta de cierre de la etapa de estandarización"]}]},{"t":"Reporte final de estandarización","p":[{"t":"Consolidación de resultados de la estandarización","h":["Informe final de estandarización con indicadores pre vs post"]},{"t":"Comparativo de indicadores pre vs post BPMN","h":["Gráfico comparativo de tiempos de ciclo pre vs post (Power BI)"]},{"t":"Presentación de hallazgos al área de ingeniería","h":["Presentación ejecutiva de resultados para la gerencia"]},{"t":"Recomendaciones para la siguiente fase (OE2)","h":["Plan de acción para OE2 (automatización)"]}]}]},{"t":"Estrategia de interoperabilidad TAPP - BCRP","c":[{"t":"Diagnóstico de tareas repetitivas y fuentes de información dispersa","p":[{"t":"Identificación de tareas repetitivas automatizables (procesamiento de órdenes, conciliación de facturas)","h":["Listado de tareas repetitivas priorizadas para automatizar"]},{"t":"Mapeo de fuentes de información dispersas (Excel, Outlook, SAP)","h":["Mapa de fuentes de información dispersa (diagrama de flujo)"]},{"t":"Definición de parámetros mínimos para la automatización","h":["Ficha de parámetros mínimos de automatización"]}]},{"t":"Transferencia de conocimientos y capacitación","p":[{"t":"Capacitación al equipo en el APP piloto","h":["Plan de capacitación aprobado y ejecutado"]},{"t":"Sensibilización sobre integración de sistemas (ERP / Power BI)","h":["Registro de asistencia y evaluaciones de comprensión del equipo"]}]},{"t":"Configuración e implementación de la APP piloto (RPA + ERP)","p":[{"t":"Configuración de la APP piloto para el procesamiento automático de órdenes","h":["APP piloto configurada y conectada al sistema ERP (acta de configuración)"]},{"t":"Integración de la APP con el sistema ERP/SAP","h":["Diagrama de integración de sistemas: APP + ERP + Power BI"]},{"t":"Centralización de datos (eliminación de Excel y Outlook como fuentes únicas)","h":["Manual de configuración técnica de la APP piloto"]},{"t":"Configuración de perfiles de acceso por usuario","h":["Matriz de perfiles de acceso por usuario definida y aprobada"]}]},{"t":"Despliegue y prueba piloto (74 órdenes de compra)","p":[{"t":"Ejecución de la prueba piloto con 74 órdenes de compra reales","h":["Reporte de prueba piloto (errores detectados y corregidos)"]},{"t":"Registro de errores y reprocesos durante la prueba","h":["Registro comparativo de reprocesos y errores antes vs durante piloto"]},{"t":"Ajuste y corrección de la APP según resultados","h":["Informe de ajustes realizados a la APP tras la prueba piloto"]}]},{"t":"Formalización y estandarización de la APP como herramienta oficial","p":[{"t":"Validación final de la APP","h":["APP piloto aprobada como herramienta oficial (acta de aprobación firmada)"]},{"t":"Actualización del diagrama TO-BE con flujos automatizados","h":["Diagrama TO-BE actualizado con flujos automatizados integrados"]}]},{"t":"Reporte final de integración y automatización","p":[{"t":"Consolidación del % de reducción de reprocesos y errores documentarios","h":["Informe final de automatización con indicadores pre vs post"]},{"t":"Análisis comparativo: proceso manual vs proceso automatizado","h":["Gráfico comparativo de reprocesos y errores (Power BI)"]}]}]},{"t":"Implementación de KPIs logísticos (Modelo SCOR + ciclo PHVA)","c":[{"t":"Diagnóstico del estado actual de medición (0% cobertura KPI)","p":[{"t":"Levantamiento de datos históricos disponibles (74 órdenes pre-test)","h":["Base de datos histórica de 74 órdenes pre-test"]},{"t":"Definición del alcance del sistema de KPIs","h":["Alcance del sistema de KPIs aprobado"]}]},{"t":"Diseño del modelo de KPIs (Modelo SCOR)","p":[{"t":"Definición de cada KPI: qué medir, fórmula, frecuencia y responsable","h":["Ficha de indicadores KPI (1 ficha por indicador)"]},{"t":"KPIs de tiempo de ciclo: (1 − TCC/TCA) × 100","h":["Modelo SCOR adaptado al proceso de adquisición"]},{"t":"KPIs de reprocesos: (1 − RE post/RE pre) × 100","h":["Diccionario de KPIs del proceso de adquisición"]},{"t":"KPI de cobertura: (Procesos con KPI / Total procesos) × 100","h":["Informe de validación del modelo de KPIs con el jefe de logística"]}]},{"t":"Implementación del dashboard de seguimiento KPI","p":[{"t":"Construcción del dashboard en Power BI / Excel","h":["Dashboard de seguimiento KPI operativo (Power BI)"]},{"t":"Conexión del dashboard con el sistema ERP y la APP piloto (OE2)","h":["Conexión activa: Dashboard ↔ ERP ↔ APP"]}]},{"t":"Medición pre-test (línea base: 0% cobertura KPI)","p":[{"t":"Registro de KPIs en los 6 meses antes de la implementación (meses 1-6)","h":["Reporte de KPIs pre-test: tiempo de ciclo promedio, N° de reprocesos, % pedidos a tiempo y cobertura KPI: 0%"]},{"t":"Cálculo de los indicadores con los 74 registros pre-test","h":["Gráfico de línea base (Power BI)"]},{"t":"Documentación de la línea base para comparación","h":["Informe de línea base pre-test consolidado y aprobado"]}]},{"t":"Medición post-test : aplicación del ciclo PHVA","p":[{"t":"Seguimiento con KPIs durante los 6 meses post-implementación (meses 7-12)","h":["Reporte de KPIs post-test (reducción tiempo ciclo, reprocesos, pedidos a tiempo, cobertura meta 60%)"]},{"t":"Cálculo de indicadores con los 74 registros post-test","h":["Gráfico comparativo pre vs post (Power BI)"]},{"t":"Aplicación del ciclo PHVA: Planificar → Hacer → Verificar → Actuar","h":["Acta de revisión PHVA"]},{"t":"Ajuste de KPIs y metas según resultados obtenidos","h":["Informe de ajustes de KPIs y metas tras el ciclo PHVA"]}]},{"t":"Reporte final de seguimiento, control y trazabilidad","p":[{"t":"Consolidación de todos los indicadores pre vs post","h":["Informe final de KPIs con indicadores pre vs post"]},{"t":"Análisis de la brecha residual hacia el 60%","h":["Dashboard final actualizado con todos los KPIs del período completo (Power BI)"]},{"t":"Presentación de resultados a la gerencia de ingeniería","h":["Presentación ejecutiva de resultados del sistema de KPIs para la gerencia"]}]}]}];
+
+function toggleEjemploRed(){
+  var caja = document.getElementById('ej-red');
+  var abierta = caja.style.display === 'block';
+  caja.style.display = abierta ? 'none' : 'block';
+  if(!abierta && !caja.dataset.listo){
+    caja.innerHTML = construirEjemploHTML_();
+    caja.dataset.listo = '1';
+  }
+}
+
+function construirEjemploHTML_(){
+  var nE = EJEMPLO_RED.length, nC = 0, nP = 0, nH = 0;
+  EJEMPLO_RED.forEach(function(e){
+    nC += e.c.length;
+    e.c.forEach(function(c){
+      nP += c.p.length;
+      c.p.forEach(function(pr){ nH += pr.h.length; });
+    });
+  });
+
+  var h = '<b>Cómo se traduce el canvas de experimentos a esta red.</b>'+
+    '<p class="note" style="font-size:13px;margin:6px 0 10px;">Si ya trabajaste tu canvas, '+
+    'cada columna entra en un nivel distinto de la red:</p>'+
+    '<table class="ejParTable"><thead><tr><th>Columna del canvas</th><th>Nivel en la red</th></tr></thead><tbody>'+
+    '<tr><td>Metodología de solución</td><td><b>Enfoque</b></td></tr>'+
+    '<tr><td>Etapas</td><td><b>Concepto</b></td></tr>'+
+    '<tr><td>Sub etapas</td><td><b>Procedimiento</b></td></tr>'+
+    '<tr><td>Entregable / producto</td><td><b>Herramienta</b></td></tr>'+
+    '</tbody></table>'+
+    '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
+    '<b>'+nE+' enfoques · '+nC+' conceptos · '+nP+' procedimientos · '+nH+' herramientas</b>. '+
+    'La empresa se mantiene en reserva.</p>'+
+    '<div class="ej-arbol">';
+
+  EJEMPLO_RED.forEach(function(e){
+    h += '<div class="ej-n1">■ '+esc(e.t)+'</div>';
+    e.c.forEach(function(c){
+      h += '<div class="ej-n2">▸ '+esc(c.t)+'</div>';
+      c.p.forEach(function(pr){
+        h += '<div class="ej-n3">– '+esc(pr.t)+'</div>';
+        pr.h.forEach(function(hh){ h += '<div class="ej-n4">→ '+esc(hh)+'</div>'; });
+      });
+    });
+  });
+  h += '</div>'+
+    '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
+    'Cargar este ejemplo en mi red</button>'+
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Sirve para ver la red completa en el '+
+    'diagrama. Reemplaza lo que tengas en la vista de red semántica.</p>';
+  return h;
+}
+
+/* Vuelca el ejemplo en el árbol de trabajo, generando ids nuevos */
+function cargarEjemploRed(){
+  if(!grupo.cargado){ toast('Primero inicia la red con los datos del grupo', true); return; }
+  if(data.length && !confirm('Vas a reemplazar la red semántica que tienes en pantalla '+
+     'por el ejemplo completo.\n\nLa tabla de análisis y el canvas no se tocan. ¿Continuar?')) return;
+  data = EJEMPLO_RED.map(function(e){
+    return { id:uid('e'), text:e.t, preguntas:[], conceptos:e.c.map(function(c){
+      return { id:uid('c'), text:c.t, preguntas:[], procs:c.p.map(function(pr){
+        return { id:uid('pc'), text:pr.t, herrs:pr.h.map(function(hh){
+          return { id:uid('hr'), text:hh };
+        })};
+      })};
+    })};
+  });
+  renderAll();
+  document.getElementById('ej-red').style.display = 'none';
+  window.scrollTo({ top:0, behavior:'smooth' });
+  toast('Ejemplo cargado — revisa el diagrama');
+}
+
 /* ════════════════════════════════════════════════════════════
    REDES GUARDADAS
 ════════════════════════════════════════════════════════════ */
@@ -763,8 +874,8 @@ function cargarLista(){
              (enEdicion?'<span style="color:var(--teal);">● en edición</span>':'')+
            '</div>'+
            '<div class="listTema">'+esc(g.pregunta || '(sin pregunta general)')+'</div>'+
-           '<div class="listPg">'+g.nEnfoques+' enfoques · '+g.nConceptos+
-             ' conceptos · '+g.nInstrumentos+' instrumentos</div>'+
+           '<div class="listPg">'+g.nEnfoques+' enfoques · '+g.nConceptos+' conceptos · '+
+             (g.nProcedimientos||0)+' procedimientos · '+(g.nHerramientas||0)+' herramientas</div>'+
            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
              '<button class="btnMini" onclick="abrirRed(&quot;'+esc(g.id)+'&quot;)"'+
                (enEdicion?' disabled':'')+'>'+(enEdicion?'En edición':'Abrir →')+'</button>'+
@@ -870,21 +981,57 @@ function removeEnfoque(id){ data = data.filter(function(e){ return e.id !== id; 
 /* ── CRUD conceptos ── */
 function addConcepto(eid, text){
   var e = findIn(data, eid); if(!e) return;
-  e.conceptos.push({id:uid('c'), text:text, instrumentos:[], preguntas:[]}); renderAll();
+  e.conceptos.push({id:uid('c'), text:text, procs:[], preguntas:[]}); renderAll();
 }
 function removeConcepto(eid, cid){
   var e = findIn(data, eid); if(!e) return;
   e.conceptos = e.conceptos.filter(function(c){ return c.id !== cid; }); renderAll();
 }
 
-/* ── CRUD instrumentos ── */
-function addInstrumento(cid, text){
+/* ── CRUD procedimientos y herramientas de la red ── */
+/* Nivel 3 de la red: PROCEDIMIENTO (la "sub etapa" del canvas) */
+function addProcRed(cid, text){
   var c = findConcepto(cid); if(!c) return;
-  c.instrumentos.push({id:uid('i'), text:text}); renderAll();
+  if(!c.procs) c.procs = [];
+  c.procs.push({id:uid('pc'), text:text, herrs:[]}); renderAll();
 }
-function removeInstrumento(cid, iid){
-  var c = findConcepto(cid); if(!c) return;
-  c.instrumentos = c.instrumentos.filter(function(i){ return i.id !== iid; }); renderAll();
+function removeProcRed(cid, pid){
+  var c = findConcepto(cid); if(!c || !c.procs) return;
+  c.procs = c.procs.filter(function(x){ return x.id !== pid; }); renderAll();
+}
+/* Nivel 4 de la red: HERRAMIENTA (el "entregable/producto" del canvas) */
+function findProcRed(pid){
+  for(var i=0;i<data.length;i++){
+    for(var j=0;j<data[i].conceptos.length;j++){
+      var pr = findIn(data[i].conceptos[j].procs||[], pid);
+      if(pr) return pr;
+    }
+  } return null;
+}
+function addHerrRed(pid, text){
+  var pr = findProcRed(pid); if(!pr) return;
+  if(!pr.herrs) pr.herrs = [];
+  pr.herrs.push({id:uid('hr'), text:text}); renderAll();
+}
+function removeHerrRed(pid, hid){
+  var pr = findProcRed(pid); if(!pr || !pr.herrs) return;
+  pr.herrs = pr.herrs.filter(function(x){ return x.id !== hid; }); renderAll();
+}
+/* Compatibilidad: las redes guardadas antes de este cambio traen
+   "instrumentos" (un solo nivel). Se convierten a procedimientos sin
+   herramientas para no perder nada de lo ya trabajado. */
+function migrarInstrumentos_(enfoques){
+  (enfoques||[]).forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      if(!c.procs){
+        c.procs = (c.instrumentos||[]).map(function(i){
+          return { id:i.id, text:i.text, herrs:[] };
+        });
+      }
+      delete c.instrumentos;
+      (c.procs||[]).forEach(function(pr){ if(!pr.herrs) pr.herrs = []; });
+    });
+  });
 }
 
 /* ── CRUD preguntas ── */
@@ -917,9 +1064,15 @@ function removeHerramienta(prid, hid){
   pr.herramientas = pr.herramientas.filter(function(h){ return h.id !== hid; }); renderAll();
 }
 
-function totalInstrumentos(){
+function totalProcs(){
   var t = 0;
-  data.forEach(function(e){ e.conceptos.forEach(function(c){ t += c.instrumentos.length; }); });
+  data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){ t += (c.procs||[]).length; }); });
+  return t;
+}
+function totalHerrs(){
+  var t = 0;
+  data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){
+    (c.procs||[]).forEach(function(pr){ t += (pr.herrs||[]).length; }); }); });
   return t;
 }
 
@@ -970,37 +1123,46 @@ function renderAll(){ renderNetwork(); renderTable(); marcarCambio(); }
 ════════════════════════════════ */
 var PALETA_CLARA = {
   fondo:'#FFFFFF', linea:'#C9C6C0', textoTenue:'#6B6862',
-  enfoque:    { fill:'#EEEDFE', stroke:'#534AB7', texto:'#26215C' },
-  concepto:   { fill:'#E1F5EE', stroke:'#0F6E56', texto:'#04342C' },
-  instrumento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' }
+  enfoque:     { fill:'#EEEDFE', stroke:'#534AB7', texto:'#26215C' },
+  concepto:    { fill:'#E1F5EE', stroke:'#0F6E56', texto:'#04342C' },
+  procedimiento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' },
+  herramienta: { fill:'#FBF3DC', stroke:'#8A6D1F', texto:'#3D3009' }
 };
 var PALETA_OSCURA = {
   fondo:'#1F1E1D', linea:'#4A4844', textoTenue:'#A5A199',
-  enfoque:    { fill:'#3C3489', stroke:'#AFA9EC', texto:'#CECBF6' },
-  concepto:   { fill:'#085041', stroke:'#5DCAA5', texto:'#9FE1CB' },
-  instrumento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' }
+  enfoque:     { fill:'#3C3489', stroke:'#AFA9EC', texto:'#CECBF6' },
+  concepto:    { fill:'#085041', stroke:'#5DCAA5', texto:'#9FE1CB' },
+  procedimiento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' },
+  herramienta: { fill:'#5C4A12', stroke:'#E0C46A', texto:'#F2E2B0' }
 };
 function paletaActual(){
   var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   return oscuro ? PALETA_OSCURA : PALETA_CLARA;
 }
 
+/* El texto real de un canvas es largo, así que los nodos crecen en alto
+   según su contenido en vez de tener una altura fija. */
 var NET = {
-  colX:  [16, 246, 476],      // x de cada columna
-  nodeW: [186, 186, 186],     // ancho de nodo por columna
-  nodeH: 40,
-  rowH:  54,
+  colX:  [14, 254, 494, 734],
+  nodeW: [226, 226, 226, 226],
+  minH:   34,
+  lineH:  15,
+  padY:   13,
+  gap:    9,          // separación vertical entre nodos hermanos
+  fontPx: 12.5,
+  maxLines: 5,
   topPad: 44,
   botPad: 20,
-  width: 678
+  width:  974
 };
 
 function escapeXml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* Parte el texto en máximo 2 líneas que quepan en el ancho del nodo */
-function partirTexto(txt, anchoPx, fontPx){
+/* Parte el texto en las líneas que quepan en el ancho del nodo */
+function partirTexto(txt, anchoPx, fontPx, maxLineas){
+  maxLineas = maxLineas || NET.maxLines;
   var maxChars = Math.floor((anchoPx - 18) / (fontPx * 0.55));
   var palabras = String(txt).trim().split(/\s+/);
   var lineas = [], actual = '';
@@ -1010,10 +1172,10 @@ function partirTexto(txt, anchoPx, fontPx){
     else {
       if(actual) lineas.push(actual);
       actual = palabras[i];
-      if(lineas.length === 2) break;
+      if(lineas.length === maxLineas) break;
     }
   }
-  if(actual && lineas.length < 2) lineas.push(actual);
+  if(actual && lineas.length < maxLineas) lineas.push(actual);
   if(lineas.length === 0) lineas = [''];
   // Si sobró texto, se recorta la última línea con puntos suspensivos
   var usado = lineas.join(' ').length;
@@ -1024,45 +1186,68 @@ function partirTexto(txt, anchoPx, fontPx){
   return lineas;
 }
 
-/* Calcula la posición vertical de cada nodo: las hojas ocupan una fila
-   y cada padre se centra respecto a sus hijos. */
-function calcularLayout_(){
-  var filas = 0;
-  function yDeFila(f){ return NET.topPad + f * NET.rowH + NET.nodeH/2; }
-
-  data.forEach(function(e){
-    if(!e.conceptos || e.conceptos.length === 0){
-      e._y = yDeFila(filas); filas++;
-      return;
-    }
-    e.conceptos.forEach(function(c){
-      if(!c.instrumentos || c.instrumentos.length === 0){
-        c._y = yDeFila(filas); filas++;
-        return;
-      }
-      c.instrumentos.forEach(function(i){ i._y = yDeFila(filas); filas++; });
-      c._y = (c.instrumentos[0]._y + c.instrumentos[c.instrumentos.length-1]._y) / 2;
-    });
-    e._y = (e.conceptos[0]._y + e.conceptos[e.conceptos.length-1]._y) / 2;
-  });
-  return { filas: filas, alto: NET.topPad + filas * NET.rowH + NET.botPad };
+/* Alto que necesita un nodo según cuántas líneas ocupa su texto */
+function altoNodo_(txt, col){
+  var n = partirTexto(txt, NET.nodeW[col], NET.fontPx).length;
+  return Math.max(NET.minH, n * NET.lineH + NET.padY);
 }
 
+/* Hijos de un nodo, sea del nivel que sea */
+function hijosDe_(n){
+  return n.conceptos || n.procs || n.herrs || [];
+}
+
+/* 1.ª pasada: alto propio (_h) y alto del subárbol (_sh) de cada nodo.
+   El subárbol nunca es menor que el propio nodo, así que un texto largo
+   arriba abre espacio aunque tenga un solo hijo. */
+function medirSubarbol_(n, col){
+  n._h = altoNodo_(n.text, col) + NET.gap;
+  var hijos = hijosDe_(n), suma = 0;
+  hijos.forEach(function(hh){ suma += medirSubarbol_(hh, col + 1); });
+  n._sh = Math.max(n._h, suma);
+  return n._sh;
+}
+
+/* 2.ª pasada: posiciona el subárbol dentro de su banda y centra al padre */
+function colocarSubarbol_(n, top){
+  var hijos = hijosDe_(n);
+  if(hijos.length === 0){ n._y = top + n._sh / 2; return; }
+  var suma = 0;
+  hijos.forEach(function(hh){ suma += hh._sh; });
+  var y = top + (n._sh - suma) / 2;
+  hijos.forEach(function(hh){ colocarSubarbol_(hh, y); y += hh._sh; });
+  n._y = (hijos[0]._y + hijos[hijos.length-1]._y) / 2;
+}
+
+function calcularLayout_(){
+  var y = NET.topPad, hojas = 0;
+  data.forEach(function(e){
+    medirSubarbol_(e, 0);
+    colocarSubarbol_(e, y);
+    y += e._sh;
+  });
+  function contar(n){
+    var hs = hijosDe_(n);
+    if(hs.length === 0){ hojas++; return; }
+    hs.forEach(contar);
+  }
+  data.forEach(contar);
+  return { filas: hojas, alto: y + NET.botPad };
+}
+
+/* Dibuja un nodo cuyo alto se ajusta a las líneas que ocupa su texto */
 function nodoSVG_(x, y, w, texto, color){
-  var fontPx = 13.5;
-  var lineas = partirTexto(texto, w, fontPx);
-  var h = NET.nodeH;
-  var s = '<g><rect x="'+x+'" y="'+(y-h/2)+'" width="'+w+'" height="'+h+'" rx="9" '
+  var f = NET.fontPx;
+  var lineas = partirTexto(texto, w, f);
+  var h = Math.max(NET.minH, lineas.length * NET.lineH + NET.padY);
+  var s = '<g><rect x="'+x+'" y="'+(y - h/2).toFixed(1)+'" width="'+w+'" height="'+h.toFixed(1)+'" rx="8" '
         + 'fill="'+color.fill+'" stroke="'+color.stroke+'" stroke-width="1"/>';
   var cx = x + w/2;
-  if(lineas.length === 1){
-    s += '<text x="'+cx+'" y="'+(y+4.5)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
-       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[0])+'</text>';
-  } else {
-    s += '<text x="'+cx+'" y="'+(y-2)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
-       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[0])+'</text>'
-       + '<text x="'+cx+'" y="'+(y+13)+'" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,sans-serif" '
-       + 'font-size="'+fontPx+'" font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[1])+'</text>';
+  var y0 = y - ((lineas.length - 1) * NET.lineH) / 2 + 4;
+  for(var i=0;i<lineas.length;i++){
+    s += '<text x="'+cx+'" y="'+(y0 + i*NET.lineH).toFixed(1)+'" text-anchor="middle" '
+       + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="'+f+'" '
+       + 'font-weight="500" fill="'+color.texto+'">'+escapeXml(lineas[i])+'</text>';
   }
   return s + '</g>';
 }
@@ -1078,12 +1263,12 @@ function construirSVG_(paleta, conFondo){
   var lay = calcularLayout_();
   var W = NET.width, H = lay.alto;
   var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img">';
-  s += '<title>Red semántica: enfoques, conceptos e instrumentos</title>';
+  s += '<title>Red semántica: enfoques, conceptos, procedimientos y herramientas</title>';
   if(conFondo) s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+paleta.fondo+'"/>';
 
   /* Encabezados de columna */
-  var titulos = ['Enfoques','Conceptos','Instrumentos'];
-  for(var k=0;k<3;k++){
+  var titulos = ['Enfoques','Conceptos','Procedimientos','Herramientas'];
+  for(var k=0;k<4;k++){
     s += '<text x="'+(NET.colX[k] + NET.nodeW[k]/2)+'" y="24" text-anchor="middle" '
        + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12.5" font-weight="600" '
        + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+titulos[k].toUpperCase()+'</text>';
@@ -1093,8 +1278,11 @@ function construirSVG_(paleta, conFondo){
   data.forEach(function(e){
     (e.conceptos||[]).forEach(function(c){
       s += enlaceSVG_(NET.colX[0]+NET.nodeW[0], e._y, NET.colX[1], c._y, paleta.linea);
-      (c.instrumentos||[]).forEach(function(i){
-        s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], i._y, paleta.linea);
+      (c.procs||[]).forEach(function(pr){
+        s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], pr._y, paleta.linea);
+        (pr.herrs||[]).forEach(function(h){
+          s += enlaceSVG_(NET.colX[2]+NET.nodeW[2], pr._y, NET.colX[3], h._y, paleta.linea);
+        });
       });
     });
   });
@@ -1104,8 +1292,11 @@ function construirSVG_(paleta, conFondo){
     s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque);
     (e.conceptos||[]).forEach(function(c){
       s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto);
-      (c.instrumentos||[]).forEach(function(i){
-        s += nodoSVG_(NET.colX[2], i._y, NET.nodeW[2], i.text, paleta.instrumento);
+      (c.procs||[]).forEach(function(pr){
+        s += nodoSVG_(NET.colX[2], pr._y, NET.nodeW[2], pr.text, paleta.procedimiento);
+        (pr.herrs||[]).forEach(function(h){
+          s += nodoSVG_(NET.colX[3], h._y, NET.nodeW[3], h.text, paleta.herramienta);
+        });
       });
     });
   });
@@ -1119,18 +1310,21 @@ function renderNetwork(){
 
   var wrap = document.getElementById('net-wrap');
   var nEnf = data.length;
-  var nCon = 0, nIns = totalInstrumentos();
+  var nCon = 0, nPro = totalProcs(), nHer = totalHerrs();
   data.forEach(function(e){ nCon += (e.conceptos||[]).length; });
 
   if(nEnf === 0){
-    wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo y el diagrama se irá construyendo solo.</div>';
+    wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo. La red se construye en cuatro niveles:<br>'+
+      '<b>Enfoque</b> (metodología de solución) → <b>Concepto</b> (etapa) → '+
+      '<b>Procedimiento</b> (sub etapa) → <b>Herramienta</b> (entregable o producto).</div>';
   } else {
     wrap.innerHTML = construirSVG_(paletaActual(), false);
   }
   document.getElementById('net-resumen').textContent =
     nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
     nCon + (nCon===1?' concepto':' conceptos') + ' · ' +
-    nIns + (nIns===1?' instrumento':' instrumentos');
+    nPro + (nPro===1?' procedimiento':' procedimientos') + ' · ' +
+    nHer + (nHer===1?' herramienta':' herramientas');
   document.getElementById('btn-png').disabled = (nEnf === 0);
 }
 
@@ -1187,20 +1381,29 @@ function nombreArchivoPNG_(){
 function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
   wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc', function(){ removeEnfoque(e.id); }));
-  wrap.appendChild(makeAddRow('Agregar concepto…', function(v){ addConcepto(e.id, v); }));
+  wrap.appendChild(makeAddRow('Agregar concepto (etapa)…', function(v){ addConcepto(e.id, v); }));
   wrap.appendChild(makeChildren(e.conceptos, function(c){ return buildNetConcepto(e.id, c); }));
   return wrap;
 }
 function buildNetConcepto(eid, c){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
-  wrap.appendChild(makeHead('dot-teal', c.text, c.instrumentos.length + ' instr', function(){ removeConcepto(eid, c.id); }));
-  wrap.appendChild(makeAddRow('Agregar instrumento (ej. Escala de Rosenberg, 1965)…', function(v){ addInstrumento(c.id, v); }));
-  wrap.appendChild(makeChildren(c.instrumentos, function(i){ return buildNetInstrumento(c.id, i); }));
+  var n = (c.procs||[]).length;
+  wrap.appendChild(makeHead('dot-teal', c.text, n + (n===1?' proc':' procs'), function(){ removeConcepto(eid, c.id); }));
+  wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
+  wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
   return wrap;
 }
-function buildNetInstrumento(cid, inst){
+function buildNetProc(cid, pr){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
-  wrap.appendChild(makeHead('dot-coral', inst.text, null, function(){ removeInstrumento(cid, inst.id); }));
+  var n = (pr.herrs||[]).length;
+  wrap.appendChild(makeHead('dot-coral', pr.text, n + (n===1?' herr':' herrs'), function(){ removeProcRed(cid, pr.id); }));
+  wrap.appendChild(makeAddRow('Agregar herramienta (entregable o producto)…', function(v){ addHerrRed(pr.id, v); }));
+  wrap.appendChild(makeChildren(pr.herrs||[], function(h){ return buildNetHerr(pr.id, h); }));
+  return wrap;
+}
+function buildNetHerr(pid, h){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l4';
+  wrap.appendChild(makeHead('dot-amber', h.text, null, function(){ removeHerrRed(pid, h.id); }));
   return wrap;
 }
 
@@ -1233,16 +1436,18 @@ function buildTblConcepto(eid, c){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
   wrap.appendChild(makeHead('dot-teal', c.text, null, null));
 
-  /* instrumentos de literatura como referencia */
-  if(c.instrumentos.length > 0){
+  /* herramientas ya definidas en la red semántica, como referencia */
+  var herrsRed = [];
+  (c.procs||[]).forEach(function(pr){ (pr.herrs||[]).forEach(function(h){ herrsRed.push(h); }); });
+  if(herrsRed.length > 0){
     var ref  = document.createElement('div'); ref.style.cssText = 'margin:6px 0 4px;';
     var lbl  = document.createElement('div');
-    lbl.style.cssText = 'font-size:12.5px;color:var(--color-text-tertiary);margin-bottom:4px;';
-    lbl.textContent = 'Instrumentos de la literatura:';
+    lbl.style.cssText = 'font-size:12.5px;color:#8a948f;margin-bottom:4px;';
+    lbl.textContent = 'Herramientas definidas en la red:';
     var chips = document.createElement('div'); chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;';
-    c.instrumentos.forEach(function(i){
+    herrsRed.forEach(function(i){
       var chip = document.createElement('span');
-      chip.style.cssText = 'font-size:13.5px;padding:3px 10px;border-radius:999px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);';
+      chip.style.cssText = 'font-size:13.5px;padding:3px 10px;border-radius:999px;background:#FBF3DC;border:1px solid #8A6D1F;color:#3D3009;';
       chip.textContent = i.text; chips.appendChild(chip);
     });
     ref.appendChild(lbl); ref.appendChild(chips); wrap.appendChild(ref);
