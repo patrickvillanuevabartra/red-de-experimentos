@@ -139,11 +139,6 @@
   .qa-hint-sub{font-size:13.5px;font-weight:400;color:#8a948f;}
   .qa-empty{padding:22px;text-align:center;border:1px dashed var(--line);border-radius:4px;background:#fafbf9;}
   .qa-empty p{font-size:14.5px;color:#6a746f;margin-bottom:10px;}
-  #qa-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15.5px;margin-bottom:10px;}
-  #qa-table th,#qa-table td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
-  #qa-table th{background:var(--ink);color:#fff;font-weight:500;font-size:14.5px;}
-  #qa-table td[contenteditable]:empty:before{content:attr(data-placeholder);color:#a8b0aa;}
-  .qa-del{padding:2px 8px;border:none;background:none;color:#b04a3a;cursor:pointer;font-size:17px;}
   /* toast */
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:6px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
   .toast.show{opacity:1;}
@@ -391,17 +386,7 @@
         <div class="ejBox" id="ej-tabla" style="display:none;"></div>
         <div id="qa-breakdown"></div>
 
-        <div class="qa-section-title">Otros elementos del análisis</div>
-        <table id="qa-table">
-          <thead><tr><th style="width:32%;">Elemento</th><th>Análisis</th><th style="width:44px;"></th></tr></thead>
-          <tbody id="qa-tbody">
-            <tr><td contenteditable="true">Población o unidad de análisis</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-            <tr><td contenteditable="true">Contexto o escenario</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-            <tr><td contenteditable="true">Justificación / relevancia</td><td contenteditable="true" data-placeholder="Escribe tu análisis…"></td><td><button class="qa-del" onclick="this.closest('tr').remove(); marcarCambio();">×</button></td></tr>
-          </tbody>
-        </table>
-        <button class="btnMini" onclick="addQaRow()">+ Agregar fila</button>
-      </div>
+            </div>
 
       <!-- VISTA 3: CANVAS DE EXPERIMENTOS -->
       <div id="view-canvas" style="display:none;">
@@ -778,7 +763,7 @@ function aplicarEstadoCargado_(estructuraTxt){
   reindexarIds_(data);
   /* Solo se sobrescriben si el guardado realmente trae esas listas.
      Si no, se conservan las filas y tarjetas por defecto del HTML. */
-  if(Array.isArray(estado.otrosElementos)) restaurarOtros_(estado.otrosElementos);
+  rescatarOtros_(estado.otrosElementos);
   if(Array.isArray(estado.canvas))         restaurarCanvas_(estado.canvas);
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   renderAll();
@@ -810,24 +795,20 @@ function reindexarIds_(enfoques){
 }
 
 /* ── Serialización ── */
-function serializarOtros_(){
-  var filas = [];
-  document.querySelectorAll('#qa-tbody tr').forEach(function(tr){
-    var tds = tr.querySelectorAll('td');
-    filas.push({ elemento: tds[0].textContent, analisis: tds[1].textContent });
-  });
-  return filas;
+/* Recupera lo que un grupo hubiera escrito en la tabla «Otros elementos
+   del análisis», ya retirada, y lo antepone a las notas del canvas para
+   no perderlo. */
+function rescatarOtros_(filas){
+  if(!Array.isArray(filas) || !filas.length) return;
+  var txt = filas.map(function(f){
+    var el = (f.elemento||'').trim(), an = (f.analisis||'').trim();
+    return an ? (el ? el + ': ' + an : an) : '';
+  }).filter(function(x){ return x; }).join('\n');
+  if(!txt) return;
+  canvasExp.notas = (canvasExp.notas ? canvasExp.notas + '\n\n' : '') +
+                    'Otros elementos del análisis (tabla retirada):\n' + txt;
 }
-function restaurarOtros_(filas){
-  var tbody = document.getElementById('qa-tbody');
-  tbody.innerHTML = '';
-  filas.forEach(function(f){
-    addQaRow();
-    var last = tbody.lastElementChild;
-    last.children[0].textContent = f.elemento || '';
-    last.children[1].textContent = f.analisis || '';
-  });
-}
+
 /* ════════════════════════════════════════════════════════════
    CANVAS DE EXPERIMENTOS (fase 3)
    Empaqueta lo construido: enfoque → proyecto → programa, y el
@@ -1405,7 +1386,6 @@ function estadoCompleto_(){
   return {
     pregunta: document.getElementById('qa-pregunta').value,
     enfoques: limpiarParaGuardar_(data),
-    otrosElementos: serializarOtros_(),
     canvas: serializarCanvas_()
   };
 }
@@ -2500,18 +2480,6 @@ function celdaLista_(items, tipo, placeholder, onAdd, onDel){
 document.getElementById('in-enfoques').addEventListener('keydown', function(e){
   if(e.key === 'Enter'){ e.preventDefault(); addEnfoqueTop(); }
 });
-function addQaRow(){
-  var tbody = document.getElementById('qa-tbody');
-  var tr    = document.createElement('tr');
-  var t1    = document.createElement('td'); t1.contentEditable = 'true'; t1.setAttribute('data-placeholder','Nuevo elemento');
-  var t2    = document.createElement('td'); t2.contentEditable = 'true'; t2.setAttribute('data-placeholder','Escribe tu análisis…');
-  var t3    = document.createElement('td');
-  var d     = document.createElement('button'); d.className = 'qa-del'; d.textContent = '×';
-  d.addEventListener('click', function(){ tr.remove(); marcarCambio(); });
-  t3.appendChild(d); tr.appendChild(t1); tr.appendChild(t2); tr.appendChild(t3);
-  tbody.appendChild(tr); t1.focus();
-}
-
 /* ════════════════════════════════════════════════════════════
    NAVEGADOR DE FASES
    Grupos en recuadros con píldoras numeradas, al mismo estilo que
@@ -2610,7 +2578,6 @@ function renderFases(){
 
 /* ── Listeners de autoguardado ── */
 document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
-document.getElementById('qa-tbody').addEventListener('input', marcarCambio);
 ['cv-programa','cv-og','cv-rg','cv-notas'].forEach(function(id){
   var clave = { 'cv-programa':'programa','cv-og':'og','cv-rg':'rg','cv-notas':'notas' }[id];
   document.getElementById(id).addEventListener('input', function(){
