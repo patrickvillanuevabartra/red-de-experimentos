@@ -77,11 +77,11 @@
   .pill-n{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;
           background:#f1f0ec;color:#a8b0aa;font-size:12px;flex-shrink:0;}
   .pill-t{white-space:nowrap;}
-  /* El badge lleva fondo sólido para que resalte sobre la píldora clara;
-     al activarse la píldora se invierte a blanco sobre oscuro. */
+  /* Badge en tono suave con borde: se distingue de la píldora blanca sin
+     el peso visual de un bloque oscuro. Al activarse pasa a blanco. */
   .pill-b{font-size:9.5px;font-weight:600;letter-spacing:.08em;border-radius:999px;
-          padding:3px 8px;background:var(--ink);color:#fff;}
-  .pill.pill-on .pill-b{background:#fff;color:var(--ink);}
+          padding:3px 8px;border:1px solid transparent;}
+  .pill.pill-on .pill-b{background:#fff;color:var(--ink);border-color:transparent;}
   .pill-on{background:var(--ink);color:#fff;border-color:var(--ink);
            box-shadow:0 0 0 3px rgba(255,255,255,.75);}
   .pill-on .pill-t{font-weight:600;}
@@ -91,19 +91,19 @@
   .g-coral.barra-seg{background:#f2ddd2;} .g-coral .barra-lleno{background:#b5502a;}
   .g-coral .pill-on{background:#8f3d1f;border-color:#8f3d1f;}
   .g-coral .pill-on .pill-n{background:#b5502a;color:#fff;}
-  .g-coral .pill-b{background:#8f3d1f;}
+  .g-coral .pill-b{background:#f7e0d6;color:#8f3d1f;border-color:#c78666;}
   .g-amber{background:#fdf4e4;}
   .g-amber .fase-rot{color:#8a6d1f;} .g-amber .fase-punto{background:#8a6d1f;}
   .g-amber.barra-seg{background:#f0e3c8;} .g-amber .barra-lleno{background:#c8973b;}
   .g-amber .pill-on{background:#6f5716;border-color:#6f5716;}
   .g-amber .pill-on .pill-n{background:#8a6d1f;color:#fff;}
-  .g-amber .pill-b{background:#6f5716;}
+  .g-amber .pill-b{background:#f6e9cc;color:#6f5716;border-color:#af8a3e;}
   .g-teal{background:#e9f3f0;}
   .g-teal .fase-rot{color:#2f6d6a;} .g-teal .fase-punto{background:#2f6d6a;}
   .g-teal.barra-seg{background:#d3e4e0;} .g-teal .barra-lleno{background:#2f6d6a;}
   .g-teal .pill-on{background:#1c2a33;border-color:#1c2a33;}
   .g-teal .pill-on .pill-n{background:#2f6d6a;color:#fff;}
-  .g-teal .pill-b{background:#26605d;}
+  .g-teal .pill-b{background:#d9eae6;color:#1f5b58;border-color:#5c9a93;}
   /* árbol */
   .tree-children{display:flex;flex-direction:column;gap:8px;}
   .tree-children.root{gap:10px;margin-top:12px;}
