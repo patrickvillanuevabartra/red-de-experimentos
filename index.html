@@ -866,66 +866,102 @@ function traerDePlanteamiento(){
   });
 }
 
-/* Panel de confirmación: el alumno elige qué usar, no se sobrescribe solo */
+/* Rellena directamente objetivo general y específicos (son campos propios
+   de Planteamiento). Lo demás queda como opciones para aplicar a mano. */
 function mostrarPanelPlanteamiento_(d){
   var est = document.getElementById('cv-plant-estado');
-  est.innerHTML = '';
-  est.style.color = '';
+  est.innerHTML = ''; est.style.color = '';
+  var aplicado = [];
+
+  /* ── Objetivo general ── */
+  if(String(d.objetivo_general||'').trim()){
+    canvasExp.og = d.objetivo_general.trim();
+    document.getElementById('cv-og').value = canvasExp.og;
+    aplicado.push('objetivo general');
+  }
+
+  /* ── Objetivos específicos ── */
+  var oes = parsearLineas_(d.objetivos_especificos);
+  var inds = parsearLineas_(d.indicadores_especificos);
+  if(oes.length){
+    canvasExp.especificos = oes.map(function(t, i){
+      return { id:uid('oe'), obj:t, res: inds[i] || '' };
+    });
+    aplicado.push(oes.length + (oes.length===1?' objetivo específico':' objetivos específicos'));
+    if(inds.length) aplicado.push(Math.min(inds.length, oes.length) + ' indicadores como resultado');
+  }
+
+  /* ── Resultado general desde el indicador general ── */
+  if(String(d.indicador_general||'').trim() && !String(canvasExp.rg||'').trim()){
+    canvasExp.rg = d.indicador_general.trim();
+    document.getElementById('cv-rg').value = canvasExp.rg;
+    aplicado.push('indicador general como resultado general');
+  }
+
+  if(aplicado.length){ renderCanvas(); marcarCambio(); }
 
   var caja = document.createElement('div'); caja.className = 'plant-caja';
   var tit = document.createElement('div'); tit.className = 'plant-tit';
-  tit.textContent = 'Encontrado en Planteamiento Investigativo';
+  tit.textContent = aplicado.length
+    ? 'Traído de Planteamiento Investigativo'
+    : 'Grupo encontrado, pero sin objetivos registrados';
   caja.appendChild(tit);
 
   var aviso = document.createElement('p'); aviso.className = 'plant-aviso';
-  aviso.innerHTML = 'Ese aplicativo guarda el <b>propósito</b> (redactado como objetivo, en infinitivo) '+
-    'y los <b>problemas específicos</b>, que están escritos como preguntas. '+
-    'Revisa y ajusta la redacción antes de darlos por buenos.';
+  if(aplicado.length){
+    aviso.innerHTML = 'Se cargó: <b>' + esc(aplicado.join(', ')) + '</b>. ' +
+      (inds.length && oes.length && inds.length !== oes.length
+        ? 'Ojo: hay ' + oes.length + ' objetivos y ' + inds.length + ' indicadores, así que algunos resultados quedaron vacíos. '
+        : '') +
+      'Los indicadores dicen <i>qué se mide</i>; el resultado esperado debe decir <i>cuánto</i>. Complétalos.';
+  } else {
+    aviso.innerHTML = 'Ese grupo todavía no llenó los campos de objetivos en Planteamiento Investigativo. '+
+      'Abajo está lo que sí tiene registrado, por si quieres partir de ahí.';
+  }
   caja.appendChild(aviso);
 
+  /* ── Opciones de respaldo, siempre disponibles ── */
   function opcion(rotulo, valor, alAplicar){
     if(!String(valor||'').trim()) return;
     var fila = document.createElement('div'); fila.className = 'plant-op';
     var izq = document.createElement('div');
     izq.innerHTML = '<div class="plant-rot">'+esc(rotulo)+'</div>'+
-                    '<div class="plant-val">'+esc(valor)+'</div>';
-    var b = document.createElement('button'); b.className = 'btnMini'; b.textContent = 'usar';
-    b.addEventListener('click', function(){ alAplicar(); marcarCambio(); toast('Aplicado — revisa la redacción'); });
-    fila.appendChild(izq); fila.appendChild(b);
-    caja.appendChild(fila);
-  }
-
-  opcion('Propósito → objetivo general', d.proposito, function(){
-    canvasExp.og = d.proposito;
-    document.getElementById('cv-og').value = d.proposito;
-  });
-  opcion('Tema de investigación', d.tema, function(){
-    canvasExp.og = d.tema;
-    document.getElementById('cv-og').value = d.tema;
-  });
-  opcion('Problema general (es una pregunta)', d.problema_general, function(){
-    canvasExp.og = d.problema_general;
-    document.getElementById('cv-og').value = d.problema_general;
-  });
-
-  /* Problemas específicos: vienen en líneas "PE1 [...] texto || Herramienta: ..." */
-  var pes = parsearEspecificos_(d.problemas_especificos);
-  if(pes.length){
-    var fila = document.createElement('div'); fila.className = 'plant-op';
-    var izq = document.createElement('div');
-    izq.innerHTML = '<div class="plant-rot">'+pes.length+' problemas específicos → objetivos específicos</div>'+
-      '<div class="plant-val">'+esc(pes.map(function(x){ return x.slice(0,70); }).join(' · '))+'</div>';
+                    '<div class="plant-val">'+esc(String(valor).slice(0,220))+'</div>';
     var b = document.createElement('button'); b.className = 'btnMini'; b.textContent = 'usar';
     b.addEventListener('click', function(){
-      canvasExp.especificos = pes.map(function(t){ return { id:uid('oe'), obj:t, res:'' }; });
-      renderCanvas(); marcarCambio();
-      toast('Cargados — están redactados como preguntas, conviértelos a objetivos');
+      alAplicar(); marcarCambio(); toast('Aplicado — revisa la redacción');
     });
     fila.appendChild(izq); fila.appendChild(b);
     caja.appendChild(fila);
   }
 
+  opcion('Propósito (se redacta como objetivo, en infinitivo)', d.proposito, function(){
+    canvasExp.og = d.proposito; document.getElementById('cv-og').value = d.proposito;
+  });
+  opcion('Tema de investigación', d.tema, function(){
+    canvasExp.og = d.tema; document.getElementById('cv-og').value = d.tema;
+  });
+  opcion('Problema general (está redactado como pregunta)', d.problema_general, function(){
+    canvasExp.og = d.problema_general; document.getElementById('cv-og').value = d.problema_general;
+  });
+
+  var pes = parsearEspecificos_(d.problemas_especificos);
+  if(pes.length && !oes.length){
+    opcion(pes.length + ' problemas específicos (son preguntas: conviértelos a infinitivo)',
+      pes.join(' · '), function(){
+        canvasExp.especificos = pes.map(function(t){ return { id:uid('oe'), obj:t, res:'' }; });
+        renderCanvas();
+      });
+  }
+
   est.appendChild(caja);
+}
+
+/* Parte un campo multilínea en elementos, quitando numeraciones y rótulos */
+function parsearLineas_(txt){
+  return String(txt||'').split(/\r?\n/).map(function(l){
+    return l.replace(/^\s*(OE|OG|IE|IG)?\s*\d*\s*[.):-]\s*/i, '').trim();
+  }).filter(function(t){ return t.length > 3; });
 }
 
 /* Extrae el enunciado de cada PE del texto serializado por el otro aplicativo */
