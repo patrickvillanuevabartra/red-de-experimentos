@@ -54,17 +54,50 @@
   .listMeta{font-size:12px;color:#8a948f;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
   .listTema{font-size:15px;margin-bottom:6px;font-weight:500;}
   .listPg{font-size:13px;color:#4a5a60;}
-  /* stepper de fases (mismo patrón que Planteamiento Investigativo) */
-  .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);
-           border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
-  .step{display:flex;align-items:center;gap:8px;flex:1;min-width:120px;}
-  .stepClick{cursor:pointer;}
-  .stepClick:hover .dot{border-color:var(--ink);}
-  .dot{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;
-       place-items:center;font-size:12.5px;background:#fff;flex-shrink:0;}
-  .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
-  .step span{font-size:12.5px;color:#8a948f;}
-  .step span.on{color:var(--ink);font-weight:600;}
+  /* navegador de fases en recuadros */
+  .fases{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+         padding:16px 0 18px;margin-bottom:22px;}
+  .fases-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .fases-tit{font-size:14.5px;color:var(--ink);}
+  .fases-tit b{color:var(--amber);}
+  .fases-pct{font-size:12.5px;color:#a8b0aa;}
+  .fases-barra{display:flex;gap:4px;margin-bottom:16px;}
+  .barra-seg{height:4px;border-radius:2px;overflow:hidden;}
+  .barra-lleno{height:100%;border-radius:2px;transition:width .3s;}
+  .fases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .fase-caja{border-radius:8px;padding:12px 14px 14px;}
+  .fase-rot{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;
+            letter-spacing:.1em;margin-bottom:10px;}
+  .fase-punto{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .fase-pills{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;
+        border:1px solid rgba(0,0,0,.07);border-radius:999px;padding:5px 14px 5px 5px;
+        font-size:13.5px;color:#8a948f;font-family:'Poppins',sans-serif;}
+  .pill:hover:not(.pill-on){color:var(--ink);}
+  .pill-n{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;
+          background:#f1f0ec;color:#a8b0aa;font-size:12px;flex-shrink:0;}
+  .pill-t{white-space:nowrap;}
+  .pill-b{font-size:9.5px;letter-spacing:.08em;background:#fff;color:var(--ink);
+          border-radius:999px;padding:2px 7px;}
+  .pill-on{background:var(--ink);color:#fff;border-color:var(--ink);
+           box-shadow:0 0 0 3px rgba(255,255,255,.75);}
+  .pill-on .pill-t{font-weight:600;}
+  /* tonos por grupo */
+  .g-coral{background:#fbeee8;}
+  .g-coral .fase-rot{color:#b5502a;} .g-coral .fase-punto{background:#b5502a;}
+  .g-coral.barra-seg{background:#f2ddd2;} .g-coral .barra-lleno{background:#b5502a;}
+  .g-coral .pill-on{background:#8f3d1f;border-color:#8f3d1f;}
+  .g-coral .pill-on .pill-n{background:#b5502a;color:#fff;}
+  .g-amber{background:#fdf4e4;}
+  .g-amber .fase-rot{color:#8a6d1f;} .g-amber .fase-punto{background:#8a6d1f;}
+  .g-amber.barra-seg{background:#f0e3c8;} .g-amber .barra-lleno{background:#c8973b;}
+  .g-amber .pill-on{background:#6f5716;border-color:#6f5716;}
+  .g-amber .pill-on .pill-n{background:#8a6d1f;color:#fff;}
+  .g-teal{background:#e9f3f0;}
+  .g-teal .fase-rot{color:#2f6d6a;} .g-teal .fase-punto{background:#2f6d6a;}
+  .g-teal.barra-seg{background:#d3e4e0;} .g-teal .barra-lleno{background:#2f6d6a;}
+  .g-teal .pill-on{background:#1c2a33;border-color:#1c2a33;}
+  .g-teal .pill-on .pill-n{background:#2f6d6a;color:#fff;}
   /* árbol */
   .tree-children{display:flex;flex-direction:column;gap:8px;}
   .tree-children.root{gap:10px;margin-top:12px;}
@@ -282,7 +315,7 @@
     <!-- Herramienta de tres vistas -->
     <div class="card" id="appCard" style="display:none;">
       <h2 class="sr-only">Red semántica, tabla de análisis y canvas de experimentos</h2>
-      <div class="stepper" id="stepper"></div>
+      <div class="fases" id="fases"></div>
 
       <!-- VISTA 1: RED SEMÁNTICA -->
       <div id="view-network">
@@ -328,7 +361,7 @@
       <div id="view-canvas" style="display:none;">
         <p class="note">El canvas se arma de abajo hacia arriba: partes de los objetivos, defines un proyecto por cada uno asociándolo a un enfoque de tu red, y los proyectos se integran en un único programa.</p>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b1">
           <div class="cv-head">
             <span class="cv-titulo"><span class="cv-paso">1</span>Objetivo general y resultado general</span>
             <button class="ejBtn" id="btn-plant" onclick="traerDePlanteamiento()">traer de Planteamiento Investigativo</button>
@@ -346,14 +379,14 @@
           <p id="cv-plant-estado" class="note" style="font-size:12.5px;margin:8px 0 0;"></p>
         </div>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b2">
           <span class="cv-titulo"><span class="cv-paso">2</span>Objetivos específicos y resultados específicos</span>
           <p class="note" style="margin:4px 0 10px;">Cada objetivo específico dará origen a un proyecto.</p>
           <div id="cv-especificos"></div>
           <button class="btnMini" onclick="addEspecifico()">+ Agregar objetivo específico</button>
         </div>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b3">
           <div class="cv-head">
             <span class="cv-titulo"><span class="cv-paso">3</span>Proyectos</span>
             <button class="btnMini" onclick="addProyecto()">+ Agregar proyecto</button>
@@ -362,14 +395,14 @@
           <div id="cv-proyectos"></div>
         </div>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b4">
           <span class="cv-titulo"><span class="cv-paso">4</span>Programa</span>
           <p class="note" style="margin:4px 0 8px;">El paraguas que integra todos los proyectos.</p>
           <input id="cv-programa" placeholder="Nombre del programa que integra los proyectos…">
           <div id="cv-cadena"></div>
         </div>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b5">
           <div class="cv-head">
             <span class="cv-titulo"><span class="cv-paso">5</span>Detalle heredado de la red</span>
             <button class="ejBtn" onclick="toggleCascada()">mostrar / ocultar</button>
@@ -2142,42 +2175,99 @@ function addQaRow(){
   tbody.appendChild(tr); t1.focus();
 }
 
-/* ── Navegación por fases (stepper) ── */
-var FASES = [
-  { v:'network', n:'Red semántica',      d:'Enfoque → concepto → procedimiento → herramienta → producto' },
-  { v:'table',   n:'Análisis de preguntas', d:'Preguntas y autores detrás de cada concepto' },
-  { v:'canvas',  n:'Canvas de experimentos', d:'Objetivos → proyectos → programa' }
+/* ════════════════════════════════════════════════════════════
+   NAVEGADOR DE FASES
+   Grupos en recuadros con píldoras numeradas, al mismo estilo que
+   Planteamiento Investigativo. Cada píldora navega de verdad: cambia
+   de vista y, dentro del canvas, salta al bloque correspondiente.
+════════════════════════════════════════════════════════════ */
+var GRUPOS = [
+  { rot:'CONSTRUCCIÓN', tono:'g-coral', pasos:[
+      { n:1, nom:'Red semántica', vista:'network', badge:'INICIO' }
+  ]},
+  { rot:'ANÁLISIS', tono:'g-amber', pasos:[
+      { n:2, nom:'Preguntas y autores', vista:'table' }
+  ]},
+  { rot:'CANVAS DE EXPERIMENTOS', tono:'g-teal', pasos:[
+      { n:3, nom:'Objetivos',  vista:'canvas', ancla:'cv-b1' },
+      { n:4, nom:'Proyectos',  vista:'canvas', ancla:'cv-b3' },
+      { n:5, nom:'Programa',   vista:'canvas', ancla:'cv-b4', badge:'FIN' }
+  ]}
 ];
+var TOTAL_PASOS = 5;
+var pasoActual  = 1;
 var vistaActual = 'network';
 
-function switchView(view){
-  vistaActual = view;
-  FASES.forEach(function(f){
-    document.getElementById('view-' + f.v).style.display = (f.v === view ? 'block' : 'none');
-  });
-  renderStepper();
+function pasoPorId_(n){
+  for(var i=0;i<GRUPOS.length;i++){
+    for(var j=0;j<GRUPOS[i].pasos.length;j++){
+      if(GRUPOS[i].pasos[j].n === n) return { paso:GRUPOS[i].pasos[j], grupo:GRUPOS[i] };
+    }
+  }
+  return null;
 }
 
-function renderStepper(){
-  var st = document.getElementById('stepper');
-  if(!st) return;
-  var idxActual = 0;
-  FASES.forEach(function(f, i){ if(f.v === vistaActual) idxActual = i; });
-  st.innerHTML = '';
-  FASES.forEach(function(f, i){
-    var paso = document.createElement('div');
-    paso.className = 'step stepClick';
-    paso.title = f.d;
-    var dot = document.createElement('div');
-    dot.className = 'dot' + (i <= idxActual ? ' on' : '');
-    dot.textContent = String(i + 1);
-    var tx = document.createElement('span');
-    tx.className = (i === idxActual ? 'on' : '');
-    tx.textContent = f.n;
-    paso.appendChild(dot); paso.appendChild(tx);
-    paso.addEventListener('click', function(){ switchView(f.v); });
-    st.appendChild(paso);
+function irAPaso(n){
+  var r = pasoPorId_(n); if(!r) return;
+  pasoActual = n;
+  switchView(r.paso.vista, true);
+  if(r.paso.ancla){
+    var el = document.getElementById(r.paso.ancla);
+    if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+function switchView(view, desdePaso){
+  vistaActual = view;
+  ['network','table','canvas'].forEach(function(v){
+    document.getElementById('view-' + v).style.display = (v === view ? 'block' : 'none');
   });
+  /* Si el cambio no vino de una píldora, se sincroniza el paso activo */
+  if(!desdePaso){
+    pasoActual = view === 'network' ? 1 : (view === 'table' ? 2 : 3);
+  }
+  renderFases();
+}
+
+function renderFases(){
+  var cont = document.getElementById('fases');
+  if(!cont) return;
+  var r = pasoPorId_(pasoActual);
+  var rotGrupo = r ? r.grupo.rot : '';
+  var pct = Math.round(pasoActual / TOTAL_PASOS * 100);
+
+  var h = '<div class="fases-head">'+
+            '<span class="fases-tit">Paso <b>'+pasoActual+'</b> de '+TOTAL_PASOS+
+              ' · '+esc(rotGrupo.charAt(0)+rotGrupo.slice(1).toLowerCase())+'</span>'+
+            '<span class="fases-pct">'+pct+'%</span>'+
+          '</div>'+
+          '<div class="fases-barra">';
+  GRUPOS.forEach(function(g){
+    var hechos = g.pasos.filter(function(p){ return p.n <= pasoActual; }).length;
+    h += '<div class="barra-seg '+g.tono+'" style="flex:'+g.pasos.length+';">'+
+           '<div class="barra-lleno" style="width:'+(hechos/g.pasos.length*100)+'%;"></div>'+
+         '</div>';
+  });
+  h += '</div><div class="fases-grid">';
+
+  GRUPOS.forEach(function(g){
+    h += '<div class="fase-caja '+g.tono+'">'+
+           '<div class="fase-rot"><span class="fase-punto"></span>'+esc(g.rot)+'</div>'+
+           '<div class="fase-pills">';
+    g.pasos.forEach(function(p){
+      var act = p.n === pasoActual;
+      h += '<button class="pill'+(act?' pill-on':'')+'" onclick="irAPaso('+p.n+')">'+
+             '<span class="pill-n">'+p.n+'</span>'+
+             '<span class="pill-t">'+esc(p.nom)+'</span>'+
+             (p.badge ? '<span class="pill-b">'+esc(p.badge)+'</span>' : '')+
+           '</button>';
+    });
+    h += '</div></div>';
+  });
+  h += '</div>';
+  cont.innerHTML = h;
 }
 
 /* ── Listeners de autoguardado ── */
