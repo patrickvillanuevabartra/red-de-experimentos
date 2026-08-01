@@ -245,6 +245,17 @@
   .ej-a{color:#2b3d52;margin-left:30px;font-size:12px;margin-bottom:4px;}
   .ej-n5{color:#2b4a68;margin-left:66px;font-size:12px;}
   .ej-rot{color:#a8b0aa;font-size:11px;font-style:normal;font-weight:400;}
+  .qa-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+           margin:18px 0 10px;flex-wrap:wrap;}
+  .ej-tabla-wrap{max-height:400px;overflow:auto;border:1px solid var(--line);border-radius:4px;background:#fff;}
+  .ej-tabla3{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .ej-tabla3 th{position:sticky;top:0;background:var(--ink);color:#fff;font-weight:500;
+                font-size:11.5px;padding:7px 9px;text-align:left;}
+  .ej-tabla3 td{border-bottom:1px solid var(--line);padding:7px 9px;vertical-align:top;}
+  .ej-fila-enf td{background:#eceaf8;color:#26215C;font-weight:600;font-size:12px;}
+  .ej-td-c{background:#f4faf8;color:#04342C;font-weight:500;width:26%;}
+  .ej-td-q{color:#7a2547;margin-bottom:4px;line-height:1.45;}
+  .ej-td-a{color:#2b3d52;margin-bottom:2px;}
   .ej-proy{color:var(--teal);font-size:12px;font-weight:400;margin-left:14px;}
   .ej-aviso{background:#fff;border:1px solid var(--line);border-left:3px solid var(--teal);
             border-radius:4px;padding:10px 12px;margin:10px 0;font-size:12.5px;line-height:1.5;}
@@ -350,9 +361,13 @@
         <label for="qa-pregunta">Pregunta de investigación general</label>
         <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
 
-        <div class="qa-section-title">Análisis por concepto
-          <span class="qa-hint-sub">— los conceptos vienen de tu red semántica; aquí les añades las preguntas que hay detrás y los autores consultados</span>
+        <div class="qa-head">
+          <div class="qa-section-title" style="margin:0;">Análisis por concepto
+            <span class="qa-hint-sub">— los conceptos vienen de tu red semántica; aquí les añades las preguntas que hay detrás y los autores consultados</span>
+          </div>
+          <button class="ejBtn" onclick="toggleEjemploTabla()">ver ejemplo</button>
         </div>
+        <div class="ejBox" id="ej-tabla" style="display:none;"></div>
         <div id="qa-breakdown"></div>
 
         <div class="qa-section-title">Otros elementos del análisis</div>
@@ -1344,19 +1359,16 @@ function toggleEjemploRed(){
 
 function construirEjemploHTML_(){
   var n = contarEjemplo_();
-  var h = '<b>Las tres fases trabajan sobre la misma construcción.</b>'+
-    '<p class="note" style="font-size:13px;margin:6px 0 10px;">En la primera fase construyes la red. '+
-    'En la segunda no vuelves a escribir conceptos: retomas los que ya definiste y les añades las '+
-    'preguntas que hay detrás y los autores que las sustentan. En la tercera, cada enfoque se asocia '+
-    'a un proyecto y los proyectos se integran en un programa.</p>'+
+  var h = '<b>Cómo se traduce el trabajo a los cinco niveles de la red.</b>'+
+    '<p class="note" style="font-size:13px;margin:6px 0 10px;">Cada columna de tu canvas de '+
+    'experimentos entra en un nivel distinto. Los conceptos que definas aquí son los que se '+
+    'retoman en la fase 2 para añadirles preguntas y autores.</p>'+
     '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>Dónde entra</th></tr></thead><tbody>'+
     '<tr><td>Metodología de solución / Postura técnica</td><td><b>Enfoque</b> — fase 1</td></tr>'+
     '<tr><td>Etapa</td><td><b>Concepto</b> — fase 1, se retoma en fase 2</td></tr>'+
     '<tr><td>Sub etapa</td><td><b>Procedimiento</b> — fase 1</td></tr>'+
     '<tr><td>Métodos de recopilación de datos</td><td><b>Herramienta</b> — fase 1</td></tr>'+
     '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> — fase 1</td></tr>'+
-    '<tr><td>Preguntas</td><td><b>Preguntas</b> — fase 2</td></tr>'+
-    '<tr><td>Autor (consultado)</td><td><b>Autor</b> — fase 2</td></tr>'+
     '<tr><td>Proyecto</td><td><b>Proyecto</b> — fase 3, asociado a un enfoque</td></tr>'+
     '<tr><td>Programa</td><td><b>Programa</b> — fase 3, integra los proyectos</td></tr>'+
     '</tbody></table>'+
@@ -1367,8 +1379,8 @@ function construirEjemploHTML_(){
     'muestran enlazados.</div>'+
     '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
     '<b>'+n.e+' enfoques · '+n.c+' conceptos · '+n.p+' procedimientos · '+n.h+' herramientas · '+
-    n.d+' productos</b>, y sobre esos conceptos <b>'+n.q+' preguntas y '+n.a+' autores</b>. '+
-    'La empresa se mantiene en reserva.</p>'+
+    n.d+' productos</b>. Las preguntas y los autores de estos mismos conceptos están en la '+
+    'fase 2. La empresa se mantiene en reserva.</p>'+
     '<div class="ej-arbol">';
 
   EJEMPLO_RED.forEach(function(e){
@@ -1385,12 +1397,6 @@ function construirEjemploHTML_(){
           });
         });
       });
-      (c.q||[]).forEach(function(q){
-        h += '<div class="ej-q">? '+esc(q)+' <span class="ej-rot">(pregunta)</span></div>';
-      });
-      if((c.a||[]).length){
-        h += '<div class="ej-a">'+esc(c.a.join(' · '))+' <span class="ej-rot">(autores)</span></div>';
-      }
     });
   });
   h += '</div>'+
@@ -1398,6 +1404,61 @@ function construirEjemploHTML_(){
     'Cargar este ejemplo</button>'+
     '<p class="note" style="font-size:12px;margin:6px 0 0;">Llena las tres fases a la vez: '+
     'la red semántica, la tabla de análisis y el canvas (programa, proyectos y objetivos).</p>';
+  return h;
+}
+
+/* ── Ejemplo de la fase 2: concepto → preguntas → autores ──
+   Usa los MISMOS conceptos del ejemplo de la red, para que se vea que la
+   segunda fase no crea conceptos nuevos sino que retoma los de la primera. */
+function toggleEjemploTabla(){
+  var caja = document.getElementById('ej-tabla');
+  var abierta = caja.style.display === 'block';
+  caja.style.display = abierta ? 'none' : 'block';
+  if(!abierta && !caja.dataset.listo){
+    caja.innerHTML = construirEjemploTablaHTML_();
+    caja.dataset.listo = '1';
+  }
+}
+
+function construirEjemploTablaHTML_(){
+  var n = contarEjemplo_();
+  var h = '<b>Los conceptos no se escriben aquí: vienen de la fase 1.</b>'+
+    '<p class="note" style="font-size:13px;margin:6px 0 10px;">Cada fila es un concepto que ya '+
+    'existe en la red semántica. Lo único que se agrega en esta fase son las <b>preguntas</b> que '+
+    'hay detrás de ese concepto y los <b>autores</b> que las sustentan.</p>'+
+    '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>Dónde entra</th></tr></thead><tbody>'+
+    '<tr><td>Etapa / Concepto</td><td><b>Concepto</b> — heredado de la fase 1</td></tr>'+
+    '<tr><td>Preguntas y conceptos relacionados</td><td><b>Preguntas</b> — fase 2</td></tr>'+
+    '<tr><td>Autor (consultado)</td><td><b>Autor(es)</b> — fase 2</td></tr>'+
+    '</tbody></table>'+
+    '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
+    '<b>'+n.q+' preguntas y '+n.a+' autores</b> sobre los '+n.c+' conceptos de la red. '+
+    'La empresa se mantiene en reserva.</p>'+
+    '<div class="ej-tabla-wrap"><table class="ej-tabla3">'+
+    '<thead><tr><th>Concepto <span class="ej-rot">(de la red)</span></th>'+
+    '<th>Preguntas</th><th>Autor(es) consultado(s)</th></tr></thead><tbody>';
+
+  EJEMPLO_RED.forEach(function(e){
+    h += '<tr class="ej-fila-enf"><td colspan="3">'+esc(e.t)+
+         ' <span class="ej-rot">(enfoque de la red)</span></td></tr>';
+    e.c.forEach(function(c){
+      var qs = c.q || [], as = c.a || [];
+      h += '<tr>'+
+           '<td class="ej-td-c">'+esc(c.t)+'</td>'+
+           '<td>'+ (qs.length
+                      ? qs.map(function(q){ return '<div class="ej-td-q">'+esc(q)+'</div>'; }).join('')
+                      : '<span class="ej-rot">sin preguntas registradas</span>') +'</td>'+
+           '<td>'+ (as.length
+                      ? as.map(function(a){ return '<div class="ej-td-a">'+esc(a)+'</div>'; }).join('')
+                      : '<span class="ej-rot">—</span>') +'</td>'+
+           '</tr>';
+    });
+  });
+  h += '</tbody></table></div>'+
+    '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
+    'Cargar este ejemplo</button>'+
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez: '+
+    'la red, esta tabla y el canvas.</p>';
   return h;
 }
 
