@@ -54,10 +54,17 @@
   .listMeta{font-size:12px;color:#8a948f;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
   .listTema{font-size:15px;margin-bottom:6px;font-weight:500;}
   .listPg{font-size:13px;color:#4a5a60;}
-  /* vistas internas */
-  .vtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap;}
-  .vtab{font-size:14px;padding:9px 15px;border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;background:transparent;color:#6a746f;font-weight:500;margin-bottom:-1px;}
-  .vtab.on{background:#fff;border-color:var(--line);color:var(--ink);}
+  /* stepper de fases (mismo patrón que Planteamiento Investigativo) */
+  .stepper{display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--line);
+           border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px;}
+  .step{display:flex;align-items:center;gap:8px;flex:1;min-width:120px;}
+  .stepClick{cursor:pointer;}
+  .stepClick:hover .dot{border-color:var(--ink);}
+  .dot{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;
+       place-items:center;font-size:12.5px;background:#fff;flex-shrink:0;}
+  .dot.on{border-color:var(--ink);background:var(--ink);color:#fff;}
+  .step span{font-size:12.5px;color:#8a948f;}
+  .step span.on{color:var(--ink);font-weight:600;}
   /* árbol */
   .tree-children{display:flex;flex-direction:column;gap:8px;}
   .tree-children.root{gap:10px;margin-top:12px;}
@@ -112,18 +119,33 @@
   .userBar{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12.5px;color:#6a746f;margin-bottom:10px;}
   .userBar b{color:var(--ink);}
   /* canvas de experimentos */
+  .cv-paso{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;
+           background:var(--ink);color:#fff;font-size:12px;margin-right:8px;vertical-align:middle;}
+  .cv-proy-num{font-size:12px;font-weight:600;color:var(--amber);padding-top:22px;letter-spacing:.04em;}
+  .cv-proy-res{grid-column:2 / 4;font-size:12px;color:#8a948f;margin-top:2px;}
+  /* cascada heredada */
+  .casc-proy{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:4px;
+             padding:11px 13px;margin-bottom:10px;background:#fafbf9;}
+  .casc-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+  .casc-enf{font-size:13px;color:#26215C;margin-bottom:5px;}
+  .casc-c{font-size:13px;color:#04342C;margin:5px 0 0 8px;}
+  .casc-p{font-size:12.5px;color:#4A1B0C;margin-left:26px;}
+  .casc-h{font-size:12.5px;color:#3D3009;margin-left:44px;}
+  .casc-d{font-size:12px;color:#152B40;margin-left:62px;}
+  .casc-rot{font-size:10.5px;color:#a8b0aa;text-transform:uppercase;letter-spacing:.04em;}
+  .casc-vacio{font-size:12.5px;color:#a8501e;font-style:italic;}
   .cv-bloque{border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:14px;background:#fff;}
   .cv-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
   .cv-titulo{font-size:15px;font-weight:600;color:var(--ink);}
   .cv-oe{display:grid;grid-template-columns:44px 1fr 1fr 28px;gap:8px;align-items:start;margin-bottom:8px;}
   .cv-oe-num{font-size:12px;font-weight:600;color:var(--amber);padding-top:10px;letter-spacing:.04em;}
   .cv-oe textarea{font-size:14px;padding:8px 10px;}
-  .cv-proy{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;
+  .cv-proy{display:grid;grid-template-columns:34px 1fr 1fr 28px;gap:10px;align-items:start;
            border:1px solid var(--line);border-left:3px solid #534AB7;border-radius:4px;
            padding:10px 12px;margin-bottom:8px;background:#fafbf9;}
-  .cv-proy-enf{font-size:14px;color:#26215C;}
-  .cv-proy-inp label{margin:0 0 4px;font-size:11.5px;}
-  .cv-proy-inp input{font-size:14px;padding:7px 10px;}
+  .cv-proy label{margin:0 0 4px;font-size:11.5px;}
+  .cv-proy input,.cv-proy select{font-size:14px;padding:7px 10px;}
+  #cv-programa{font-size:15.5px;}
   .cad-prog{background:var(--ink);color:#fff;border-radius:4px;padding:10px 14px;
             font-size:15px;font-weight:500;text-align:center;}
   .cad-oe{font-size:12.5px;color:var(--teal);text-align:center;margin-top:6px;}
@@ -133,10 +155,6 @@
   .cad-proy.cad-vacio{border-top-color:#d8cfc0;opacity:.7;}
   .cad-proy-t{font-size:13.5px;font-weight:500;color:#04342C;}
   .cad-proy-e{font-size:12px;color:#8a948f;margin-top:3px;}
-  .ent-row{display:flex;align-items:center;gap:6px;margin-top:6px;}
-  .ent-lbl{font-size:11.5px;color:#8a7f6d;white-space:nowrap;}
-  .ent-inp{flex:1;font-size:13px;padding:5px 8px;border:1px dashed var(--line);border-radius:3px;}
-  .ent-inp:focus{outline:none;border-style:solid;border-color:#8A6D1F;}
 
   /* panel de traída desde Planteamiento */
   .plant-caja{border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:4px;
@@ -186,7 +204,7 @@
   .ej-n4{color:#6a5410;margin-left:48px;font-size:12.5px;}
   .ej-q{color:#7a2547;margin-left:30px;font-size:12.5px;font-style:italic;margin-top:3px;}
   .ej-a{color:#2b3d52;margin-left:30px;font-size:12px;margin-bottom:4px;}
-  .ej-ent{color:#8a6d1f;font-style:italic;}
+  .ej-n5{color:#2b4a68;margin-left:66px;font-size:12px;}
   .ej-proy{color:var(--teal);font-weight:400;font-size:12px;}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
   @media(max-width:680px){.row2{grid-template-columns:1fr;}}
@@ -209,7 +227,7 @@
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · TALLER DE INVESTIGACIÓN EN INGENIERÍA I</div>
   <h1>De la red semántica al experimento</h1>
-  <p class="sub">Construye la red en cuatro niveles —enfoque, concepto, procedimiento y herramienta—, desglosa la pregunta de investigación y arma el canvas de experimentos.</p>
+  <p class="sub">Construye la red en cinco niveles —enfoque, concepto, procedimiento, herramienta y producto—, analiza las preguntas detrás de cada concepto y arma el canvas de experimentos.</p>
 
   <div class="userBar" id="userBar" style="display:none;">
     <span id="userTxt"></span>
@@ -264,11 +282,7 @@
     <!-- Herramienta de tres vistas -->
     <div class="card" id="appCard" style="display:none;">
       <h2 class="sr-only">Red semántica, tabla de análisis y canvas de experimentos</h2>
-      <div class="vtabs">
-        <button class="vtab" data-view="network" onclick="switchView('network')">Red semántica</button>
-        <button class="vtab" data-view="table"   onclick="switchView('table')">Tabla de análisis de pregunta</button>
-        <button class="vtab" data-view="canvas"  onclick="switchView('canvas')">Canvas de experimentos</button>
-      </div>
+      <div class="stepper" id="stepper"></div>
 
       <!-- VISTA 1: RED SEMÁNTICA -->
       <div id="view-network">
@@ -312,17 +326,11 @@
 
       <!-- VISTA 3: CANVAS DE EXPERIMENTOS -->
       <div id="view-canvas" style="display:none;">
-        <p class="note">El canvas empaqueta lo que ya construiste: cada <b>enfoque</b> de la red se vuelve un <b>proyecto</b>, los proyectos se agrupan en un <b>programa</b>, y ese programa responde al objetivo general y a los específicos.</p>
-
-        <div class="cv-bloque">
-          <label for="cv-programa">Programa</label>
-          <input id="cv-programa" placeholder="Nombre del programa que agrupa todos los proyectos…">
-          <p class="note" style="font-size:12.5px;margin:5px 0 0;">Uno solo: es el paraguas al que apuntan el objetivo general y todos los específicos.</p>
-        </div>
+        <p class="note">El canvas se arma de abajo hacia arriba: partes de los objetivos, defines un proyecto por cada uno asociándolo a un enfoque de tu red, y los proyectos se integran en un único programa.</p>
 
         <div class="cv-bloque">
           <div class="cv-head">
-            <span class="cv-titulo">Objetivo general y resultado general</span>
+            <span class="cv-titulo"><span class="cv-paso">1</span>Objetivo general y resultado general</span>
             <button class="ejBtn" id="btn-plant" onclick="traerDePlanteamiento()">traer de Planteamiento Investigativo</button>
           </div>
           <div class="row2">
@@ -332,28 +340,42 @@
             </div>
             <div>
               <label for="cv-rg">Resultado general</label>
-              <textarea id="cv-rg" rows="4" placeholder="La meta medible del objetivo general (ej. reducir en 40% el tiempo de atención)…"></textarea>
+              <textarea id="cv-rg" rows="4" placeholder="La meta medible del objetivo general…"></textarea>
             </div>
           </div>
           <p id="cv-plant-estado" class="note" style="font-size:12.5px;margin:8px 0 0;"></p>
         </div>
 
         <div class="cv-bloque">
-          <span class="cv-titulo">Objetivos específicos y resultados específicos</span>
-          <p class="note" style="margin:4px 0 10px;">Todos apuntan al mismo programa. Cada uno debería corresponder a un proyecto.</p>
+          <span class="cv-titulo"><span class="cv-paso">2</span>Objetivos específicos y resultados específicos</span>
+          <p class="note" style="margin:4px 0 10px;">Cada objetivo específico dará origen a un proyecto.</p>
           <div id="cv-especificos"></div>
           <button class="btnMini" onclick="addEspecifico()">+ Agregar objetivo específico</button>
         </div>
 
         <div class="cv-bloque">
-          <span class="cv-titulo">Proyectos</span>
-          <p class="note" style="margin:4px 0 10px;">Cada enfoque de tu red semántica se convierte en un proyecto del programa.</p>
+          <div class="cv-head">
+            <span class="cv-titulo"><span class="cv-paso">3</span>Proyectos</span>
+            <button class="btnMini" onclick="addProyecto()">+ Agregar proyecto</button>
+          </div>
+          <p class="note" style="margin:4px 0 10px;">Define cada proyecto y asócialo a uno de los enfoques que ya construiste en la red. Normalmente son tres.</p>
           <div id="cv-proyectos"></div>
         </div>
 
         <div class="cv-bloque">
-          <span class="cv-titulo">Cadena resultante</span>
+          <span class="cv-titulo"><span class="cv-paso">4</span>Programa</span>
+          <p class="note" style="margin:4px 0 8px;">El paraguas que integra todos los proyectos.</p>
+          <input id="cv-programa" placeholder="Nombre del programa que integra los proyectos…">
           <div id="cv-cadena"></div>
+        </div>
+
+        <div class="cv-bloque">
+          <div class="cv-head">
+            <span class="cv-titulo"><span class="cv-paso">5</span>Detalle heredado de la red</span>
+            <button class="ejBtn" onclick="toggleCascada()">mostrar / ocultar</button>
+          </div>
+          <p class="note" style="margin:4px 0 8px;">Todo lo construido en la primera fase, agrupado por proyecto: enfoque, conceptos, procedimientos, herramientas y productos.</p>
+          <div id="cv-cascada" style="display:none;"></div>
         </div>
 
         <div class="cv-bloque">
@@ -645,7 +667,7 @@ function nuevaRed(){
   suprimirAutoguardado = true;
   grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
   data = []; idc = 0;
-  canvasExp = { programa:'', og:'', rg:'', especificos:[], notas:'' };
+  canvasExp = { programa:'', og:'', rg:'', especificos:[], proyectos:[], notas:'' };
   pintarCamposCanvas_();
   document.getElementById('qa-pregunta').value = '';
   document.getElementById('f_ciclo').value = '';
@@ -692,7 +714,10 @@ function reindexarIds_(enfoques){
       track(c.id);
       (c.procs||[]).forEach(function(pr){
         track(pr.id);
-        (pr.herrs||[]).forEach(function(h){ track(h.id); });
+        (pr.herrs||[]).forEach(function(h){
+          track(h.id);
+          (h.prods||[]).forEach(function(pd){ track(pd.id); });
+        });
       });
       (c.preguntas||[]).forEach(function(q){ track(q.id); });
       (c.autores||[]).forEach(function(a){ track(a.id); });
@@ -727,7 +752,7 @@ function restaurarOtros_(filas){
    El proyecto se guarda EN el enfoque, así el vínculo no se puede
    desincronizar: si borras el enfoque, se va su proyecto.
 ════════════════════════════════════════════════════════════ */
-var canvasExp = { programa:'', og:'', rg:'', especificos:[], notas:'' };
+var canvasExp = { programa:'', og:'', rg:'', especificos:[], proyectos:[], notas:'' };
 
 function addEspecifico(){
   canvasExp.especificos.push({ id:uid('oe'), obj:'', res:'' });
@@ -737,11 +762,26 @@ function removeEspecifico(id){
   canvasExp.especificos = canvasExp.especificos.filter(function(x){ return x.id !== id; });
   renderCanvas(); marcarCambio();
 }
+/* El proyecto se define primero y luego se asocia a un enfoque, por eso
+   guarda el id del enfoque en vez de vivir dentro de él. */
+function addProyecto(){
+  canvasExp.proyectos.push({ id:uid('py'), nombre:'', enfoqueId:'' });
+  renderCanvas(); marcarCambio();
+}
+function removeProyecto(id){
+  canvasExp.proyectos = canvasExp.proyectos.filter(function(x){ return x.id !== id; });
+  renderCanvas(); marcarCambio();
+}
+function enfoquePorId_(id){
+  for(var i=0;i<data.length;i++){ if(data[i].id === id) return data[i]; }
+  return null;
+}
 
 function renderCanvas(){
-  /* ── objetivos específicos ── */
   var cont = document.getElementById('cv-especificos');
   if(!cont) return;
+
+  /* ── objetivos específicos ── */
   cont.innerHTML = '';
   if(canvasExp.especificos.length === 0){
     var vac = document.createElement('p');
@@ -765,70 +805,217 @@ function renderCanvas(){
     cont.appendChild(fila);
   });
 
-  /* ── proyectos: uno por enfoque ── */
+  /* ── proyectos: nombre + enfoque asociado ── */
   var pr = document.getElementById('cv-proyectos');
   pr.innerHTML = '';
-  if(data.length === 0){
-    var v2 = document.createElement('div'); v2.className = 'qa-empty';
-    var p2 = document.createElement('p');
-    p2.textContent = 'Los proyectos salen de los enfoques de tu red, y todavía no hay ninguno.';
-    var b2 = document.createElement('button'); b2.className = 'btnMini';
-    b2.textContent = 'Ir a la red semántica';
-    b2.addEventListener('click', function(){ switchView('network'); });
-    v2.appendChild(p2); v2.appendChild(b2); pr.appendChild(v2);
-  } else {
-    data.forEach(function(e){
-      var fila = document.createElement('div'); fila.className = 'cv-proy';
-      var izq = document.createElement('div'); izq.className = 'cv-proy-enf';
-      izq.innerHTML = '<span class="net-dot dot-purple"></span>' + esc(e.text);
-      var der = document.createElement('div'); der.className = 'cv-proy-inp';
-      var lb = document.createElement('label'); lb.textContent = 'Proyecto';
-      var inp = document.createElement('input');
-      inp.value = e.proyecto || ''; inp.placeholder = 'Nombre del proyecto para este enfoque…';
-      inp.addEventListener('input', function(){ e.proyecto = inp.value; marcarCambio(); refrescarCadena_(); });
-      der.appendChild(lb); der.appendChild(inp);
-      fila.appendChild(izq); fila.appendChild(der);
-      pr.appendChild(fila);
-    });
+  if(canvasExp.proyectos.length === 0){
+    var v2 = document.createElement('p');
+    v2.className = 'note'; v2.style.cssText = 'font-size:13px;margin:0 0 8px;';
+    v2.textContent = data.length
+      ? 'Todavía no hay proyectos. Agrega uno y asócialo a un enfoque.'
+      : 'Primero construye los enfoques en la red semántica: son los que se asocian a cada proyecto.';
+    pr.appendChild(v2);
   }
+  var usados = {};
+  canvasExp.proyectos.forEach(function(py){ if(py.enfoqueId) usados[py.enfoqueId] = true; });
+
+  canvasExp.proyectos.forEach(function(py, i){
+    var fila = document.createElement('div'); fila.className = 'cv-proy';
+    var num = document.createElement('div'); num.className = 'cv-proy-num'; num.textContent = 'P' + (i+1);
+
+    var col1 = document.createElement('div');
+    var l1 = document.createElement('label'); l1.textContent = 'Nombre del proyecto';
+    var inp = document.createElement('input');
+    inp.value = py.nombre || ''; inp.placeholder = 'Ej. Rediseño del proceso con BPMN';
+    inp.addEventListener('input', function(){ py.nombre = inp.value; marcarCambio(); refrescarCadena_(); });
+    col1.appendChild(l1); col1.appendChild(inp);
+
+    var col2 = document.createElement('div');
+    var l2 = document.createElement('label'); l2.textContent = 'Enfoque asociado (de la red)';
+    var sel = document.createElement('select');
+    var op0 = document.createElement('option'); op0.value = ''; op0.textContent = '— elegir enfoque —';
+    sel.appendChild(op0);
+    data.forEach(function(e){
+      var op = document.createElement('option');
+      op.value = e.id;
+      /* Marca los enfoques ya tomados por otro proyecto, sin bloquearlos */
+      op.textContent = e.text + (usados[e.id] && py.enfoqueId !== e.id ? '  (ya asociado)' : '');
+      if(py.enfoqueId === e.id) op.selected = true;
+      sel.appendChild(op);
+    });
+    sel.addEventListener('change', function(){
+      py.enfoqueId = sel.value; renderCanvas(); marcarCambio();
+    });
+    col2.appendChild(l2); col2.appendChild(sel);
+
+    var del = document.createElement('button');
+    del.className = 'tree-del'; del.textContent = '×'; del.title = 'Eliminar proyecto';
+    del.addEventListener('click', function(){ removeProyecto(py.id); });
+
+    fila.appendChild(num); fila.appendChild(col1); fila.appendChild(col2); fila.appendChild(del);
+
+    var e = enfoquePorId_(py.enfoqueId);
+    if(e){
+      var res = document.createElement('div'); res.className = 'cv-proy-res';
+      res.textContent = resumenEnfoque_(e);
+      fila.appendChild(res);
+    }
+    pr.appendChild(fila);
+  });
+
   refrescarCadena_();
+  if(document.getElementById('cv-cascada').style.display === 'block') pintarCascada_();
 }
 
-/* Resumen visual de la cadena programa → proyectos → enfoques */
+/* Cuenta lo que cuelga de un enfoque en la red */
+function contarEnfoque_(e){
+  var r = { c:0, p:0, h:0, d:0 };
+  (e.conceptos||[]).forEach(function(c){
+    r.c++;
+    (c.procs||[]).forEach(function(pc){
+      r.p++;
+      (pc.herrs||[]).forEach(function(h){ r.h++; r.d += (h.prods||[]).length; });
+    });
+  });
+  return r;
+}
+function resumenEnfoque_(e){
+  var r = contarEnfoque_(e);
+  return r.c + ' conceptos · ' + r.p + ' procedimientos · ' + r.h + ' herramientas · ' + r.d + ' productos';
+}
+
+/* Resumen visual: programa → proyectos → enfoques */
 function refrescarCadena_(){
   var box = document.getElementById('cv-cadena');
   if(!box) return;
   var prog = (canvasExp.programa || '').trim();
-  var proys = data.filter(function(e){ return (e.proyecto||'').trim(); });
+  var conNombre = canvasExp.proyectos.filter(function(p){ return (p.nombre||'').trim(); });
   var nOE = canvasExp.especificos.filter(function(x){ return (x.obj||'').trim(); }).length;
 
-  if(!prog && proys.length === 0){
-    box.innerHTML = '<p class="note" style="font-size:13px;margin:0;">Escribe el programa y nombra los proyectos para ver la cadena.</p>';
+  if(!prog && conNombre.length === 0){
+    box.innerHTML = '<p class="note" style="font-size:13px;margin:10px 0 0;">Nombra el programa y los proyectos para ver la cadena.</p>';
     return;
   }
   var h = '<div class="cad-prog">' + esc(prog || '(programa sin nombre)') + '</div>';
   if(nOE) h += '<div class="cad-oe">' + nOE + (nOE===1?' objetivo específico apunta':' objetivos específicos apuntan') + ' a este programa</div>';
   h += '<div class="cad-lista">';
-  data.forEach(function(e){
-    var np = (e.proyecto||'').trim();
-    var nC = (e.conceptos||[]).length;
-    h += '<div class="cad-proy' + (np ? '' : ' cad-vacio') + '">'+
-         '<div class="cad-proy-t">' + esc(np || 'sin proyecto asignado') + '</div>'+
-         '<div class="cad-proy-e">← ' + esc(e.text) + ' · ' + nC + (nC===1?' concepto':' conceptos') + '</div>'+
+  canvasExp.proyectos.forEach(function(py){
+    var e = enfoquePorId_(py.enfoqueId);
+    h += '<div class="cad-proy' + (py.nombre && e ? '' : ' cad-vacio') + '">'+
+         '<div class="cad-proy-t">' + esc(py.nombre || 'proyecto sin nombre') + '</div>'+
+         '<div class="cad-proy-e">' + (e ? '← ' + esc(e.text) : 'sin enfoque asociado') + '</div>'+
          '</div>';
   });
   h += '</div>';
-  var faltan = data.length - proys.length;
-  if(faltan > 0){
-    h += '<p class="note" style="font-size:12.5px;margin:8px 0 0;color:#a8501e;">'+
-         faltan + (faltan===1?' enfoque sin proyecto asignado.':' enfoques sin proyecto asignado.')+'</p>';
+
+  var avisos = [];
+  var sinEnf = canvasExp.proyectos.filter(function(p){ return !enfoquePorId_(p.enfoqueId); }).length;
+  if(sinEnf) avisos.push(sinEnf + (sinEnf===1?' proyecto sin enfoque asociado.':' proyectos sin enfoque asociado.'));
+  var libres = data.filter(function(e){
+    return !canvasExp.proyectos.some(function(p){ return p.enfoqueId === e.id; });
+  }).length;
+  if(libres) avisos.push(libres + (libres===1?' enfoque de la red no está en ningún proyecto.':' enfoques de la red no están en ningún proyecto.'));
+  if(nOE && conNombre.length && nOE !== conNombre.length){
+    avisos.push('Hay ' + nOE + ' objetivos específicos y ' + conNombre.length + ' proyectos; normalmente va uno por cada uno.');
   }
-  if(nOE && proys.length && nOE !== proys.length){
-    h += '<p class="note" style="font-size:12.5px;margin:4px 0 0;color:#8a6d1f;">'+
-         'Tienes ' + nOE + ' objetivos específicos y ' + proys.length + ' proyectos. '+
-         'Normalmente hay uno por cada uno — revísalo si no es intencional.</p>';
-  }
+  avisos.forEach(function(a){
+    h += '<p class="note" style="font-size:12.5px;margin:6px 0 0;color:#a8501e;">' + esc(a) + '</p>';
+  });
   box.innerHTML = h;
+}
+
+/* ── Cascada: todo lo heredado de la red, agrupado por proyecto ── */
+function toggleCascada(){
+  var c = document.getElementById('cv-cascada');
+  var abierta = c.style.display === 'block';
+  c.style.display = abierta ? 'none' : 'block';
+  if(!abierta) pintarCascada_();
+}
+function pintarCascada_(){
+  var box = document.getElementById('cv-cascada');
+  if(canvasExp.proyectos.length === 0){
+    box.innerHTML = '<p class="note" style="font-size:13px;margin:0;">Define proyectos y asócialos a un enfoque para ver aquí su detalle.</p>';
+    return;
+  }
+  var h = '';
+  canvasExp.proyectos.forEach(function(py, i){
+    var e = enfoquePorId_(py.enfoqueId);
+    h += '<div class="casc-proy">';
+    h += '<div class="casc-t">P' + (i+1) + ' · ' + esc(py.nombre || 'proyecto sin nombre') + '</div>';
+    if(!e){
+      h += '<div class="casc-vacio">Sin enfoque asociado.</div></div>';
+      return;
+    }
+    h += '<div class="casc-enf"><b>Enfoque (metodología de solución):</b> ' + esc(e.text) + '</div>';
+    (e.conceptos||[]).forEach(function(c){
+      h += '<div class="casc-c">▸ <b>' + esc(c.text) + '</b> <span class="casc-rot">concepto / etapa</span></div>';
+      (c.procs||[]).forEach(function(pc){
+        h += '<div class="casc-p">– ' + esc(pc.text) + ' <span class="casc-rot">procedimiento / sub etapa</span></div>';
+        (pc.herrs||[]).forEach(function(hh){
+          h += '<div class="casc-h">→ ' + esc(hh.text) + ' <span class="casc-rot">herramienta</span></div>';
+          (hh.prods||[]).forEach(function(pd){
+            h += '<div class="casc-d">◇ ' + esc(pd.text) + ' <span class="casc-rot">producto / entregable</span></div>';
+          });
+        });
+      });
+    });
+    h += '</div>';
+  });
+  box.innerHTML = h;
+}
+
+/* ── Serialización del canvas ── */
+function serializarCanvas_(){
+  return {
+    programa: canvasExp.programa,
+    og: canvasExp.og, rg: canvasExp.rg,
+    especificos: canvasExp.especificos.map(function(x){
+      return { id:x.id, obj:x.obj, res:x.res };
+    }),
+    proyectos: canvasExp.proyectos.map(function(x){
+      return { id:x.id, nombre:x.nombre, enfoqueId:x.enfoqueId };
+    }),
+    notas: canvasExp.notas
+  };
+}
+function restaurarCanvas_(c){
+  if(Array.isArray(c)){
+    /* Formato más antiguo: tarjetas libres. Se rescata su texto en notas. */
+    var txt = c.map(function(t){
+      return (t.titulo||'') + (t.contenido ? ': ' + t.contenido : '');
+    }).filter(function(x){ return x.trim() && x.trim() !== ':'; }).join('\n');
+    canvasExp = { programa:'', og:'', rg:'', especificos:[], proyectos:[], notas:txt };
+  } else if(c && typeof c === 'object'){
+    canvasExp = {
+      programa: c.programa || '', og: c.og || '', rg: c.rg || '',
+      especificos: (c.especificos||[]).map(function(x){
+        return { id:x.id || uid('oe'), obj:x.obj||'', res:x.res||'' };
+      }),
+      proyectos: (c.proyectos||[]).map(function(x){
+        return { id:x.id || uid('py'), nombre:x.nombre||'', enfoqueId:x.enfoqueId||'' };
+      }),
+      notas: c.notas || ''
+    };
+  }
+  /* Antes el proyecto se guardaba dentro del enfoque. Si el registro
+     viene así, se convierte en proyecto con su enfoque asociado. */
+  if(canvasExp.proyectos.length === 0){
+    data.forEach(function(e){
+      if((e.proyecto||'').trim()){
+        canvasExp.proyectos.push({ id:uid('py'), nombre:e.proyecto.trim(), enfoqueId:e.id });
+      }
+      delete e.proyecto;
+    });
+  }
+  pintarCamposCanvas_();
+}
+function pintarCamposCanvas_(){
+  var f = { 'cv-programa':'programa', 'cv-og':'og', 'cv-rg':'rg', 'cv-notas':'notas' };
+  Object.keys(f).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = canvasExp[f[id]] || '';
+  });
+  renderCanvas();
 }
 
 /* ── Traer objetivos desde Planteamiento Investigativo ──
@@ -976,58 +1163,23 @@ function parsearEspecificos_(txt){
   }).filter(function(t){ return t.length > 3; });
 }
 
-/* ── Serialización del canvas ── */
-function serializarCanvas_(){
-  return {
-    programa: canvasExp.programa,
-    og: canvasExp.og, rg: canvasExp.rg,
-    especificos: canvasExp.especificos.map(function(x){
-      return { id:x.id, obj:x.obj, res:x.res };
-    }),
-    notas: canvasExp.notas
-  };
-}
-function restaurarCanvas_(c){
-  /* Formato antiguo: era una lista de tarjetas libres. Se conserva su
-     contenido en las notas para no perder lo escrito. */
-  if(Array.isArray(c)){
-    var txt = c.map(function(t){
-      return (t.titulo||'') + (t.contenido ? ': ' + t.contenido : '');
-    }).filter(function(x){ return x.trim() && x.trim() !== ':'; }).join('\n');
-    canvasExp = { programa:'', og:'', rg:'', especificos:[], notas:txt };
-  } else if(c && typeof c === 'object'){
-    canvasExp = {
-      programa: c.programa || '', og: c.og || '', rg: c.rg || '',
-      especificos: (c.especificos||[]).map(function(x){
-        return { id:x.id || uid('oe'), obj:x.obj||'', res:x.res||'' };
-      }),
-      notas: c.notas || ''
-    };
-  }
-  pintarCamposCanvas_();
-}
-function pintarCamposCanvas_(){
-  var f = { 'cv-programa':'programa', 'cv-og':'og', 'cv-rg':'rg', 'cv-notas':'notas' };
-  Object.keys(f).forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) el.value = canvasExp[f[id]] || '';
-  });
-  renderCanvas();
-}
 
 /* Quita las claves auxiliares del diagrama (_y) antes de guardar:
    son posiciones que se recalculan en cada render, no van a la base. */
 function limpiarParaGuardar_(enfoques){
   return (enfoques||[]).map(function(e){
     return {
-      id:e.id, text:e.text, proyecto:e.proyecto || '',
+      id:e.id, text:e.text,
       conceptos:(e.conceptos||[]).map(function(c){
         return {
           id:c.id, text:c.text,
           procs:(c.procs||[]).map(function(pr){
             return {
               id:pr.id, text:pr.text,
-              herrs:(pr.herrs||[]).map(function(h){ return { id:h.id, text:h.text, ent:h.ent||'' }; })
+              herrs:(pr.herrs||[]).map(function(h){
+              return { id:h.id, text:h.text,
+                prods:(h.prods||[]).map(function(pd){ return { id:pd.id, text:pd.text }; }) };
+            })
             };
           }),
           preguntas:(c.preguntas||[]).map(function(q){ return { id:q.id, text:q.text }; }),
@@ -1119,7 +1271,7 @@ window.addEventListener('beforeunload', function(e){
    el ejemplo se llenan a la vez la red semántica y la tabla.
    La empresa se mantiene en reserva.
 ════════════════════════════════════════════════════════════ */
-var EJEMPLO_RED = [{"t":"Gestión por procesos y mejora continua","c":[{"t":"Estandarización de procesos, ciclo PHVA y cuellos de botella","q":["¿Cómo la gestión por procesos y la mejora continua permiten reducir el tiempo de atención de entrega de bienes y/o servicios en la empresa?"],"a":["Portero-Poveda et al. (Koinonía, 2022)","Ortíz-Fernández et al. (Gestinar, 2024)","UCV (2022)","PUCP (2021)"],"p":[{"t":"Mapeo del proceso actual de adquisición y rediseño del proceso mejorado con BPMN","h":[["Diagrama AS-IS / TO-BE","Proceso actual documentado y proceso mejorado aprobado"]]}]}],"proy":"Rediseño del proceso con BPMN"},{"t":"Estandarización del proceso mediante BPMN y valoración de FCE","c":[{"t":"BPMN como lenguaje estándar OMG y valoración de FCE micro y macro","q":["¿Qué actividades del proceso de adquisición requieren estandarización mediante BPMN para reducir el tiempo de ciclo?"],"a":["Espinosa Cruz et al. (SciELO, 2020)","Ciencia & Desarrollo UNJBG (2019)","Revista Regunt (2023)","Ramirez, Paredes, Valque (UPC, 2024)"],"p":[{"t":"Modelado del proceso actual y propuesta mejorada con FCE priorizados integrados al TO-BE","h":[["Diagrama AS-IS / TO-BE en notación BPMN","Diagrama BPMN validado con los responsables"],["Mapa de FCE — radar chart","Lista de FCE críticos nivel 1 y 2 con puntajes"]]}]}],"proy":"Estandarización y priorización de FCE"},{"t":"Automatización RPA e integración de la información (APP piloto + ERP logístico)","c":[{"t":"Automatización de tareas repetitivas y centralización de datos en ERP","q":["¿De qué manera la automatización robótica de procesos (RPA) y la integración de la información impactan en la reducción de reprocesos y errores documentarios?"],"a":["Herrera, Crisóstomo, Dávila (SciELO, 2025)","Tirado & Mecola (UNT, 2024)","USIL (2021) — ERP logístico","UPC (2022) — Digitalización"],"p":[{"t":"Identificación de tareas repetitivas, tiempos y puntos de integración por automatizar","h":[["Ficha de registro del proceso actual","Registro de actividades, tiempos y responsables"]]}]}],"proy":"Automatización RPA e integración ERP"},{"t":"Control y seguimiento mediante KPIs logísticos (Modelo SCOR + ciclo PHVA)","c":[{"t":"KPI de tiempo de ciclo, de reprocesos y de cobertura de indicadores","q":["¿Qué indicadores clave de desempeño (KPIs) permiten controlar y dar seguimiento al tiempo de entrega de bienes y/o servicios en la empresa?"],"a":["USIL (2021) — KPIs logísticos","López, Sacco, Cavacini (AACINI, 2024)","Zuluaga et al. (Clío América, 2014)","Flores & Noel (USIL, 2025)","ResearchGate (2025) — Modelos KPI"],"p":[{"t":"Definición de qué medir, fórmula exacta, frecuencia, fuente de datos y responsable","h":[["Ficha de indicadores KPI","Una ficha por KPI: fórmula, frecuencia, fuente y responsable"],["Dashboard Power BI de seguimiento KPI","Tablero operativo en funcionamiento"]]}]}],"proy":"Sistema de KPIs logísticos"},{"t":"Gestión documental y relación cliente-proveedor (SLA + homologación)","c":[{"t":"Requisitos del cliente, acuerdos SLA y homologación de proveedores","q":["¿Cuáles son las condiciones mínimas del proveedor para cumplir con los requisitos del cliente?","¿Cuál deberá ser la relación cliente-proveedor óptima con SLA formalizados?","¿Cuáles son los parámetros mínimos para lograr la automatización del proceso?"],"a":["LATAM Revista (2022)","UPC (2020) — gestión de compras","Henríquez-Fuente et al. (Dialnet, 2018)","Redalyc (2021)"],"p":[{"t":"Levantamiento con jefe de logística y analistas de compras","h":[["Guía de entrevista","Informe de requisitos de proveedores y parámetros SLA"]]},{"t":"Registro del proceso documental actual con proveedores","h":[["Ficha de observación","Registro del proceso documental actual con proveedores"]]},{"t":"Registro de cumplimiento de SLA y homologación","h":[["Formulario en línea","Registro de cumplimiento de SLA y homologación"]]}]}],"proy":"Homologación de proveedores y SLA"}];
+var EJEMPLO_RED = [{"t":"Gestión por procesos y mejora continua","c":[{"t":"Estandarización de procesos, ciclo PHVA y cuellos de botella","q":["¿Cómo la gestión por procesos y la mejora continua permiten reducir el tiempo de atención de entrega de bienes y/o servicios en la empresa?"],"a":["Portero-Poveda et al. (Koinonía, 2022)","Ortíz-Fernández et al. (Gestinar, 2024)","UCV (2022)","PUCP (2021)"],"p":[{"t":"Mapeo del proceso actual de adquisición y rediseño del proceso mejorado con BPMN","h":[{"t":"Diagrama AS-IS / TO-BE","pd":["Proceso actual documentado y proceso mejorado aprobado"]}]}]}],"proy":"Rediseño del proceso con BPMN"},{"t":"Estandarización del proceso mediante BPMN y valoración de FCE","c":[{"t":"BPMN como lenguaje estándar OMG y valoración de FCE micro y macro","q":["¿Qué actividades del proceso de adquisición requieren estandarización mediante BPMN para reducir el tiempo de ciclo?"],"a":["Espinosa Cruz et al. (SciELO, 2020)","Ciencia & Desarrollo UNJBG (2019)","Revista Regunt (2023)","Ramirez, Paredes, Valque (UPC, 2024)"],"p":[{"t":"Modelado del proceso actual y propuesta mejorada con FCE priorizados integrados al TO-BE","h":[{"t":"Diagrama AS-IS / TO-BE en notación BPMN","pd":["Diagrama BPMN validado con los responsables"]},{"t":"Mapa de FCE — radar chart","pd":["Lista de FCE críticos nivel 1 y 2 con puntajes"]}]}]}],"proy":"Estandarización y priorización de FCE"},{"t":"Automatización RPA e integración de la información (APP piloto + ERP logístico)","c":[{"t":"Automatización de tareas repetitivas y centralización de datos en ERP","q":["¿De qué manera la automatización robótica de procesos (RPA) y la integración de la información impactan en la reducción de reprocesos y errores documentarios?"],"a":["Herrera, Crisóstomo, Dávila (SciELO, 2025)","Tirado & Mecola (UNT, 2024)","USIL (2021) — ERP logístico","UPC (2022) — Digitalización"],"p":[{"t":"Identificación de tareas repetitivas, tiempos y puntos de integración por automatizar","h":[{"t":"Ficha de registro del proceso actual","pd":["Registro de actividades, tiempos y responsables"]}]}]}],"proy":"Automatización RPA e integración ERP"},{"t":"Control y seguimiento mediante KPIs logísticos (Modelo SCOR + ciclo PHVA)","c":[{"t":"KPI de tiempo de ciclo, de reprocesos y de cobertura de indicadores","q":["¿Qué indicadores clave de desempeño (KPIs) permiten controlar y dar seguimiento al tiempo de entrega de bienes y/o servicios en la empresa?"],"a":["USIL (2021) — KPIs logísticos","López, Sacco, Cavacini (AACINI, 2024)","Zuluaga et al. (Clío América, 2014)","Flores & Noel (USIL, 2025)","ResearchGate (2025) — Modelos KPI"],"p":[{"t":"Definición de qué medir, fórmula exacta, frecuencia, fuente de datos y responsable","h":[{"t":"Ficha de indicadores KPI","pd":["Una ficha por KPI: fórmula, frecuencia, fuente y responsable"]},{"t":"Dashboard Power BI de seguimiento KPI","pd":["Tablero operativo en funcionamiento"]}]}]}],"proy":"Sistema de KPIs logísticos"},{"t":"Gestión documental y relación cliente-proveedor (SLA + homologación)","c":[{"t":"Requisitos del cliente, acuerdos SLA y homologación de proveedores","q":["¿Cuáles son las condiciones mínimas del proveedor para cumplir con los requisitos del cliente?","¿Cuál deberá ser la relación cliente-proveedor óptima con SLA formalizados?","¿Cuáles son los parámetros mínimos para lograr la automatización del proceso?"],"a":["LATAM Revista (2022)","UPC (2020) — gestión de compras","Henríquez-Fuente et al. (Dialnet, 2018)","Redalyc (2021)"],"p":[{"t":"Levantamiento con jefe de logística y analistas de compras","h":[{"t":"Guía de entrevista","pd":["Informe de requisitos de proveedores y parámetros SLA"]}]},{"t":"Registro del proceso documental actual con proveedores","h":[{"t":"Ficha de observación","pd":["Registro del proceso documental actual con proveedores"]}]},{"t":"Registro de cumplimiento de SLA y homologación","h":[{"t":"Formulario en línea","pd":["Registro de cumplimiento de SLA y homologación"]}]}]}],"proy":"Homologación de proveedores y SLA"}];
 var EJEMPLO_CANVAS = {"programa":"Programa de excelencia operacional en el proceso de adquisición","og":"Reducir el tiempo de atención de entrega de bienes y/o servicios al área de ingeniería mediante la aplicación de la gestión por procesos y mejora continua","rg":"Reducir por lo menos en 40% el tiempo de atención total de entrega","oe":[["Estandarizar el proceso de adquisición mediante la aplicación de BPMN","Proceso estandarizado con SOP y matriz RACI aprobados"],["Mejorar la integración de la información del proceso de adquisición mediante la automatización","Información centralizada en ERP, con reprocesos reducidos entre 20% y 30%"],["Mejorar el seguimiento, control y evaluación del proceso de adquisición mediante KPIs","Cobertura de KPIs del proceso elevada de 0% a por lo menos 60%"]]};
 
 function contarEjemplo_(){
@@ -1154,10 +1306,11 @@ function construirEjemploHTML_(){
     '<tr><td>Metodología de solución / Postura técnica</td><td><b>Enfoque</b> — fase 1</td></tr>'+
     '<tr><td>Etapa / Concepto</td><td><b>Concepto</b> — fase 1, se retoma en fase 2</td></tr>'+
     '<tr><td>Sub etapa</td><td><b>Procedimiento</b> — fase 1</td></tr>'+
-    '<tr><td>Entregable / producto</td><td><b>Herramienta</b> — fase 1</td></tr>'+
+    '<tr><td>Herramienta para implementar</td><td><b>Herramienta</b> — fase 1</td></tr>'+
+    '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> — fase 1</td></tr>'+
     '<tr><td>Preguntas</td><td><b>Preguntas</b> — fase 2</td></tr>'+
     '<tr><td>Autor (consultado)</td><td><b>Autor</b> — fase 2</td></tr>'+
-    '<tr><td>Cada enfoque</td><td><b>Proyecto</b> — fase 3</td></tr>'+
+    '<tr><td>Cada enfoque, asociado a un proyecto</td><td><b>Proyecto</b> — fase 3</td></tr>'+
     '<tr><td>Los proyectos juntos</td><td><b>Programa</b> — fase 3</td></tr>'+
     '</tbody></table>'+
     '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
@@ -1174,10 +1327,8 @@ function construirEjemploHTML_(){
       c.p.forEach(function(pr){
         h += '<div class="ej-n3">– '+esc(pr.t)+'</div>';
         pr.h.forEach(function(hh){
-          var nom = typeof hh === 'string' ? hh : hh[0];
-          var ent = typeof hh === 'string' ? '' : (hh[1]||'');
-          h += '<div class="ej-n4">→ '+esc(nom)+
-               (ent ? ' <span class="ej-ent">· entregable: '+esc(ent)+'</span>' : '')+'</div>';
+          h += '<div class="ej-n4">→ '+esc(hh.t)+'</div>';
+          (hh.pd||[]).forEach(function(x){ h += '<div class="ej-n5">◇ '+esc(x)+'</div>'; });
         });
       });
       c.q.forEach(function(q){ h += '<div class="ej-q">? '+esc(q)+'</div>'; });
@@ -1204,11 +1355,8 @@ function cargarEjemploRed(){
         id:uid('c'), text:c.t,
         procs: c.p.map(function(pr){
           return { id:uid('pc'), text:pr.t, herrs:pr.h.map(function(hh){
-            /* la herramienta puede venir como texto suelto o como par
-               [herramienta, entregable] */
-            return typeof hh === 'string'
-              ? { id:uid('hr'), text:hh, ent:'' }
-              : { id:uid('hr'), text:hh[0], ent:hh[1] || '' };
+            return { id:uid('hr'), text:hh.t,
+              prods:(hh.pd||[]).map(function(x){ return { id:uid('pd'), text:x }; }) };
           })};
         }),
         preguntas: c.q.map(function(q){ return { id:uid('q'), text:q }; }),
@@ -1222,6 +1370,10 @@ function cargarEjemploRed(){
     especificos: EJEMPLO_CANVAS.oe.map(function(x){
       return { id:uid('oe'), obj:x[0], res:x[1] };
     }),
+    /* Un proyecto por enfoque, apuntando al id recién generado */
+    proyectos: data.map(function(e, i){
+      return { id:uid('py'), nombre: EJEMPLO_RED[i].proy || '', enfoqueId: e.id };
+    }).filter(function(py){ return py.nombre; }),
     notas: canvasExp.notas
   };
   pintarCamposCanvas_();
@@ -1392,14 +1544,37 @@ function findProcRed(pid){
 function addHerrRed(pid, text){
   var pr = findProcRed(pid); if(!pr) return;
   if(!pr.herrs) pr.herrs = [];
-  /* ent = producto/entregable que resulta de usar esa herramienta.
-     Va como campo aparte porque la herramienta es CON QUÉ se hace y
-     el entregable es QUÉ queda: en el trabajo real no siempre coinciden. */
-  pr.herrs.push({id:uid('hr'), text:text, ent:''}); renderAll();
+  pr.herrs.push({id:uid('hr'), text:text, prods:[]}); renderAll();
 }
 function removeHerrRed(pid, hid){
   var pr = findProcRed(pid); if(!pr || !pr.herrs) return;
   pr.herrs = pr.herrs.filter(function(x){ return x.id !== hid; }); renderAll();
+}
+
+/* Nivel 5 de la red: PRODUCTO / ENTREGABLE.
+   Es elemento propio, no un campo de la herramienta: la herramienta es
+   CON QUÉ se hace y el producto es QUÉ queda. Una misma herramienta
+   puede dejar más de un entregable. */
+function findHerrRed(hid){
+  for(var i=0;i<data.length;i++){
+    var cs = data[i].conceptos || [];
+    for(var j=0;j<cs.length;j++){
+      var ps = cs[j].procs || [];
+      for(var k=0;k<ps.length;k++){
+        var h = findIn(ps[k].herrs||[], hid);
+        if(h) return h;
+      }
+    }
+  } return null;
+}
+function addProdRed(hid, text){
+  var h = findHerrRed(hid); if(!h) return;
+  if(!h.prods) h.prods = [];
+  h.prods.push({id:uid('pd'), text:text}); renderAll();
+}
+function removeProdRed(hid, pdid){
+  var h = findHerrRed(hid); if(!h || !h.prods) return;
+  h.prods = h.prods.filter(function(x){ return x.id !== pdid; }); renderAll();
 }
 /* Compatibilidad: las redes guardadas antes de este cambio traen
    "instrumentos" (un solo nivel). Se convierten a procedimientos sin
@@ -1415,7 +1590,14 @@ function migrarInstrumentos_(enfoques){
       delete c.instrumentos;
       (c.procs||[]).forEach(function(pr){
         if(!pr.herrs) pr.herrs = [];
-        (pr.herrs||[]).forEach(function(h){ if(h.ent === undefined) h.ent = ''; });
+        (pr.herrs||[]).forEach(function(h){
+          /* Antes el entregable era un campo de texto dentro de la
+             herramienta; ahora es un elemento propio. Se convierte. */
+          if(!h.prods){
+            h.prods = (h.ent||'').trim() ? [{ id:uid('pd'), text:h.ent.trim() }] : [];
+          }
+          delete h.ent;
+        });
       });
       /* Las preguntas antiguas colgaban procedimientos y herramientas.
          Ahora esos niveles viven en la red, así que la pregunta queda plana. */
@@ -1462,21 +1644,12 @@ function totalHerrs(){
     (c.procs||[]).forEach(function(pr){ t += (pr.herrs||[]).length; }); }); });
   return t;
 }
-function totalEntregables(){
+function totalProds(){
   var t = 0;
   data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){
     (c.procs||[]).forEach(function(pr){ (pr.herrs||[]).forEach(function(h){
-      if((h.ent||'').trim()) t++; }); }); }); });
+      t += (h.prods||[]).length; }); }); }); });
   return t;
-}
-/* Todas las herramientas de la red, con su entregable — insumo del canvas */
-function listaEntregables(){
-  var out = [];
-  data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){
-    (c.procs||[]).forEach(function(pr){ (pr.herrs||[]).forEach(function(h){
-      out.push({ enfoque:e.text, concepto:c.text, herramienta:h.text, entregable:h.ent||'' });
-    }); }); }); });
-  return out;
 }
 
 /* ════════════════════════════════
@@ -1529,14 +1702,16 @@ var PALETA_CLARA = {
   enfoque:     { fill:'#EEEDFE', stroke:'#534AB7', texto:'#26215C' },
   concepto:    { fill:'#E1F5EE', stroke:'#0F6E56', texto:'#04342C' },
   procedimiento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' },
-  herramienta: { fill:'#FBF3DC', stroke:'#8A6D1F', texto:'#3D3009' }
+  herramienta: { fill:'#FBF3DC', stroke:'#8A6D1F', texto:'#3D3009' },
+  producto:    { fill:'#E6EFF7', stroke:'#3A6EA5', texto:'#152B40' }
 };
 var PALETA_OSCURA = {
   fondo:'#1F1E1D', linea:'#4A4844', textoTenue:'#A5A199',
   enfoque:     { fill:'#3C3489', stroke:'#AFA9EC', texto:'#CECBF6' },
   concepto:    { fill:'#085041', stroke:'#5DCAA5', texto:'#9FE1CB' },
   procedimiento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' },
-  herramienta: { fill:'#5C4A12', stroke:'#E0C46A', texto:'#F2E2B0' }
+  herramienta: { fill:'#5C4A12', stroke:'#E0C46A', texto:'#F2E2B0' },
+  producto:    { fill:'#1F3A52', stroke:'#7FB2DC', texto:'#C3DDF2' }
 };
 function paletaActual(){
   var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1546,8 +1721,8 @@ function paletaActual(){
 /* El texto real de un canvas es largo, así que los nodos crecen en alto
    según su contenido en vez de tener una altura fija. */
 var NET = {
-  colX:  [14, 254, 494, 734],
-  nodeW: [226, 226, 226, 226],
+  colX:  [12, 232, 452, 672, 892],
+  nodeW: [208, 208, 208, 208, 208],
   minH:   34,
   lineH:  15,
   padY:   13,
@@ -1559,7 +1734,7 @@ var NET = {
   subMaxLines: 3,
   topPad: 44,
   botPad: 20,
-  width:  974
+  width:  1112
 };
 
 function escapeXml(s){
@@ -1599,7 +1774,7 @@ function altoNodo_(txt, col, sub){
 
 /* Hijos de un nodo, sea del nivel que sea */
 function hijosDe_(n){
-  return n.conceptos || n.procs || n.herrs || [];
+  return n.conceptos || n.procs || n.herrs || n.prods || [];
 }
 
 /* 1.ª pasada: alto propio (_h) y alto del subárbol (_sh) de cada nodo.
@@ -1695,8 +1870,8 @@ function construirSVG_(paleta, conFondo){
   if(conFondo) s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+paleta.fondo+'"/>';
 
   /* Encabezados de columna */
-  var titulos = ['Enfoques','Conceptos','Procedimientos','Herramientas / entregable'];
-  for(var k=0;k<4;k++){
+  var titulos = ['Enfoques','Conceptos','Procedimientos','Herramientas','Productos / entregables'];
+  for(var k=0;k<5;k++){
     s += '<text x="'+(NET.colX[k] + NET.nodeW[k]/2)+'" y="24" text-anchor="middle" '
        + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12.5" font-weight="600" '
        + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+titulos[k].toUpperCase()+'</text>';
@@ -1710,6 +1885,9 @@ function construirSVG_(paleta, conFondo){
         s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], pr._y, paleta.linea);
         (pr.herrs||[]).forEach(function(h){
           s += enlaceSVG_(NET.colX[2]+NET.nodeW[2], pr._y, NET.colX[3], h._y, paleta.linea);
+          (h.prods||[]).forEach(function(pd){
+            s += enlaceSVG_(NET.colX[3]+NET.nodeW[3], h._y, NET.colX[4], pd._y, paleta.linea);
+          });
         });
       });
     });
@@ -1723,7 +1901,10 @@ function construirSVG_(paleta, conFondo){
       (c.procs||[]).forEach(function(pr){
         s += nodoSVG_(NET.colX[2], pr._y, NET.nodeW[2], pr.text, paleta.procedimiento);
         (pr.herrs||[]).forEach(function(h){
-          s += nodoSVG_(NET.colX[3], h._y, NET.nodeW[3], h.text, paleta.herramienta, h.ent);
+          s += nodoSVG_(NET.colX[3], h._y, NET.nodeW[3], h.text, paleta.herramienta);
+          (h.prods||[]).forEach(function(pd){
+            s += nodoSVG_(NET.colX[4], pd._y, NET.nodeW[4], pd.text, paleta.producto);
+          });
         });
       });
     });
@@ -1744,7 +1925,7 @@ function renderNetwork(){
   if(nEnf === 0){
     wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo. La red se construye en cuatro niveles:<br>'+
       '<b>Enfoque</b> (metodología de solución) → <b>Concepto</b> (etapa) → '+
-      '<b>Procedimiento</b> (sub etapa) → <b>Herramienta</b> (entregable o producto).</div>';
+      '<b>Procedimiento</b> (sub etapa) → <b>Herramienta</b> → <b>Producto/entregable</b>.</div>';
   } else {
     wrap.innerHTML = construirSVG_(paletaActual(), false);
   }
@@ -1752,8 +1933,8 @@ function renderNetwork(){
     nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
     nCon + (nCon===1?' concepto':' conceptos') + ' · ' +
     nPro + (nPro===1?' procedimiento':' procedimientos') + ' · ' +
-    nHer + (nHer===1?' herramienta':' herramientas') +
-    ' (' + totalEntregables() + ' con entregable)';
+    nHer + (nHer===1?' herramienta':' herramientas') + ' · ' +
+    totalProds() + (totalProds()===1?' producto':' productos');
   document.getElementById('btn-png').disabled = (nEnf === 0);
 }
 
@@ -1832,14 +2013,16 @@ function buildNetProc(cid, pr){
 }
 function buildNetHerr(pid, h){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l4';
-  wrap.appendChild(makeHead('dot-amber', h.text, null, function(){ removeHerrRed(pid, h.id); }));
-  var fila = document.createElement('div'); fila.className = 'ent-row';
-  var et = document.createElement('span'); et.className = 'ent-lbl'; et.textContent = 'Entregable:';
-  var inp = document.createElement('input');
-  inp.className = 'ent-inp'; inp.value = h.ent || '';
-  inp.placeholder = 'producto o entregable que resulta…';
-  inp.addEventListener('input', function(){ h.ent = inp.value; marcarCambio(); });
-  fila.appendChild(et); fila.appendChild(inp); wrap.appendChild(fila);
+  var n = (h.prods||[]).length;
+  wrap.appendChild(makeHead('dot-amber', h.text, n + (n===1?' prod':' prods'),
+    function(){ removeHerrRed(pid, h.id); }));
+  wrap.appendChild(makeAddRow('Agregar producto o entregable…', function(v){ addProdRed(h.id, v); }));
+  wrap.appendChild(makeChildren(h.prods||[], function(pd){ return buildNetProd(h.id, pd); }));
+  return wrap;
+}
+function buildNetProd(hid, pd){
+  var wrap = document.createElement('div'); wrap.className = 'tree-item l5';
+  wrap.appendChild(makeHead('dot-blue', pd.text, null, function(){ removeProdRed(hid, pd.id); }));
   return wrap;
 }
 
@@ -1959,13 +2142,41 @@ function addQaRow(){
   tbody.appendChild(tr); t1.focus();
 }
 
-/* ── Navegación ── */
+/* ── Navegación por fases (stepper) ── */
+var FASES = [
+  { v:'network', n:'Red semántica',      d:'Enfoque → concepto → procedimiento → herramienta → producto' },
+  { v:'table',   n:'Análisis de preguntas', d:'Preguntas y autores detrás de cada concepto' },
+  { v:'canvas',  n:'Canvas de experimentos', d:'Objetivos → proyectos → programa' }
+];
+var vistaActual = 'network';
+
 function switchView(view){
-  ['network','table','canvas'].forEach(function(v){
-    document.getElementById('view-' + v).style.display = (v === view ? 'block' : 'none');
+  vistaActual = view;
+  FASES.forEach(function(f){
+    document.getElementById('view-' + f.v).style.display = (f.v === view ? 'block' : 'none');
   });
-  document.querySelectorAll('.vtab').forEach(function(btn){
-    btn.classList.toggle('on', btn.getAttribute('data-view') === view);
+  renderStepper();
+}
+
+function renderStepper(){
+  var st = document.getElementById('stepper');
+  if(!st) return;
+  var idxActual = 0;
+  FASES.forEach(function(f, i){ if(f.v === vistaActual) idxActual = i; });
+  st.innerHTML = '';
+  FASES.forEach(function(f, i){
+    var paso = document.createElement('div');
+    paso.className = 'step stepClick';
+    paso.title = f.d;
+    var dot = document.createElement('div');
+    dot.className = 'dot' + (i <= idxActual ? ' on' : '');
+    dot.textContent = String(i + 1);
+    var tx = document.createElement('span');
+    tx.className = (i === idxActual ? 'on' : '');
+    tx.textContent = f.n;
+    paso.appendChild(dot); paso.appendChild(tx);
+    paso.addEventListener('click', function(){ switchView(f.v); });
+    st.appendChild(paso);
   });
 }
 
