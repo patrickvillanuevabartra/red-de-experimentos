@@ -204,6 +204,8 @@
   .cad-prog{background:var(--ink);color:#fff;border-radius:4px;padding:10px 14px;
             font-size:15px;font-weight:500;text-align:center;}
   .cad-oe{font-size:12.5px;color:var(--teal);text-align:center;margin-top:6px;}
+  .cad-rot{font-size:11.5px;font-weight:600;letter-spacing:.06em;color:#8a948f;
+           text-transform:uppercase;margin:14px 0 6px;}
   .cad-lista{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:10px;}
   .cad-proy{border:1px solid var(--line);border-top:3px solid var(--teal);border-radius:4px;
             padding:9px 11px;background:#fafbf9;}
@@ -420,15 +422,22 @@
         <div class="cv-bloque" id="cv-b3">
           <div class="cv-head">
             <span class="cv-titulo"><span class="cv-paso">3</span>Proyectos</span>
-            <button class="btnMini" onclick="addProyecto()">+ Agregar proyecto</button>
+            <span style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="ejBtn" onclick="toggleEjemploProyectos()">ver ejemplo</button>
+              <button class="btnMini" onclick="addProyecto()">+ Agregar proyecto</button>
+            </span>
           </div>
-          <p class="note" style="margin:4px 0 10px;">Define cada proyecto y asócialo a uno de los enfoques que ya construiste en la red. Normalmente son tres.</p>
+          <p class="note" style="margin:4px 0 10px;">Normalmente son tres, uno por cada objetivo específico.</p>
+          <div class="ejBox" id="ej-proy" style="display:none;"></div>
           <div id="cv-proyectos"></div>
         </div>
 
         <div class="cv-bloque" id="cv-b4">
-          <span class="cv-titulo"><span class="cv-paso">4</span>Programa</span>
-          <p class="note" style="margin:4px 0 8px;">El paraguas que integra todos los proyectos.</p>
+          <div class="cv-head">
+            <span class="cv-titulo"><span class="cv-paso">4</span>Programa</span>
+            <button class="ejBtn" onclick="toggleEjemploPrograma()">ver ejemplo</button>
+          </div>
+          <div class="ejBox" id="ej-prog" style="display:none;"></div>
           <input id="cv-programa" placeholder="Nombre del programa que integra los proyectos…">
           <div id="cv-cadena"></div>
         </div>
@@ -996,11 +1005,13 @@ function refrescarCadena_(){
   var conNombre = canvasExp.proyectos.filter(function(p){ return (p.nombre||'').trim(); });
   var nOE = canvasExp.especificos.filter(function(x){ return (x.obj||'').trim(); }).length;
 
-  if(!prog && conNombre.length === 0){
-    box.innerHTML = '<p class="note" style="font-size:13px;margin:10px 0 0;">Nombra el programa y los proyectos para ver la cadena.</p>';
+  if(canvasExp.proyectos.length === 0){
+    box.innerHTML = '<p class="note" style="font-size:13px;margin:10px 0 0;">'+
+      'Todavía no hay proyectos que integrar. Vuelve al paso 3 y define al menos uno.</p>';
     return;
   }
-  var h = '<div class="cad-prog">' + esc(prog || '(programa sin nombre)') + '</div>';
+  var h = '<div class="cad-rot">Proyectos que integra este programa</div>'+
+          '<div class="cad-prog">' + esc(prog || '(programa sin nombre)') + '</div>';
   if(nOE) h += '<div class="cad-oe">' + nOE + (nOE===1?' objetivo específico apunta':' objetivos específicos apuntan') + ' a este programa</div>';
   h += '<div class="cad-lista">';
   canvasExp.proyectos.forEach(function(py){
@@ -1593,6 +1604,61 @@ function construirEjemploTablaHTML_(){
     '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez: '+
     'la red, esta tabla y el canvas.</p>';
   return h;
+}
+
+/* ── Ejemplo del paso 4: proyectos ── */
+function toggleEjemploProyectos(){
+  var caja = document.getElementById('ej-proy');
+  var abierta = caja.style.display === 'block';
+  caja.style.display = abierta ? 'none' : 'block';
+  if(!abierta && !caja.dataset.listo){
+    var C = EJEMPLO_CANVAS;
+    var h = '<b>Un proyecto por objetivo específico, anclado a un enfoque.</b>'+
+      '<p class="note" style="font-size:13px;margin:6px 0 10px;">El proyecto es el puente: por '+
+      'arriba responde a un objetivo específico; por abajo se apoya en un enfoque de tu red, del '+
+      'que hereda todas sus etapas, procedimientos, herramientas y productos.</p>'+
+      '<table class="ejParTable"><thead><tr><th style="width:30%;">Proyecto</th>'+
+      '<th style="width:34%;">Responde al objetivo específico</th>'+
+      '<th>Se apoya en el enfoque</th></tr></thead><tbody>';
+    EJEMPLO_RED.forEach(function(e, i){
+      if(!e.proy) return;
+      var oe = C.oe[i];
+      h += '<tr><td><b>P'+(i+1)+'.</b> '+esc(e.proy)+'</td>'+
+           '<td>'+(oe ? '<b>OE'+(i+1)+'.</b> '+esc(oe[0]) : '—')+'</td>'+
+           '<td>'+esc(e.t)+'</td></tr>';
+    });
+    h += '</tbody></table>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Fíjate que el proyecto no repite el '+
+      'objetivo ni el enfoque: los nombra. Todo el detalle ya está en la red.</p>';
+    caja.innerHTML = h;
+    caja.dataset.listo = '1';
+  }
+}
+
+/* ── Ejemplo del paso 5: programa ── */
+function toggleEjemploPrograma(){
+  var caja = document.getElementById('ej-prog');
+  var abierta = caja.style.display === 'block';
+  caja.style.display = abierta ? 'none' : 'block';
+  if(!abierta && !caja.dataset.listo){
+    var C = EJEMPLO_CANVAS;
+    var h = '<b>Un solo programa integra los tres proyectos.</b>'+
+      '<p class="note" style="font-size:13px;margin:6px 0 10px;">El programa es el nombre común '+
+      'bajo el que se agrupan todos los proyectos, y es el que responde al objetivo general.</p>'+
+      '<div class="cad-prog" style="margin:0 0 8px;">'+esc(C.programa)+'</div>'+
+      '<div class="cad-lista">';
+    EJEMPLO_RED.forEach(function(e, i){
+      if(!e.proy) return;
+      h += '<div class="cad-proy"><div class="cad-proy-t">'+esc(e.proy)+'</div>'+
+           '<div class="cad-proy-e">← '+esc(e.t)+'</div>'+
+           '<div class="cad-proy-oe">responde a OE'+(i+1)+'</div></div>';
+    });
+    h += '</div>'+
+      '<p class="note" style="font-size:12px;margin:8px 0 0;">Y el programa completo responde al '+
+      'objetivo general: <i>'+esc(C.og.slice(0,120))+'…</i></p>';
+    caja.innerHTML = h;
+    caja.dataset.listo = '1';
+  }
 }
 
 /* ── Ejemplo de la fase 3: objetivos, proyectos, programa y canvas ── */
