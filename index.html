@@ -1775,10 +1775,18 @@ function construirEjemploCanvasHTML_(){
   h += '<div class="ejc-bloque"><div class="ejc-rot">Paso 4 · Programa que integra los proyectos</div>'+
        '<div class="cad-prog" style="margin:0;">'+esc(C.programa)+'</div></div>';
 
-  /* Muestra las primeras filas del canvas ya ensamblado */
-  var muestra = filasEjemploCanvas_().slice(0, 8);
+  /* Muestra las primeras filas de CADA proyecto: cortar por el principio
+     dejaría fuera a los otros dos, que es justo lo que hay que ver. */
+  var todas = filasEjemploCanvas_();
+  var POR_PROYECTO = 4, vistas = {}, muestra = [];
+  todas.forEach(function(f){
+    var k = f.proy || '(sin proyecto)';
+    vistas[k] = (vistas[k] || 0) + 1;
+    if(vistas[k] <= POR_PROYECTO) muestra.push(f);
+  });
+  var nProy = Object.keys(vistas).length;
   h += '<div class="ejc-bloque"><div class="ejc-rot">Paso 5 · Así queda el canvas ensamblado</div>'+
-       '<div class="cvf-wrap" style="max-height:280px;"><table class="cvf"><thead><tr>';
+       '<div class="cvf-wrap" style="max-height:460px;"><table class="cvf"><thead><tr>';
   CANVAS_COLS.forEach(function(c){ h += '<th>'+esc(c[0])+'</th>'; });
   h += '</tr></thead><tbody>';
   var prev = {};
@@ -1795,8 +1803,9 @@ function construirEjemploCanvasHTML_(){
     h += '</tr>';
   });
   h += '</tbody></table></div>'+
-       '<p class="note" style="font-size:12px;margin:6px 0 0;">Primeras 8 filas de '+
-       filasEjemploCanvas_().length+'. Las celdas en blanco repiten el valor de arriba.</p></div>';
+       '<p class="note" style="font-size:12px;margin:6px 0 0;">Primeras '+POR_PROYECTO+
+       ' filas de cada uno de los '+nProy+' proyectos ('+muestra.length+' de '+todas.length+
+       ' filas en total). Las celdas en blanco repiten el valor de la fila de arriba.</p></div>';
 
   h += '<button class="btnMini" style="margin-top:6px;" onclick="cargarEjemploRed()">'+
        'Cargar este ejemplo</button>'+
