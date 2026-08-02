@@ -468,7 +468,7 @@
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <h2 style="margin:0;">Redes guardadas</h2>
-        <button class="btnGhost" onclick="cargarLista()">↻ Actualizar</button>
+        <button class="btnGhost" onclick="cargarLista(true)">↻ Actualizar</button>
       </div>
       <div id="listaCont" style="margin-top:16px;"><p class="note">Cargando…</p></div>
     </div>
@@ -546,10 +546,13 @@ function jsonpCall(params, onOk, onErr){
   sc.onerror = function(){ fallar('el navegador no pudo cargar la respuesta (fallo HTTP o de red)'); };
   sc.onload  = function(){
     cargo = true;
+    /* Margen amplio: con 60 ms se declaraba error si el callback se ejecutaba
+       un instante después del onload, sobre todo tras la redirección de Apps
+       Script. Medio segundo elimina esos falsos negativos. */
     setTimeout(function(){
       fallar('respondió, pero el contenido no era la respuesta esperada '+
              '(probablemente una página de Google, no nuestro JSON)');
-    }, 60);
+    }, 500);
   };
   document.body.appendChild(sc);
 }
@@ -576,6 +579,14 @@ function postCall(params, onOk, onErr){
 /* ════════════════════════════════════════════════════════════
    INGRESO CON GOOGLE
 ════════════════════════════════════════════════════════════ */
+/* Apps Script "duerme" tras un rato sin uso y la primera petición puede tardar
+   varios segundos. Se despierta apenas carga la página, mientras el usuario
+   todavía está eligiendo su cuenta, para que el ingreso ya lo encuentre listo. */
+var proxyCaliente = false;
+function calentarProxy(){
+  jsonpCall({ accion:'test' }, function(){ proxyCaliente = true; }, function(){});
+}
+
 function iniciarGoogle(){
   if(typeof google === 'undefined' || !google.accounts || !google.accounts.id){
     return setTimeout(iniciarGoogle, 300);   // el script de Google aún no cargó
@@ -585,9 +596,14 @@ function iniciarGoogle(){
     { theme:'outline', size:'large', text:'signin_with', width:280 });
 }
 
-function alRecibirCredencial(resp){
+function alRecibirCredencial(resp, intento){
+  intento = intento || 1;
   var err = document.getElementById('authErr');
   err.style.display = 'none';
+  if(intento > 1){
+    err.textContent = 'El servidor tardó en responder. Reintentando (' + intento + ' de 3)…';
+    err.style.display = 'block';
+  }
   jsonpCall({ accion:'login', token: resp.credential }, function(r){
     if(r && r.ok){
       SESION.sid = r.sid; SESION.email = r.email; SESION.docente = !!r.docente;
@@ -599,11 +615,20 @@ function alRecibirCredencial(resp){
       document.getElementById('txtMiCorreo').textContent = SESION.email;
       arrancarApp();
     } else {
-      err.textContent = 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
+      /* El proxy respondió pero rechazó: reintentar no cambiaría nada */
+      err.textContent = (r && r.error) ? r.error
+        : 'No se pudo validar tu cuenta. Revisa que uses tu correo institucional.';
       err.style.display = 'block';
     }
   }, function(){
-    err.textContent = 'Error de red al ingresar. Intenta de nuevo.';
+    /* Fallo de red: casi siempre es el proxy arrancando en frío, y basta con
+       volver a pedirlo. Se reintenta solo, en vez de pedir recargar la página. */
+    if(intento < 3){
+      setTimeout(function(){ alRecibirCredencial(resp, intento + 1); }, 900 * intento);
+      return;
+    }
+    err.textContent = 'No se pudo contactar al servidor tras 3 intentos. '+
+                      'Espera unos segundos y vuelve a intentarlo.';
     err.style.display = 'block';
   });
 }
@@ -1440,7 +1465,10 @@ function guardarAhora(){
         renderGrupoBar();
       }
       setEstadoGuardado('guardado ' + new Date().toLocaleTimeString(), 'ok');
-      if(eraNuevo) toast('✓ Red guardada');
+      if(eraNuevo){
+        toast('✓ Red guardada');
+        listaCache.grupos = null;   // la lista quedó desactualizada
+      }
     } else {
       setEstadoGuardado('no se pudo guardar', 'err');
       toast('Error al guardar: ' + ((resp&&resp.error)||'desconocido'), true);
@@ -1809,8 +1837,18 @@ function fechaCorta_(iso){
   return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
-function cargarLista(){
+/* La lista se guarda en memoria: volver a abrir la pestaña no la vuelve a
+   pedir al servidor. «Actualizar» sí fuerza una consulta fresca. */
+var listaCache = { grupos:null, t:0 };
+var LISTA_VIGENCIA = 60000;   // 1 minuto
+
+function cargarLista(forzar){
   var cont = document.getElementById('listaCont');
+  var fresca = listaCache.grupos && (Date.now() - listaCache.t) < LISTA_VIGENCIA;
+  if(!forzar && fresca){
+    pintarLista_(listaCache.grupos, cont);
+    return;
+  }
   cont.innerHTML = '<p class="note">Cargando…</p>';
   jsonpCall({ accion:'listar' }, function(res){
     if(!res || !res.ok){
@@ -1818,7 +1856,15 @@ function cargarLista(){
                        ((res&&res.error)?': '+esc(res.error):'')+'.</p>';
       return;
     }
-    var gs = res.grupos || [];
+    listaCache = { grupos: res.grupos || [], t: Date.now() };
+    pintarLista_(listaCache.grupos, cont);
+  }, function(f){
+    cont.innerHTML = '<p class="hintWarn">Error de red al cargar.<br><small>'+
+                     esc(textoFallo(f))+'</small></p>';
+  });
+}
+
+function pintarLista_(gs, cont){
     if(!gs.length){
       cont.innerHTML = '<p class="note">Aún no hay redes guardadas'+
         (SESION.docente ? '.' : ' para tu grupo. Crea la tuya desde «Red en edición».')+'</p>';
@@ -1848,10 +1894,6 @@ function cargarLista(){
            '</div></div>';
     });
     cont.innerHTML = h;
-  }, function(f){
-    cont.innerHTML = '<p class="hintWarn">Error de red al cargar.<br><small>'+
-                     esc(textoFallo(f))+'</small></p>';
-  });
 }
 
 function abrirRed(recId){
@@ -1899,7 +1941,7 @@ function eliminarRed(recId, etiqueta){
     }
     if(grupo.id === recId){ grupo.id = null; renderGrupoBar(); }
     toast('✓ Red eliminada');
-    cargarLista();
+    cargarLista(true);
   }, function(){
     toast('Error de red al eliminar', true);
   });
@@ -2673,6 +2715,7 @@ document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
 });
 
 /* init: la portada de ingreso tapa la app hasta que el proxy valide la cuenta */
+calentarProxy();
 iniciarGoogle();
 </script>
 </body>
