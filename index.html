@@ -231,6 +231,12 @@
   #qa-analisis td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;}
   #qa-analisis tr.fila-enfoque td{background:#eceaf8;border-color:#c9c4e8;font-size:14.5px;
                                   color:#26215C;padding:8px 10px;}
+  .rot-tipo{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.08em;
+            text-transform:uppercase;border-radius:999px;padding:2px 7px;margin-right:7px;
+            vertical-align:middle;}
+  .rot-enf{background:#e0dcf5;color:#3b3480;}
+  .rot-con{background:#d9ebe6;color:#1f5b58;}
+  .rot-cuenta{font-size:11.5px;font-weight:400;color:#8a948f;margin-left:9px;}
   .celda-concepto{background:#f4faf8;}
   .concepto-txt{font-weight:500;color:#04342C;}
   .concepto-sub{font-size:12px;color:#8a948f;margin-top:4px;}
@@ -1607,16 +1613,18 @@ function construirEjemploTablaHTML_(){
     '<b>'+n.q+' preguntas y '+n.a+' autores</b> sobre los '+n.c+' conceptos de la red. '+
     'La empresa se mantiene en reserva.</p>'+
     '<div class="ej-tabla-wrap"><table class="ej-tabla3">'+
-    '<thead><tr><th>Concepto <span class="ej-rot">(de la red)</span></th>'+
+    '<thead><tr><th>Enfoque y conceptos <span class="ej-rot">(de la red)</span></th>'+
     '<th>Preguntas</th><th>Autor(es) consultado(s)</th></tr></thead><tbody>';
 
   EJEMPLO_RED.forEach(function(e){
-    h += '<tr class="ej-fila-enf"><td colspan="3">'+esc(e.t)+
-         ' <span class="ej-rot">(enfoque de la red)</span></td></tr>';
+    h += '<tr class="ej-fila-enf"><td colspan="3">'+
+         '<span class="rot-tipo rot-enf">Enfoque</span>'+esc(e.t)+
+         '<span class="rot-cuenta">agrupa '+e.c.length+
+         (e.c.length===1?' concepto':' conceptos')+'</span></td></tr>';
     e.c.forEach(function(c){
       var qs = c.q || [], as = c.a || [];
       h += '<tr>'+
-           '<td class="ej-td-c">'+esc(c.t)+'</td>'+
+           '<td class="ej-td-c"><span class="rot-tipo rot-con">Concepto</span>'+esc(c.t)+'</td>'+
            '<td>'+ (qs.length
                       ? qs.map(function(q){ return '<div class="ej-td-q">'+esc(q)+'</div>'; }).join('')
                       : '<span class="ej-rot">sin preguntas registradas</span>') +'</td>'+
@@ -2503,7 +2511,7 @@ function renderTable(){
 
   var tabla = document.createElement('table'); tabla.id = 'qa-analisis';
   tabla.innerHTML = '<thead><tr>'+
-    '<th style="width:30%;">Concepto <span class="th-sub">(de la red semántica)</span></th>'+
+    '<th style="width:30%;">Enfoque y conceptos <span class="th-sub">(vienen de la red semántica)</span></th>'+
     '<th style="width:42%;">Preguntas</th>'+
     '<th style="width:28%;">Autor(es) consultado(s)</th>'+
     '</tr></thead>';
@@ -2511,9 +2519,14 @@ function renderTable(){
   var sinConceptos = 0;
 
   data.forEach(function(e){
+    var nCon = (e.conceptos||[]).length;
     var trE = document.createElement('tr'); trE.className = 'fila-enfoque';
     var tdE = document.createElement('td'); tdE.colSpan = 3;
-    tdE.innerHTML = '<span class="net-dot dot-purple"></span><b>'+esc(e.text)+'</b>';
+    tdE.innerHTML = '<span class="net-dot dot-purple"></span>'+
+                    '<span class="rot-tipo rot-enf">Enfoque</span>'+
+                    '<b>'+esc(e.text)+'</b>'+
+                    '<span class="rot-cuenta">agrupa '+nCon+
+                      (nCon===1?' concepto':' conceptos')+'</span>';
     trE.appendChild(tdE); tb.appendChild(trE);
 
     var cs = e.conceptos || [];
@@ -2543,7 +2556,8 @@ function filaConcepto_(c){
 
   var tdC = document.createElement('td'); tdC.className = 'celda-concepto';
   var eti = document.createElement('div'); eti.className = 'concepto-txt';
-  eti.innerHTML = '<span class="net-dot dot-teal"></span>' + esc(c.text);
+  eti.innerHTML = '<span class="net-dot dot-teal"></span>'+
+                  '<span class="rot-tipo rot-con">Concepto</span>' + esc(c.text);
   tdC.appendChild(eti);
   var nP = (c.procs||[]).length;
   if(nP){
