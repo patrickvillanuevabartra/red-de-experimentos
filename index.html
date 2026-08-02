@@ -98,6 +98,12 @@
   .g-amber .pill-on{background:#6f5716;border-color:#6f5716;}
   .g-amber .pill-on .pill-n{background:#8a6d1f;color:#fff;}
   .g-amber .pill-b{background:#f6e9cc;color:#6f5716;border-color:#af8a3e;}
+  .g-blue{background:#eaeff6;}
+  .g-blue .fase-rot{color:#33587e;} .g-blue .fase-punto{background:#33587e;}
+  .g-blue.barra-seg{background:#d5dfeb;} .g-blue .barra-lleno{background:#3a6ea5;}
+  .g-blue .pill-on{background:#24405c;border-color:#24405c;}
+  .g-blue .pill-on .pill-n{background:#3a6ea5;color:#fff;}
+  .g-blue .pill-b{background:#dde7f2;color:#24405c;border-color:#7ba0c6;}
   .g-teal{background:#e9f3f0;}
   .g-teal .fase-rot{color:#2f6d6a;} .g-teal .fase-punto{background:#2f6d6a;}
   .g-teal.barra-seg{background:#d3e4e0;} .g-teal .barra-lleno{background:#2f6d6a;}
@@ -364,6 +370,7 @@
 
       <!-- VISTA 1: RED SEMÁNTICA -->
       <div id="view-network">
+        <p class="note" id="net-intro"></p>
         <div class="net-toolbar">
           <span id="net-resumen" class="net-resumen"></span>
           <span style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -373,7 +380,7 @@
         </div>
         <div class="ejBox" id="ej-red" style="display:none;"></div>
         <div id="net-wrap"></div>
-        <div class="tree-root-add">
+        <div class="tree-root-add" id="add-enfoque-row">
           <input id="in-enfoques" placeholder="Agregar enfoque…">
           <button onclick="addEnfoqueTop()">+ Agregar enfoque</button>
         </div>
@@ -2239,7 +2246,9 @@ function altoNodo_(txt, col, sub){
 }
 
 /* Hijos de un nodo, sea del nivel que sea */
-function hijosDe_(n){
+function hijosDe_(n, col){
+  /* Por debajo del nivel visible el nodo se trata como hoja */
+  if(col !== undefined && col >= nivelRed - 1) return [];
   return n.conceptos || n.procs || n.herrs || n.prods || [];
 }
 
@@ -2247,21 +2256,22 @@ function hijosDe_(n){
    El subárbol nunca es menor que el propio nodo, así que un texto largo
    arriba abre espacio aunque tenga un solo hijo. */
 function medirSubarbol_(n, col){
-  n._h = altoNodo_(n.text, col, n.ent) + NET.gap;
-  var hijos = hijosDe_(n), suma = 0;
+  n._h = altoNodo_(n.text, col) + NET.gap;
+  var hijos = hijosDe_(n, col), suma = 0;
   hijos.forEach(function(hh){ suma += medirSubarbol_(hh, col + 1); });
   n._sh = Math.max(n._h, suma);
   return n._sh;
 }
 
 /* 2.ª pasada: posiciona el subárbol dentro de su banda y centra al padre */
-function colocarSubarbol_(n, top){
-  var hijos = hijosDe_(n);
+function colocarSubarbol_(n, top, col){
+  col = col || 0;
+  var hijos = hijosDe_(n, col);
   if(hijos.length === 0){ n._y = top + n._sh / 2; return; }
   var suma = 0;
   hijos.forEach(function(hh){ suma += hh._sh; });
   var y = top + (n._sh - suma) / 2;
-  hijos.forEach(function(hh){ colocarSubarbol_(hh, y); y += hh._sh; });
+  hijos.forEach(function(hh){ colocarSubarbol_(hh, y, col + 1); y += hh._sh; });
   n._y = (hijos[0]._y + hijos[hijos.length-1]._y) / 2;
 }
 
@@ -2269,15 +2279,15 @@ function calcularLayout_(){
   var y = NET.topPad, hojas = 0;
   data.forEach(function(e){
     medirSubarbol_(e, 0);
-    colocarSubarbol_(e, y);
+    colocarSubarbol_(e, y, 0);
     y += e._sh;
   });
-  function contar(n){
-    var hs = hijosDe_(n);
+  function contar(n, col){
+    var hs = hijosDe_(n, col);
     if(hs.length === 0){ hojas++; return; }
-    hs.forEach(contar);
+    hs.forEach(function(x){ contar(x, col + 1); });
   }
-  data.forEach(contar);
+  data.forEach(function(e){ contar(e, 0); });
   return { filas: hojas, alto: y + NET.botPad };
 }
 
@@ -2330,14 +2340,17 @@ function enlaceSVG_(x1, y1, x2, y2, color){
 
 function construirSVG_(paleta, conFondo){
   var lay = calcularLayout_();
-  var W = NET.width, H = lay.alto;
+  /* El lienzo se recorta a las columnas visibles: en el paso 1 sobraría
+     el espacio de las tres que aún no existen. */
+  var W = NET.colX[nivelRed-1] + NET.nodeW[nivelRed-1] + 12;
+  var H = lay.alto;
   var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img">';
   s += '<title>Red semántica: enfoques, conceptos, procedimientos y herramientas</title>';
   if(conFondo) s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+paleta.fondo+'"/>';
 
   /* Encabezados de columna */
   var titulos = ['Enfoques','Conceptos','Procedimientos','Herramientas','Productos / entregables'];
-  for(var k=0;k<5;k++){
+  for(var k=0;k<nivelRed;k++){
     s += '<text x="'+(NET.colX[k] + NET.nodeW[k]/2)+'" y="24" text-anchor="middle" '
        + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12.5" font-weight="600" '
        + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+titulos[k].toUpperCase()+'</text>';
@@ -2347,6 +2360,7 @@ function construirSVG_(paleta, conFondo){
   data.forEach(function(e){
     (e.conceptos||[]).forEach(function(c){
       s += enlaceSVG_(NET.colX[0]+NET.nodeW[0], e._y, NET.colX[1], c._y, paleta.linea);
+      if(nivelRed < 3) return;
       (c.procs||[]).forEach(function(pr){
         s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], pr._y, paleta.linea);
         (pr.herrs||[]).forEach(function(h){
@@ -2364,6 +2378,7 @@ function construirSVG_(paleta, conFondo){
     s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque);
     (e.conceptos||[]).forEach(function(c){
       s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto);
+      if(nivelRed < 3) return;
       (c.procs||[]).forEach(function(pr){
         s += nodoSVG_(NET.colX[2], pr._y, NET.nodeW[2], pr.text, paleta.procedimiento);
         (pr.herrs||[]).forEach(function(h){
@@ -2380,8 +2395,17 @@ function construirSVG_(paleta, conFondo){
 }
 
 function renderNetwork(){
+  var intro = document.getElementById('net-intro');
+  if(intro){
+    intro.innerHTML = nivelRed < 3
+      ? 'Define <b>qué vas a estudiar</b>: los enfoques (metodologías de solución) y, dentro de cada uno, sus conceptos (etapas). Las preguntas vienen en el paso 2 y los procedimientos en el paso 3.'
+      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos (sub etapas), la herramienta con que se ejecutan y el producto que dejan.';
+  }
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
   data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+
+  var fila = document.getElementById('add-enfoque-row');
+  if(fila) fila.style.display = (nivelRed < 3) ? 'flex' : 'none';
 
   var wrap = document.getElementById('net-wrap');
   var nEnf = data.length;
@@ -2389,18 +2413,21 @@ function renderNetwork(){
   data.forEach(function(e){ nCon += (e.conceptos||[]).length; });
 
   if(nEnf === 0){
-    wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo. La red se construye en cuatro niveles:<br>'+
-      '<b>Enfoque</b> (metodología de solución) → <b>Concepto</b> (etapa) → '+
-      '<b>Procedimiento</b> (sub etapa) → <b>Herramienta</b> → <b>Producto/entregable</b>.</div>';
+    wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo.<br>'+
+      'En este paso solo defines <b>Enfoque</b> (metodología de solución) y '+
+      '<b>Concepto</b> (etapa). Los procedimientos, herramientas y productos '+
+      'vienen después, en el paso 3.</div>';
   } else {
     wrap.innerHTML = construirSVG_(paletaActual(), false);
   }
-  document.getElementById('net-resumen').textContent =
-    nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
-    nCon + (nCon===1?' concepto':' conceptos') + ' · ' +
-    nPro + (nPro===1?' procedimiento':' procedimientos') + ' · ' +
-    nHer + (nHer===1?' herramienta':' herramientas') + ' · ' +
-    totalProds() + (totalProds()===1?' producto':' productos');
+  var res = nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
+            nCon + (nCon===1?' concepto':' conceptos');
+  if(nivelRed >= 3){
+    res += ' · ' + nPro + (nPro===1?' procedimiento':' procedimientos') +
+           ' · ' + nHer + (nHer===1?' herramienta':' herramientas') +
+           ' · ' + totalProds() + (totalProds()===1?' producto':' productos');
+  }
+  document.getElementById('net-resumen').textContent = res;
   document.getElementById('btn-png').disabled = (nEnf === 0);
 }
 
@@ -2464,9 +2491,17 @@ function buildNetEnfoque(e){
 function buildNetConcepto(eid, c){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
   var n = (c.procs||[]).length;
-  wrap.appendChild(makeHead('dot-teal', c.text, n + (n===1?' proc':' procs'), function(){ removeConcepto(eid, c.id); }));
-  wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
-  wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
+  var nq = (c.preguntas||[]).length;
+  /* En el paso 1 la insignia muestra las preguntas (lo que viene después);
+     en el paso 3, los procedimientos que se le van colgando. */
+  var badge = nivelRed < 3
+    ? (nq ? nq + (nq===1?' pregunta':' preguntas') : null)
+    : n + (n===1?' proc':' procs');
+  wrap.appendChild(makeHead('dot-teal', c.text, badge, function(){ removeConcepto(eid, c.id); }));
+  if(nivelRed >= 3){
+    wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
+    wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
+  }
   return wrap;
 }
 function buildNetProc(cid, pr){
@@ -2608,21 +2643,32 @@ document.getElementById('in-enfoques').addEventListener('keydown', function(e){
    Planteamiento Investigativo. Cada píldora navega de verdad: cambia
    de vista y, dentro del canvas, salta al bloque correspondiente.
 ════════════════════════════════════════════════════════════ */
+/* El orden sigue la lógica de la investigación: primero QUÉ se estudia
+   (enfoques y conceptos), luego QUÉ se pregunta, y recién entonces CÓMO se
+   responde (procedimientos, herramientas y productos). Definir el
+   instrumento antes de la pregunta sería decidir el método a ciegas. */
 var GRUPOS = [
-  { rot:'CONSTRUCCIÓN', tono:'g-coral', pasos:[
-      { n:1, nom:'Red semántica', vista:'network', badge:'INICIO' }
+  { rot:'QUÉ SE ESTUDIA', tono:'g-coral', pasos:[
+      { n:1, nom:'Enfoques y conceptos', vista:'network', nivel:2, badge:'INICIO' }
   ]},
-  { rot:'ANÁLISIS', tono:'g-amber', pasos:[
+  { rot:'QUÉ SE PREGUNTA', tono:'g-amber', pasos:[
       { n:2, nom:'Preguntas y autores', vista:'table' }
   ]},
+  { rot:'CÓMO SE RESPONDE', tono:'g-blue', pasos:[
+      { n:3, nom:'Procedimientos, herramientas y productos', vista:'network', nivel:5 }
+  ]},
   { rot:'CANVAS DE EXPERIMENTOS', tono:'g-teal', pasos:[
-      { n:3, nom:'Objetivos',  vista:'canvas', ancla:'cv-b1' },
-      { n:4, nom:'Proyectos',  vista:'canvas', ancla:'cv-b3' },
-      { n:5, nom:'Programa',   vista:'canvas', ancla:'cv-b4' },
-      { n:6, nom:'Canvas',     vista:'canvas', ancla:'cv-b5', badge:'FIN' }
+      { n:4, nom:'Objetivos',  vista:'canvas' },
+      { n:5, nom:'Proyectos',  vista:'canvas' },
+      { n:6, nom:'Programa',   vista:'canvas' },
+      { n:7, nom:'Canvas',     vista:'canvas', badge:'FIN' }
   ]}
 ];
-var TOTAL_PASOS = 6;
+var TOTAL_PASOS = 7;
+
+/* Hasta qué nivel se muestra y se puede editar la red: 2 en el paso 1
+   (enfoque y concepto) y 5 en el paso 3 (hasta producto). */
+var nivelRed = 2;
 var pasoActual  = 1;
 var vistaActual = 'network';
 
@@ -2638,25 +2684,27 @@ function pasoPorId_(n){
 function irAPaso(n){
   var r = pasoPorId_(n); if(!r) return;
   pasoActual = n;
+  if(r.paso.nivel) nivelRed = r.paso.nivel;
   switchView(r.paso.vista, true);
+  if(r.paso.vista === 'network') renderNetwork();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 /* Dentro del canvas cada paso tiene su propio bloque: se muestra uno a la
    vez para que el paso 3 no enseñe ya lo del 4 y el 5. */
 var BLOQUES_PASO = {
-  3: { ids:['cv-b1','cv-b2'],
+  4: { ids:['cv-b1','cv-b2'],
        intro:'Empieza por aquí: el objetivo general con su resultado, y de ahí los objetivos específicos. Cada objetivo específico dará origen a un proyecto.' },
-  4: { ids:['cv-b3'],
+  5: { ids:['cv-b3'],
        intro:'Define cada proyecto y asócialo a un enfoque de tu red y al objetivo específico que responde.' },
-  5: { ids:['cv-b4'],
+  6: { ids:['cv-b4'],
        intro:'El programa es el paraguas que integra los proyectos que acabas de definir.' },
-  6: { ids:['cv-b5','cv-b6'],
+  7: { ids:['cv-b5','cv-b6'],
        intro:'Aquí no se escribe nada: el canvas se arma solo con todo lo anterior.' }
 };
 
 function mostrarBloquesCanvas_(){
-  var cfg = BLOQUES_PASO[pasoActual] || BLOQUES_PASO[3];
+  var cfg = BLOQUES_PASO[pasoActual] || BLOQUES_PASO[4];
   ['cv-b1','cv-b2','cv-b3','cv-b4','cv-b5','cv-b6'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = (cfg.ids.indexOf(id) !== -1) ? 'block' : 'none';
@@ -2672,7 +2720,8 @@ function switchView(view, desdePaso){
   });
   /* Si el cambio no vino de una píldora, se sincroniza el paso activo */
   if(!desdePaso){
-    pasoActual = view === 'network' ? 1 : (view === 'table' ? 2 : 3);
+    pasoActual = view === 'network' ? 1 : (view === 'table' ? 2 : 4);
+    if(view === 'network') nivelRed = 2;
   }
   if(view === 'canvas') mostrarBloquesCanvas_();
   renderFases();
