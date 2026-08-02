@@ -64,19 +64,22 @@
   .fases-barra{display:flex;gap:4px;margin-bottom:16px;}
   .barra-seg{height:4px;border-radius:2px;overflow:hidden;}
   .barra-lleno{height:100%;border-radius:2px;transition:width .3s;}
-  .fases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .fases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;}
   .fase-caja{border-radius:8px;padding:12px 14px 14px;}
   .fase-rot{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;
             letter-spacing:.1em;margin-bottom:10px;}
   .fase-punto{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .fase-pills{display:flex;flex-wrap:wrap;gap:8px;}
   .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;
-        border:1px solid rgba(0,0,0,.07);border-radius:999px;padding:5px 14px 5px 5px;
-        font-size:13.5px;color:#8a948f;font-family:'Poppins',sans-serif;}
+        border:1px solid rgba(0,0,0,.07);border-radius:16px;padding:6px 14px 6px 6px;
+        font-size:13.5px;color:#8a948f;font-family:'Poppins',sans-serif;
+        max-width:100%;text-align:left;}
   .pill:hover:not(.pill-on){color:var(--ink);}
   .pill-n{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;
           background:#f1f0ec;color:#a8b0aa;font-size:12px;flex-shrink:0;}
-  .pill-t{white-space:nowrap;}
+  /* El nombre puede ocupar dos líneas: «Procedimientos, herramientas y
+     productos» no cabe en una sola y se salía del recuadro. */
+  .pill-t{white-space:normal;line-height:1.25;}
   /* Badge en tono suave con borde: se distingue de la píldora blanca sin
      el peso visual de un bloque oscuro. Al activarse pasa a blanco. */
   .pill-b{font-size:9.5px;font-weight:600;letter-spacing:.08em;border-radius:999px;
@@ -1536,49 +1539,73 @@ function toggleEjemploRed(){
   var caja = document.getElementById('ej-red');
   var abierta = caja.style.display === 'block';
   caja.style.display = abierta ? 'none' : 'block';
-  if(!abierta && !caja.dataset.listo){
+  /* Se reconstruye si cambió el paso: el ejemplo del paso 1 solo muestra
+     enfoques y conceptos; el del paso 3, los cinco niveles. */
+  if(!abierta && caja.dataset.nivel !== String(nivelRed)){
     caja.innerHTML = construirEjemploHTML_();
-    caja.dataset.listo = '1';
+    caja.dataset.nivel = String(nivelRed);
   }
 }
 
+/* Rótulo de cada nivel: nombre en la app + equivalencia en el canvas */
+var ROTULOS = {
+  enf:  'enfoque \u00b7 metodolog\u00eda de soluci\u00f3n',
+  con:  'concepto \u00b7 etapa',
+  proc: 'procedimiento \u00b7 sub etapa',
+  herr: 'herramienta \u00b7 con qu\u00e9 se hace',
+  prod: 'producto/entregable \u00b7 qu\u00e9 queda'
+};
+
 function construirEjemploHTML_(){
   var n = contarEjemplo_();
-  var h = '<b>Cómo se traduce el trabajo a los cinco niveles de la red.</b>'+
-    '<p class="note" style="font-size:13px;margin:6px 0 10px;">Cada columna de tu canvas de '+
-    'experimentos entra en un nivel distinto. Los conceptos que definas aquí son los que se '+
-    'retoman en la fase 2 para añadirles preguntas y autores.</p>'+
-    '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>Dónde entra</th></tr></thead><tbody>'+
-    '<tr><td>Metodología de solución / Postura técnica</td><td><b>Enfoque</b> — fase 1</td></tr>'+
-    '<tr><td>Etapa</td><td><b>Concepto</b> — fase 1, se retoma en fase 2</td></tr>'+
-    '<tr><td>Sub etapa</td><td><b>Procedimiento</b> — fase 1</td></tr>'+
-    '<tr><td>Métodos de recopilación de datos</td><td><b>Herramienta</b> — fase 1</td></tr>'+
-    '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> — fase 1</td></tr>'+
-    '<tr><td>Proyecto</td><td><b>Proyecto</b> — fase 3, asociado a un enfoque</td></tr>'+
-    '<tr><td>Programa</td><td><b>Programa</b> — fase 3, integra los proyectos</td></tr>'+
-    '</tbody></table>'+
-    '<div class="ej-aviso"><b>Herramienta y producto no son lo mismo.</b> La herramienta es '+
-    '<i>con qué</i> se hace (guía de entrevista, ficha de observación, Power BI); el producto es '+
-    '<i>qué queda</i> al usarla (informe de requisitos, registro de cumplimiento, tablero de KPIs). '+
-    'En el trabajo original los métodos estaban en una columna y los entregables en otra: aquí se '+
-    'muestran enlazados.</div>'+
-    '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
-    '<b>'+n.e+' enfoques · '+n.c+' conceptos · '+n.p+' procedimientos · '+n.h+' herramientas · '+
-    n.d+' productos</b>. Las preguntas y los autores de estos mismos conceptos están en la '+
-    'fase 2. La empresa se mantiene en reserva.</p>'+
+  var completo = nivelRed >= 3;
+
+  var h = completo
+    ? '<b>C\u00f3mo se traduce el trabajo a los cinco niveles de la red.</b>'+
+      '<p class="note" style="font-size:13px;margin:6px 0 10px;">Para cada concepto que ya '+
+      'definiste, ahora se detalla el procedimiento con que se aborda, la herramienta con que '+
+      'se ejecuta y el producto que deja.</p>'
+    : '<b>En este paso solo defines los dos primeros niveles.</b>'+
+      '<p class="note" style="font-size:13px;margin:6px 0 10px;">El enfoque es la metodolog\u00eda de '+
+      'soluci\u00f3n y el concepto es cada etapa dentro de \u00e9l. Los conceptos que definas aqu\u00ed son los '+
+      'que se retoman en el paso 2 para a\u00f1adirles preguntas, y en el paso 3 para detallar c\u00f3mo se '+
+      'abordan.</p>';
+
+  h += '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>D\u00f3nde entra</th></tr></thead><tbody>'+
+    '<tr><td>Metodolog\u00eda de soluci\u00f3n / Postura t\u00e9cnica</td><td><b>Enfoque</b> \u2014 paso 1</td></tr>'+
+    '<tr><td>Etapa</td><td><b>Concepto</b> \u2014 paso 1, se retoma en los pasos 2 y 3</td></tr>';
+  if(completo){
+    h += '<tr><td>Sub etapa</td><td><b>Procedimiento</b> \u2014 paso 3</td></tr>'+
+         '<tr><td>M\u00e9todos de recopilaci\u00f3n de datos</td><td><b>Herramienta</b> \u2014 paso 3</td></tr>'+
+         '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> \u2014 paso 3</td></tr>';
+  }
+  h += '</tbody></table>';
+
+  if(completo){
+    h += '<div class="ej-aviso"><b>Herramienta y producto no son lo mismo.</b> La herramienta es '+
+      '<i>con qu\u00e9</i> se hace (gu\u00eda de entrevista, ficha de observaci\u00f3n, Power BI); el producto es '+
+      '<i>qu\u00e9 queda</i> al usarla (informe de requisitos, registro de cumplimiento, tablero de KPIs). '+
+      'En el trabajo original los m\u00e9todos estaban en una columna y los entregables en otra: aqu\u00ed se '+
+      'muestran enlazados.</div>';
+  }
+
+  h += '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
+    '<b>'+n.e+' enfoques \u00b7 '+n.c+' conceptos'+
+    (completo ? ' \u00b7 '+n.p+' procedimientos \u00b7 '+n.h+' herramientas \u00b7 '+n.d+' productos' : '')+
+    '</b>. La empresa se mantiene en reserva.</p>'+
     '<div class="ej-arbol">';
 
   EJEMPLO_RED.forEach(function(e){
-    h += '<div class="ej-n1">■ '+esc(e.t)+' <span class="ej-rot">(metodología de solución)</span>'+
-         (e.proy ? '<div class="ej-proy">proyecto: '+esc(e.proy)+'</div>' : '')+'</div>';
+    h += '<div class="ej-n1">\u25a0 '+esc(e.t)+' <span class="ej-rot">('+ROTULOS.enf+')</span></div>';
     e.c.forEach(function(c){
-      h += '<div class="ej-n2">▸ '+esc(c.t)+' <span class="ej-rot">(etapa)</span></div>';
+      h += '<div class="ej-n2">\u25b8 '+esc(c.t)+' <span class="ej-rot">('+ROTULOS.con+')</span></div>';
+      if(!completo) return;
       c.p.forEach(function(pr){
-        h += '<div class="ej-n3">– '+esc(pr.t)+' <span class="ej-rot">(sub etapa)</span></div>';
+        h += '<div class="ej-n3">\u2013 '+esc(pr.t)+' <span class="ej-rot">('+ROTULOS.proc+')</span></div>';
         (pr.h||[]).forEach(function(hh){
-          h += '<div class="ej-n4">→ '+esc(hh.t)+' <span class="ej-rot">(con qué se hace)</span></div>';
+          h += '<div class="ej-n4">\u2192 '+esc(hh.t)+' <span class="ej-rot">('+ROTULOS.herr+')</span></div>';
           (hh.pd||[]).forEach(function(x){
-            h += '<div class="ej-n5">◇ '+esc(x)+' <span class="ej-rot">(qué queda)</span></div>';
+            h += '<div class="ej-n5">\u25c7 '+esc(x)+' <span class="ej-rot">('+ROTULOS.prod+')</span></div>';
           });
         });
       });
@@ -1587,8 +1614,8 @@ function construirEjemploHTML_(){
   h += '</div>'+
     '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
     'Cargar este ejemplo</button>'+
-    '<p class="note" style="font-size:12px;margin:6px 0 0;">Llena las tres fases a la vez: '+
-    'la red semántica, la tabla de análisis y el canvas (programa, proyectos y objetivos).</p>';
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez: '+
+    'la red completa, la tabla de an\u00e1lisis y el canvas.</p>';
   return h;
 }
 
