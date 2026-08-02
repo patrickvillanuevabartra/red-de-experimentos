@@ -390,7 +390,7 @@
 
       <!-- VISTA 3: CANVAS DE EXPERIMENTOS -->
       <div id="view-canvas" style="display:none;">
-        <p class="note">El canvas se arma de abajo hacia arriba: partes de los objetivos, defines un proyecto por cada uno asociándolo a un enfoque de tu red, y los proyectos se integran en un único programa.</p>
+        <p class="note" id="cv-intro"></p>
 
         <div class="cv-bloque" id="cv-b1">
           <div class="cv-head">
@@ -446,7 +446,7 @@
           <div id="cv-final"></div>
         </div>
 
-        <div class="cv-bloque">
+        <div class="cv-bloque" id="cv-b6">
           <label for="cv-notas">Notas</label>
           <textarea id="cv-notas" rows="3" placeholder="Anotaciones libres sobre el canvas…"></textarea>
         </div>
@@ -2517,12 +2517,30 @@ function irAPaso(n){
   var r = pasoPorId_(n); if(!r) return;
   pasoActual = n;
   switchView(r.paso.vista, true);
-  if(r.paso.ancla){
-    var el = document.getElementById(r.paso.ancla);
-    if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
-  } else {
-    window.scrollTo({ top:0, behavior:'smooth' });
-  }
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* Dentro del canvas cada paso tiene su propio bloque: se muestra uno a la
+   vez para que el paso 3 no enseñe ya lo del 4 y el 5. */
+var BLOQUES_PASO = {
+  3: { ids:['cv-b1','cv-b2'],
+       intro:'Empieza por aquí: el objetivo general con su resultado, y de ahí los objetivos específicos. Cada objetivo específico dará origen a un proyecto.' },
+  4: { ids:['cv-b3'],
+       intro:'Define cada proyecto y asócialo a un enfoque de tu red y al objetivo específico que responde.' },
+  5: { ids:['cv-b4'],
+       intro:'El programa es el paraguas que integra los proyectos que acabas de definir.' },
+  6: { ids:['cv-b5','cv-b6'],
+       intro:'Aquí no se escribe nada: el canvas se arma solo con todo lo anterior.' }
+};
+
+function mostrarBloquesCanvas_(){
+  var cfg = BLOQUES_PASO[pasoActual] || BLOQUES_PASO[3];
+  ['cv-b1','cv-b2','cv-b3','cv-b4','cv-b5','cv-b6'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = (cfg.ids.indexOf(id) !== -1) ? 'block' : 'none';
+  });
+  var intro = document.getElementById('cv-intro');
+  if(intro) intro.textContent = cfg.intro;
 }
 
 function switchView(view, desdePaso){
@@ -2534,6 +2552,7 @@ function switchView(view, desdePaso){
   if(!desdePaso){
     pasoActual = view === 'network' ? 1 : (view === 'table' ? 2 : 3);
   }
+  if(view === 'canvas') mostrarBloquesCanvas_();
   renderFases();
 }
 
