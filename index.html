@@ -202,6 +202,15 @@
   .cv-oe-num{font-size:12px;font-weight:600;color:var(--amber);padding-top:10px;letter-spacing:.04em;}
   .cv-oe textarea{font-size:14px;padding:8px 10px;}
   .cv-proy-campos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .cv-proy-campos2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .cv-sin-enf{color:#a8501e;}
+  .cv-con-sub{font-size:11.5px;color:#8a948f;}
+  .enf-proy{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .enf-proy-lbl{font-size:11.5px;color:#8a7f6d;white-space:nowrap;}
+  .enf-proy-sel{flex:1;min-width:180px;font-size:13px;padding:5px 8px;
+                border:1px dashed var(--line);border-radius:3px;background:#fff;}
+  .enf-proy-sel:focus{outline:none;border-style:solid;border-color:var(--teal);}
+  @media(max-width:820px){.cv-proy-campos2{grid-template-columns:1fr;}}
   .cad-proy-oe{font-size:11.5px;color:var(--amber);margin-top:3px;}
   @media(max-width:820px){.cv-proy-campos{grid-template-columns:1fr;}}
   .cv-proy{display:grid;grid-template-columns:34px 1fr 28px;gap:10px;align-items:start;
@@ -429,7 +438,7 @@
         </div>
 
         <div class="cv-bloque" id="cv-b2">
-          <span class="cv-titulo"><span class="cv-paso">2</span>Objetivos específicos y resultados específicos</span>
+          <span class="cv-titulo"><span class="cv-paso">1</span>Objetivos específicos y resultados específicos</span>
           <p class="note" style="margin:4px 0 10px;">Cada objetivo específico dará origen a un proyecto.</p>
           <div id="cv-especificos"></div>
           <button class="btnMini" onclick="addEspecifico()">+ Agregar objetivo específico</button>
@@ -450,7 +459,7 @@
 
         <div class="cv-bloque" id="cv-b4">
           <div class="cv-head">
-            <span class="cv-titulo"><span class="cv-paso">4</span>Programa</span>
+            <span class="cv-titulo"><span class="cv-paso">2</span>Programa</span>
             <button class="ejBtn" onclick="toggleEjemploPrograma()">ver ejemplo</button>
           </div>
           <div class="ejBox" id="ej-prog" style="display:none;"></div>
@@ -460,7 +469,7 @@
 
         <div class="cv-bloque" id="cv-b5">
           <div class="cv-head">
-            <span class="cv-titulo"><span class="cv-paso">5</span>Canvas de experimentos</span>
+            <span class="cv-titulo"><span class="cv-paso">7</span>Canvas de experimentos</span>
             <span style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="ejBtn" onclick="toggleEjemploCanvas()">ver ejemplo</button>
               <button class="btnMini" onclick="descargarCanvasCSV()">⬇ Descargar CSV</button>
@@ -882,10 +891,16 @@ function removeEspecifico(id){
 /* El proyecto se define primero y luego se asocia a un enfoque, por eso
    guarda el id del enfoque en vez de vivir dentro de él. */
 function addProyecto(){
-  /* oeId: objetivo específico al que responde. Se elige explícitamente en vez
-     de aparearlo por posición, porque el orden de captura no siempre coincide. */
-  canvasExp.proyectos.push({ id:uid('py'), nombre:'', enfoqueId:'', oeId:'' });
+  /* El proyecto se asocia a un ENFOQUE completo. Si el grupo armó un híbrido,
+     lo representa como un enfoque propio en la red, no combinando conceptos
+     sueltos: así la metodología queda nombrada y es trazable. */
+  canvasExp.proyectos.push({ id:uid('py'), nombre:'', oeId:'' });
   renderCanvas(); marcarCambio();
+}
+/* La relación se guarda en el enfoque (enfoque.proyectoId) porque se declara
+   en el paso 2, cuando el proyecto ya existe y el enfoque se está creando. */
+function enfoquesDelProyecto_(pyId){
+  return data.filter(function(e){ return e.proyectoId === pyId; });
 }
 function especificoPorId_(id){
   for(var i=0;i<canvasExp.especificos.length;i++){
@@ -898,6 +913,12 @@ function indiceEspecifico_(id){
     if(canvasExp.especificos[i].id === id) return i;
   }
   return -1;
+}
+function proyectoPorId_(id){
+  for(var i=0;i<canvasExp.proyectos.length;i++){
+    if(canvasExp.proyectos[i].id === id) return canvasExp.proyectos[i];
+  }
+  return null;
 }
 function removeProyecto(id){
   canvasExp.proyectos = canvasExp.proyectos.filter(function(x){ return x.id !== id; });
@@ -936,23 +957,21 @@ function renderCanvas(){
     cont.appendChild(fila);
   });
 
-  /* ── proyectos: nombre + enfoque asociado ── */
+  /* ── proyectos: nombre y objetivo. El enfoque se asocia en el paso 2 ── */
   var pr = document.getElementById('cv-proyectos');
   pr.innerHTML = '';
   if(canvasExp.proyectos.length === 0){
     var v2 = document.createElement('p');
     v2.className = 'note'; v2.style.cssText = 'font-size:13px;margin:0 0 8px;';
-    v2.textContent = data.length
-      ? 'Todavía no hay proyectos. Agrega uno y asócialo a un enfoque.'
-      : 'Primero construye los enfoques en la red semántica: son los que se asocian a cada proyecto.';
+    v2.textContent = 'Todavía no hay proyectos. Agrega uno por cada objetivo específico.';
     pr.appendChild(v2);
   }
-  var usados = {};
-  canvasExp.proyectos.forEach(function(py){ if(py.enfoqueId) usados[py.enfoqueId] = true; });
 
   canvasExp.proyectos.forEach(function(py, i){
     var fila = document.createElement('div'); fila.className = 'cv-proy';
     var num = document.createElement('div'); num.className = 'cv-proy-num'; num.textContent = 'P' + (i+1);
+
+    var campos = document.createElement('div'); campos.className = 'cv-proy-campos2';
 
     var col1 = document.createElement('div');
     var l1 = document.createElement('label'); l1.textContent = 'Nombre del proyecto';
@@ -962,25 +981,7 @@ function renderCanvas(){
     col1.appendChild(l1); col1.appendChild(inp);
 
     var col2 = document.createElement('div');
-    var l2 = document.createElement('label'); l2.textContent = 'Enfoque asociado (de la red)';
-    var sel = document.createElement('select');
-    var op0 = document.createElement('option'); op0.value = ''; op0.textContent = '— elegir enfoque —';
-    sel.appendChild(op0);
-    data.forEach(function(e){
-      var op = document.createElement('option');
-      op.value = e.id;
-      /* Marca los enfoques ya tomados por otro proyecto, sin bloquearlos */
-      op.textContent = e.text + (usados[e.id] && py.enfoqueId !== e.id ? '  (ya asociado)' : '');
-      if(py.enfoqueId === e.id) op.selected = true;
-      sel.appendChild(op);
-    });
-    sel.addEventListener('change', function(){
-      py.enfoqueId = sel.value; renderCanvas(); marcarCambio();
-    });
-    col2.appendChild(l2); col2.appendChild(sel);
-
-    var col3 = document.createElement('div');
-    var l3 = document.createElement('label'); l3.textContent = 'Responde al objetivo específico';
+    var l2 = document.createElement('label'); l2.textContent = 'Responde al objetivo específico';
     var selOE = document.createElement('select');
     var o0 = document.createElement('option'); o0.value = ''; o0.textContent = '— elegir objetivo —';
     selOE.appendChild(o0);
@@ -990,30 +991,35 @@ function renderCanvas(){
       var op = document.createElement('option');
       op.value = oe.id;
       var txt = (oe.obj||'').trim() || '(objetivo específico sin redactar)';
-      op.textContent = 'OE' + (k+1) + ' · ' + txt.slice(0,60) +
+      op.textContent = 'OE' + (k+1) + ' · ' + txt.slice(0,58) +
                        (oeUsados[oe.id] && py.oeId !== oe.id ? '  (ya asociado)' : '');
       if(py.oeId === oe.id) op.selected = true;
       selOE.appendChild(op);
     });
-    selOE.addEventListener('change', function(){
-      py.oeId = selOE.value; renderCanvas(); marcarCambio();
-    });
-    col3.appendChild(l3); col3.appendChild(selOE);
+    selOE.addEventListener('change', function(){ py.oeId = selOE.value; renderCanvas(); marcarCambio(); });
+    col2.appendChild(l2); col2.appendChild(selOE);
+
+    campos.appendChild(col1); campos.appendChild(col2);
 
     var del = document.createElement('button');
     del.className = 'tree-del'; del.textContent = '×'; del.title = 'Eliminar proyecto';
     del.addEventListener('click', function(){ removeProyecto(py.id); });
 
-    var campos = document.createElement('div'); campos.className = 'cv-proy-campos';
-    campos.appendChild(col1); campos.appendChild(col2); campos.appendChild(col3);
     fila.appendChild(num); fila.appendChild(campos); fila.appendChild(del);
 
-    var e = enfoquePorId_(py.enfoqueId);
-    if(e){
-      var res = document.createElement('div'); res.className = 'cv-proy-res';
-      res.textContent = resumenEnfoque_(e);
-      fila.appendChild(res);
+    /* Enfoques que este proyecto adoptó: se asignan en el paso 2 */
+    var es = enfoquesDelProyecto_(py.id);
+    var res = document.createElement('div'); res.className = 'cv-proy-res';
+    if(es.length){
+      res.innerHTML = es.map(function(e){
+        return '<span class="net-dot dot-purple"></span>' + esc(e.text) +
+               ' <span class="cv-con-sub">' + resumenEnfoque_(e) + '</span>';
+      }).join('<br>');
+    } else {
+      res.innerHTML = '<span class="cv-sin-enf">Sin enfoque adoptado. '+
+        'En el paso 2, cada enfoque indica a qué proyecto pertenece.</span>';
     }
+    fila.appendChild(res);
     pr.appendChild(fila);
   });
 
@@ -1056,25 +1062,27 @@ function refrescarCadena_(){
   if(nOE) h += '<div class="cad-oe">' + nOE + (nOE===1?' objetivo específico apunta':' objetivos específicos apuntan') + ' a este programa</div>';
   h += '<div class="cad-lista">';
   canvasExp.proyectos.forEach(function(py){
-    var e = enfoquePorId_(py.enfoqueId);
+    var es = enfoquesDelProyecto_(py.id);
     var k = indiceEspecifico_(py.oeId);
-    h += '<div class="cad-proy' + (py.nombre && e ? '' : ' cad-vacio') + '">'+
+    h += '<div class="cad-proy' + (py.nombre && es.length ? '' : ' cad-vacio') + '">'+
          '<div class="cad-proy-t">' + esc(py.nombre || 'proyecto sin nombre') + '</div>'+
-         '<div class="cad-proy-e">' + (e ? '← ' + esc(e.text) : 'sin enfoque asociado') + '</div>'+
+         '<div class="cad-proy-e">' + (es.length
+             ? '← ' + esc(es.map(function(e){ return e.text; }).join(' + '))
+             : 'sin enfoque adoptado') + '</div>'+
          (k >= 0 ? '<div class="cad-proy-oe">responde a OE' + (k+1) + '</div>' : '')+
          '</div>';
   });
   h += '</div>';
 
   var avisos = [];
-  var sinEnf = canvasExp.proyectos.filter(function(p){ return !enfoquePorId_(p.enfoqueId); }).length;
-  if(sinEnf) avisos.push(sinEnf + (sinEnf===1?' proyecto sin enfoque asociado.':' proyectos sin enfoque asociado.'));
+  var sinEnf = canvasExp.proyectos.filter(function(p){ return !enfoquesDelProyecto_(p.id).length; }).length;
+  if(sinEnf) avisos.push(sinEnf + (sinEnf===1?' proyecto sin enfoque adoptado.':' proyectos sin enfoque adoptado.'));
   var sinOE = canvasExp.proyectos.filter(function(p){ return !especificoPorId_(p.oeId); }).length;
   if(sinOE) avisos.push(sinOE + (sinOE===1?' proyecto sin objetivo específico asignado.':' proyectos sin objetivo específico asignado.'));
-  var libres = data.filter(function(e){
-    return !canvasExp.proyectos.some(function(p){ return p.enfoqueId === e.id; });
-  }).length;
-  if(libres) avisos.push(libres + (libres===1?' enfoque de la red no está en ningún proyecto.':' enfoques de la red no están en ningún proyecto.'));
+  var libres = data.filter(function(e){ return !e.proyectoId; }).length;
+  if(libres) avisos.push(libres + (libres===1
+    ? ' enfoque de la red no fue adoptado por ningún proyecto: queda documentado pero fuera del canvas.'
+    : ' enfoques de la red no fueron adoptados por ningún proyecto: quedan documentados pero fuera del canvas.'));
   if(nOE && conNombre.length && nOE !== conNombre.length){
     avisos.push('Hay ' + nOE + ' objetivos específicos y ' + conNombre.length + ' proyectos; normalmente va uno por cada uno.');
   }
@@ -1131,16 +1139,16 @@ function filasCanvas_(){
     });
   }
 
-  /* Cada proyecto lleva el objetivo específico que el grupo le asignó */
+  /* Solo entra al canvas lo ADOPTADO: los enfoques que el grupo asignó a un
+     proyecto. Los que estudió y descartó se quedan en la red, documentados,
+     pero fuera del canvas. */
   canvasExp.proyectos.forEach(function(py){
     var esp = especificoPorId_(py.oeId) || { obj:'', res:'' };
-    recorrer(enfoquePorId_(py.enfoqueId), esp.obj || '', esp.res || '', py.nombre || '');
-  });
-
-  /* Enfoques que aún no tienen proyecto: se muestran igual, sin fila superior */
-  data.forEach(function(e){
-    var tomado = canvasExp.proyectos.some(function(py){ return py.enfoqueId === e.id; });
-    if(!tomado) recorrer(e, '', '', '');
+    var es = enfoquesDelProyecto_(py.id);
+    if(!es.length){ return; }
+    es.forEach(function(e){
+      recorrer(e, esp.obj || '', esp.res || '', py.nombre || '');
+    });
   });
 
   return filas;
@@ -1211,7 +1219,7 @@ function serializarCanvas_(){
       return { id:x.id, obj:x.obj, res:x.res };
     }),
     proyectos: canvasExp.proyectos.map(function(x){
-      return { id:x.id, nombre:x.nombre, enfoqueId:x.enfoqueId, oeId:x.oeId||'' };
+      return { id:x.id, nombre:x.nombre, oeId:x.oeId||'' };
     }),
     notas: canvasExp.notas
   };
@@ -1230,7 +1238,8 @@ function restaurarCanvas_(c){
         return { id:x.id || uid('oe'), obj:x.obj||'', res:x.res||'' };
       }),
       proyectos: (c.proyectos||[]).map(function(x){
-        return { id:x.id || uid('py'), nombre:x.nombre||'', enfoqueId:x.enfoqueId||'', oeId:x.oeId||'' };
+        return { id:x.id || uid('py'), nombre:x.nombre||'', oeId:x.oeId||'',
+                 _enfoqueId:x.enfoqueId||'' };   // solo para migrar el formato anterior
       }),
       notas: c.notas || ''
     };
@@ -1240,6 +1249,12 @@ function restaurarCanvas_(c){
      partida y desde ahí el grupo puede corregirlo a mano. */
   canvasExp.proyectos.forEach(function(py, i){
     if(!py.oeId && canvasExp.especificos[i]) py.oeId = canvasExp.especificos[i].id;
+    /* Antes el proyecto apuntaba al enfoque; ahora es al revés. */
+    if(py._enfoqueId){
+      var e = enfoquePorId_(py._enfoqueId);
+      if(e && !e.proyectoId) e.proyectoId = py.id;
+      delete py._enfoqueId;
+    }
   });
   /* Antes el proyecto se guardaba dentro del enfoque. Si el registro
      viene así, se convierte en proyecto con su enfoque asociado. */
@@ -1413,7 +1428,7 @@ function parsearEspecificos_(txt){
 function limpiarParaGuardar_(enfoques){
   return (enfoques||[]).map(function(e){
     return {
-      id:e.id, text:e.text,
+      id:e.id, text:e.text, proyectoId:e.proyectoId || '',
       conceptos:(e.conceptos||[]).map(function(c){
         return {
           id:c.id, text:c.text,
@@ -1865,12 +1880,15 @@ function cargarEjemploRed(){
     proyectos: [],
     notas: canvasExp.notas
   };
-  /* Un proyecto por enfoque, con su objetivo específico ya asignado */
-  canvasExp.proyectos = data.map(function(e, i){
+  /* Un proyecto por enfoque; la relación se guarda en el enfoque */
+  data.forEach(function(e, i){
+    var nom = EJEMPLO_RED[i].proy || '';
+    if(!nom) return;
     var oe = canvasExp.especificos[i];
-    return { id:uid('py'), nombre: EJEMPLO_RED[i].proy || '',
-             enfoqueId: e.id, oeId: oe ? oe.id : '' };
-  }).filter(function(py){ return py.nombre; });
+    var py = { id:uid('py'), nombre:nom, oeId: oe ? oe.id : '' };
+    canvasExp.proyectos.push(py);
+    e.proyectoId = py.id;
+  });
   pintarCamposCanvas_();
   renderAll();
   document.getElementById('ej-red').style.display = 'none';
@@ -2519,7 +2537,31 @@ function nombreArchivoPNG_(){
 }
 function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
+  /* La asociación con el proyecto se declara aquí, en el paso 2, cuando ya
+     existen los proyectos (paso 1) y el enfoque se está construyendo. */
   wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc', function(){ removeEnfoque(e.id); }));
+  if(nivelRed < 3){
+    var fp = document.createElement('div'); fp.className = 'enf-proy';
+    var lp = document.createElement('span'); lp.className = 'enf-proy-lbl';
+    lp.textContent = 'Pertenece al proyecto:';
+    var sp = document.createElement('select'); sp.className = 'enf-proy-sel';
+    var o0 = document.createElement('option'); o0.value = '';
+    o0.textContent = canvasExp.proyectos.length ? '— ninguno (no entra al canvas) —'
+                                                : '— aún no hay proyectos (paso 1) —';
+    sp.appendChild(o0);
+    canvasExp.proyectos.forEach(function(py, k){
+      var op = document.createElement('option');
+      op.value = py.id;
+      op.textContent = 'P' + (k+1) + ' · ' + ((py.nombre||'').trim() || '(proyecto sin nombre)');
+      if(e.proyectoId === py.id) op.selected = true;
+      sp.appendChild(op);
+    });
+    sp.addEventListener('change', function(){
+      e.proyectoId = sp.value; marcarCambio(); renderNetwork(); renderCanvas();
+    });
+    fp.appendChild(lp); fp.appendChild(sp);
+    wrap.appendChild(fp);
+  }
   wrap.appendChild(makeAddRow('Agregar concepto (etapa)…', function(v){ addConcepto(e.id, v); }));
   wrap.appendChild(makeChildren(e.conceptos, function(c){ return buildNetConcepto(e.id, c); }));
   return wrap;
@@ -2683,21 +2725,25 @@ document.getElementById('in-enfoques').addEventListener('keydown', function(e){
    (enfoques y conceptos), luego QUÉ se pregunta, y recién entonces CÓMO se
    responde (procedimientos, herramientas y productos). Definir el
    instrumento antes de la pregunta sería decidir el método a ciegas. */
+/* El recorrido sigue el orden en que se lee el canvas de experimentos:
+   objetivos → programa → proyecto → metodología → etapa → sub etapa →
+   herramienta → entregable. Se parte de lo que el grupo ya trae de
+   Planteamiento Investigativo y se termina ensamblando el canvas. */
 var GRUPOS = [
-  { rot:'QUÉ SE ESTUDIA', tono:'g-coral', pasos:[
-      { n:1, nom:'Enfoques y conceptos', vista:'network', nivel:2, badge:'INICIO' }
+  { rot:'CONTEXTO Y OBJETIVOS', tono:'g-coral', pasos:[
+      { n:1, nom:'Objetivos',  vista:'canvas', badge:'INICIO' },
+      { n:2, nom:'Programa',   vista:'canvas' },
+      { n:3, nom:'Proyectos',  vista:'canvas' }
   ]},
-  { rot:'QUÉ SE PREGUNTA', tono:'g-amber', pasos:[
-      { n:2, nom:'Preguntas y autores', vista:'table' }
+  { rot:'QUÉ SE ESTUDIA', tono:'g-amber', pasos:[
+      { n:4, nom:'Enfoques y conceptos', vista:'network', nivel:2 }
   ]},
-  { rot:'CÓMO SE RESPONDE', tono:'g-blue', pasos:[
-      { n:3, nom:'Procedimientos, herramientas y productos', vista:'network', nivel:5 }
+  { rot:'QUÉ SE PREGUNTA', tono:'g-blue', pasos:[
+      { n:5, nom:'Preguntas y autores', vista:'table' }
   ]},
-  { rot:'CANVAS DE EXPERIMENTOS', tono:'g-teal', pasos:[
-      { n:4, nom:'Objetivos',  vista:'canvas' },
-      { n:5, nom:'Proyectos',  vista:'canvas' },
-      { n:6, nom:'Programa',   vista:'canvas' },
-      { n:7, nom:'Canvas',     vista:'canvas', badge:'FIN' }
+  { rot:'CÓMO SE RESPONDE', tono:'g-teal', pasos:[
+      { n:6, nom:'Procedimientos, herramientas y productos', vista:'network', nivel:5 },
+      { n:7, nom:'Canvas', vista:'canvas', badge:'FIN' }
   ]}
 ];
 var TOTAL_PASOS = 7;
@@ -2729,18 +2775,18 @@ function irAPaso(n){
 /* Dentro del canvas cada paso tiene su propio bloque: se muestra uno a la
    vez para que el paso 3 no enseñe ya lo del 4 y el 5. */
 var BLOQUES_PASO = {
-  4: { ids:['cv-b1','cv-b2'],
-       intro:'Empieza por aquí: el objetivo general con su resultado, y de ahí los objetivos específicos. Cada objetivo específico dará origen a un proyecto.' },
-  5: { ids:['cv-b3'],
-       intro:'Define cada proyecto y asócialo a un enfoque de tu red y al objetivo específico que responde.' },
-  6: { ids:['cv-b4'],
-       intro:'El programa es el paraguas que integra los proyectos que acabas de definir.' },
+  1: { ids:['cv-b1','cv-b2'],
+       intro:'Empieza por los objetivos: el general con su resultado y los específicos con los suyos. Puedes traerlos de Planteamiento Investigativo.' },
+  2: { ids:['cv-b4'],
+       intro:'El programa es el paraguas bajo el que se agrupará todo el trabajo.' },
+  3: { ids:['cv-b3'],
+       intro:'Un proyecto por cada objetivo específico. En el paso 4 decidirás qué enfoque adopta cada uno.' },
   7: { ids:['cv-b5','cv-b6'],
        intro:'Aquí no se escribe nada: el canvas se arma solo con todo lo anterior.' }
 };
 
 function mostrarBloquesCanvas_(){
-  var cfg = BLOQUES_PASO[pasoActual] || BLOQUES_PASO[4];
+  var cfg = BLOQUES_PASO[pasoActual] || BLOQUES_PASO[1];
   ['cv-b1','cv-b2','cv-b3','cv-b4','cv-b5','cv-b6'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = (cfg.ids.indexOf(id) !== -1) ? 'block' : 'none';
@@ -2756,7 +2802,7 @@ function switchView(view, desdePaso){
   });
   /* Si el cambio no vino de una píldora, se sincroniza el paso activo */
   if(!desdePaso){
-    pasoActual = view === 'network' ? 1 : (view === 'table' ? 2 : 4);
+    pasoActual = view === 'network' ? 4 : (view === 'table' ? 5 : 1);
     if(view === 'network') nivelRed = 2;
   }
   if(view === 'canvas') mostrarBloquesCanvas_();
