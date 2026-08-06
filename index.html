@@ -61,6 +61,8 @@
   .fases-tit{font-size:14.5px;color:var(--ink);}
   .fases-tit b{color:var(--amber);}
   .fases-pct{font-size:12.5px;color:#a8b0aa;}
+  .fases-acts{display:flex;align-items:center;gap:10px;}
+  .fases-acts .btnMini{padding:4px 10px;font-size:12px;}
   .fases-barra{display:flex;gap:4px;margin-bottom:16px;}
   .barra-seg{height:4px;border-radius:2px;overflow:hidden;}
   .barra-lleno{height:100%;border-radius:2px;transition:width .3s;}
@@ -140,7 +142,10 @@
   .net-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
   .net-resumen{font-size:13.5px;color:#8a948f;}
   #net-wrap{overflow-x:auto;margin-bottom:16px;}
-  #net-wrap svg{display:block;max-width:100%;height:auto;}
+  /* El diagrama se muestra siempre a tamaño real y el contenedor se desplaza
+     de lado si no cabe. Escalarlo al ancho disponible achica el texto: al 78%
+     de un escritorio queda en 9.7 px y en un celular, en 4 px. */
+  #net-wrap svg{display:block;max-width:none;height:auto;}
   .net-vacio{padding:34px 16px;text-align:center;font-size:14.5px;color:#8a948f;
              border:1px dashed var(--line);border-radius:4px;background:#fafbf9;}
   /* tabla de análisis */
@@ -302,6 +307,31 @@
   .ej-aviso{background:#fff;border:1px solid var(--line);border-left:3px solid var(--teal);
             border-radius:4px;padding:10px 12px;margin:10px 0;font-size:12.5px;line-height:1.5;}
   .ej-proy{color:var(--teal);font-weight:400;font-size:12px;}
+  /* ── Pantallas angostas ──
+     La tabla de análisis de 3 columnas no cabe en un celular, así que se
+     apila: cada concepto pasa a ser un bloque con sus preguntas y autores
+     debajo, cada uno con su rótulo. */
+  /* El diagrama conserva su tamaño real y se desplaza de lado cuando no cabe.
+     Encogerlo dejaría el texto ilegible: al 61% de una tablet queda en 7 px, y
+     en un celular, en 4 px. Mejor mantenerlo nítido y que el usuario deslice. */
+  @media(max-width:1180px){
+    #net-wrap:after{content:'Desliza de lado para ver todo el diagrama';
+      display:block;font-size:11.5px;color:#8a948f;padding:5px 2px 0;}
+  }
+  @media(max-width:640px){
+    #qa-analisis, #qa-analisis tbody, #qa-analisis tr, #qa-analisis td{display:block;width:100%;}
+    #qa-analisis thead{display:none;}
+    #qa-analisis tr{border:1px solid var(--line);border-radius:4px;
+                    margin-bottom:12px;overflow:hidden;}
+    #qa-analisis tr.fila-enfoque{border:none;margin-bottom:6px;}
+    #qa-analisis td{border:none;border-bottom:1px solid var(--line);}
+    #qa-analisis tr td:last-child{border-bottom:none;}
+    #qa-analisis td[data-rot]:before{content:attr(data-rot);display:block;
+      font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+      color:#8a948f;margin-bottom:6px;}
+    .celda-concepto{background:#f4faf8;}
+    .rot-cuenta{display:block;margin:4px 0 0;}
+  }
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
   @media(max-width:680px){.row2{grid-template-columns:1fr;}}
 </style>
@@ -820,10 +850,12 @@ function aplicarEstadoCargado_(estructuraTxt){
   data = estado.enfoques || [];
   migrarInstrumentos_(data);
   reindexarIds_(data);
-  /* Solo se sobrescriben si el guardado realmente trae esas listas.
-     Si no, se conservan las filas y tarjetas por defecto del HTML. */
   rescatarOtros_(estado.otrosElementos);
-  if(Array.isArray(estado.canvas))         restaurarCanvas_(estado.canvas);
+  /* El canvas se restaura siempre. La comprobación Array.isArray venía de
+     cuando era una lista de tarjetas; hoy es un objeto, así que esa condición
+     nunca se cumplía y el programa, los objetivos y los proyectos se perdían
+     al abrir una red guardada. restaurarCanvas_ ya distingue ambos formatos. */
+  restaurarCanvas_(estado.canvas);
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   renderAll();
 }
@@ -1090,6 +1122,51 @@ function refrescarCadena_(){
     h += '<p class="note" style="font-size:12.5px;margin:6px 0 0;color:#a8501e;">' + esc(a) + '</p>';
   });
   box.innerHTML = h;
+}
+
+/* Vuelve a traer del servidor la red guardada del grupo. Sirve cuando dos
+   integrantes trabajan a la vez: uno guarda y el otro trae los cambios sin
+   tener que recargar la página ni volver a ingresar. */
+function recargarRed(){
+  if(!grupo.cargado){ toast('Primero ingresa con los datos del grupo', true); return; }
+  if(guardadoEnCurso || guardadoPendiente || guardarTimer){
+    if(!confirm('Tienes cambios sin terminar de guardar.\n\n'+
+       'Si actualizas ahora, se reemplazan por lo que haya en el servidor. ¿Continuar?')) return;
+  }
+  var btn = document.getElementById('btn-recargar');
+  if(btn){ btn.disabled = true; btn.textContent = '↻ Actualizando…'; }
+  clearTimeout(guardarTimer); guardarTimer = null;
+
+  function restaurarBoton(){
+    var b = document.getElementById('btn-recargar');
+    if(b){ b.disabled = false; b.textContent = '↻ Actualizar'; }
+  }
+
+  jsonpCall({ accion:'buscar', ciclo:grupo.ciclo, numero_grupo:grupo.numero_grupo },
+  function(resp){
+    if(!resp || !resp.ok){
+      restaurarBoton();
+      toast(resp && resp.error ? resp.error : 'No se pudo actualizar', true);
+      return;
+    }
+    if(!resp.record){
+      restaurarBoton();
+      toast('Todavía no hay nada guardado para este grupo');
+      return;
+    }
+    suprimirAutoguardado = true;
+    grupo.id = resp.record.id;
+    aplicarEstadoCargado_(resp.record.estructura);
+    suprimirAutoguardado = false;
+    listaCache.grupos = null;      // la lista también quedó desactualizada
+    restaurarBoton();
+    renderGrupoBar();
+    toast('Red actualizada desde el servidor');
+  },
+  function(f){
+    restaurarBoton();
+    toast('Error de red al actualizar. ' + textoFallo(f), true);
+  });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -2680,15 +2757,19 @@ function filaConcepto_(c){
   }
   tr.appendChild(tdC);
 
-  tr.appendChild(celdaLista_(c.preguntas || [], 'q',
+  var tdQ = celdaLista_(c.preguntas || [], 'q',
     'Agregar pregunta…',
     function(v){ addPregunta(c.id, v); },
-    function(id){ removePregunta(c.id, id); }));
+    function(id){ removePregunta(c.id, id); });
+  tdQ.setAttribute('data-rot', 'Preguntas');
+  tr.appendChild(tdQ);
 
-  tr.appendChild(celdaLista_(c.autores || [], 'a',
+  var tdA = celdaLista_(c.autores || [], 'a',
     'Agregar autor…',
     function(v){ addAutor(c.id, v); },
-    function(id){ removeAutor(c.id, id); }));
+    function(id){ removeAutor(c.id, id); });
+  tdA.setAttribute('data-rot', 'Autor(es) consultado(s)');
+  tr.appendChild(tdA);
 
   return tr;
 }
@@ -2819,7 +2900,11 @@ function renderFases(){
   var h = '<div class="fases-head">'+
             '<span class="fases-tit">Paso <b>'+pasoActual+'</b> de '+TOTAL_PASOS+
               ' · '+esc(rotGrupo.charAt(0)+rotGrupo.slice(1).toLowerCase())+'</span>'+
-            '<span class="fases-pct">'+pct+'%</span>'+
+            '<span class="fases-acts">'+
+              '<button class="btnMini" id="btn-recargar" onclick="recargarRed()" '+
+                'title="Vuelve a traer la red guardada en el servidor">↻ Actualizar</button>'+
+              '<span class="fases-pct">'+pct+'%</span>'+
+            '</span>'+
           '</div>'+
           '<div class="fases-barra">';
   GRUPOS.forEach(function(g){
