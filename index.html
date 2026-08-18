@@ -341,8 +341,10 @@
   <div class="tabs">
     <button class="tab on" id="tabFlujo" onclick="mostrarTab('flujo')">Nuevo planteamiento</button>
     <button class="tab" id="tabLista" onclick="mostrarTab('lista')">Planteamientos guardados</button>
-    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="nuevoPlanteamiento()">＋ Nuevo desde cero</button>
+    <button class="btnMini" style="margin-left:auto;align-self:center;" onclick="toggleRecursos()">▷ Recursos</button>
+    <button class="btnMini" style="align-self:center;" onclick="nuevoPlanteamiento()">＋ Nuevo desde cero</button>
   </div>
+  <div id="panelRecursos" style="display:none;"></div>
 
   <!-- ============ VISTA FLUJO ============ -->
   <div id="vistaFlujo">
@@ -479,8 +481,6 @@ function toggleEj(id){
   if(!el) return;
   var abrir = (el.style.display==='none'||!el.style.display);
   el.style.display = abrir ? 'block' : 'none';
-  // Los recursos se piden al abrir el panel, no en cada render del paso.
-  if(abrir && id==='recursos' && typeof cargarRecursos==='function') cargarRecursos();
 }
 
 function limpiarLinea(l){ return l.replace(/\s*\(T\)\s*$/,'').trim(); }
@@ -807,11 +807,43 @@ var RECURSOS_MENDELEY = [
     u:'https://youtu.be/yVNf7dQ5gaU', tipo:'video' }
 ];
 
-function panelRecursosMendeley(){
-  var h = '<div class="ejBox" id="ej_recursos" style="display:none;">'+
-          '<b>Tutoriales</b>'+
-          '<p class="note" style="font-size:12px;margin:5px 0 10px;">Se abren en una pestaña nueva. '+
-          'Empieza por la instalación si aún no tienes la cuenta.</p>'+
+/* ── PANEL GLOBAL DE RECURSOS ──
+   Vive fuera del recorrido: los recursos pueden ser de cualquier paso, así
+   que el botón está en la barra superior y se ve desde donde sea. */
+var PASOS_RECURSO = [
+  {v:'',   t:'General (todos los pasos)'},
+  {v:'1',  t:'1 · Problema'},   {v:'2',  t:'2 · Delimitación'},
+  {v:'3',  t:'3 · Propósito'},  {v:'4',  t:'4 · Línea'},
+  {v:'5',  t:'5 · Tema'},       {v:'6',  t:'6 · Ishikawa'},
+  {v:'7',  t:'7 · Pareto'},     {v:'8',  t:'8 · Problema general'},
+  {v:'9',  t:'9 · Específicos'},{v:'10', t:'10 · Bibliométrico'},
+  {v:'11', t:'11 · Objetivos y variables'},
+  {v:'12', t:'12 · Indicadores e hipótesis'},
+  {v:'13', t:'13 · Matriz'},    {v:'14', t:'14 · Referencias'}
+];
+
+function etiquetaPaso_(p){
+  var n = String(p||'').trim();
+  if(!n) return 'General';
+  for(var i=0;i<PASOS_RECURSO.length;i++) if(PASOS_RECURSO[i].v===n) return PASOS_RECURSO[i].t;
+  return 'Paso ' + n;
+}
+
+function toggleRecursos(){
+  var el = document.getElementById('panelRecursos');
+  if(!el) return;
+  var abrir = (el.style.display === 'none' || !el.style.display);
+  el.style.display = abrir ? 'block' : 'none';
+  if(abrir){ el.innerHTML = marcoRecursos_(); cargarRecursos(); }
+}
+
+function marcoRecursos_(){
+  var h = '<div class="card" style="margin-bottom:22px;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+          '<h2 style="margin:0;">Recursos y tutoriales</h2>'+
+          '<button type="button" class="ejBtn" onclick="toggleRecursos()">cerrar</button></div>'+
+          '<p class="note">Materiales de apoyo para cualquier paso del recorrido. Se abren en una pestaña nueva, así no pierdes lo que estés escribiendo.</p>'+
+          '<div class="blockLbl" style="margin-top:16px;">◆ Mendeley · gestor de referencias</div>'+
           '<div class="recLista">';
   RECURSOS_MENDELEY.forEach(function(r){
     h += '<a class="recItem" href="'+esc(r.u)+'" target="_blank" rel="noopener">'+
@@ -820,15 +852,22 @@ function panelRecursosMendeley(){
          '<span class="recDesc">'+esc(r.d)+'</span></span>'+
          '<span class="recFlecha">↗</span></a>';
   });
-  h += '</div>';
-  h += '<div id="recPublicados"></div>';
+  h += '</div><div id="recPublicados"></div>';
+
   if(SESION.docente){
+    var ops = PASOS_RECURSO.map(function(p){
+      return '<option value="'+p.v+'">'+esc(p.t)+'</option>';
+    }).join('');
     h += '<div class="recAdmin">'+
          '<div class="varTit" style="color:#8a6d3b;">Publicar un recurso · solo docentes</div>'+
          '<div class="row2"><div><label>Título</label>'+
          '<input id="rec_titulo" placeholder="Ej. Guía rápida de Mendeley (PDF)"></div>'+
          '<div><label>Tipo</label>'+
          '<select id="rec_tipo"><option>Video</option><option>Guía</option><option>PDF</option></select></div></div>'+
+         '<div class="row2"><div><label>¿De qué paso es?</label>'+
+         '<select id="rec_paso">'+ops+'</select></div>'+
+         '<div><label>Orden</label>'+
+         '<input id="rec_orden" placeholder="1, 2, 3…" value="10"></div></div>'+
          '<label>Descripción</label>'+
          '<input id="rec_desc" placeholder="Una línea sobre qué cubre">'+
          '<label>Enlace</label>'+
@@ -840,32 +879,46 @@ function panelRecursosMendeley(){
   return h + '</div>';
 }
 
-/* Recursos publicados por el docente. Se leen del proxy; crear y eliminar
+/* Recursos publicados por el docente, agrupados por paso. Crear y eliminar
    los autoriza el proxy, no esta pantalla. */
 function cargarRecursos(){
   var cont = document.getElementById('recPublicados');
   if(!cont) return;
-  cont.innerHTML = '<p class="note" style="font-size:12px;margin:8px 0 0;">Cargando recursos…</p>';
-  jsonpCall({ action:'recursos', paso:'14' }, function(r){
+  cont.innerHTML = '<p class="note" style="font-size:12px;margin:10px 0 0;">Cargando recursos…</p>';
+  jsonpCall({ action:'recursos' }, function(r){
     if(!r || !r.ok){ cont.innerHTML=''; return; }
     var lista = r.lista || [];
     if(!lista.length){ cont.innerHTML=''; return; }
-    var h = '<div class="recLista" style="margin-top:7px;">';
+
+    var grupos = {}, orden = [];
     lista.forEach(function(x){
-      var t = String(x.tipo||'').toLowerCase();
-      var cls = (t.indexOf('video')!==-1) ? 'video' : (t.indexOf('pdf')!==-1 ? 'pdf' : 'guía');
-      var et  = (cls==='video') ? '▶ video' : (cls==='pdf' ? 'PDF' : 'guía');
-      h += '<div class="recFila">'+
-           '<a class="recItem" style="flex:1;" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+
-           '<span class="recTipo recTipo-'+cls+'">'+et+'</span>'+
-           '<span class="recTxt"><span class="recTit">'+esc(x.titulo||'(sin título)')+'</span>'+
-           '<span class="recDesc">'+esc(x.descripcion||'')+'</span></span>'+
-           '<span class="recFlecha">↗</span></a>'+
-           (SESION.docente ? '<button type="button" class="btnDel" style="padding:6px 9px;" '+
-             'title="Eliminar recurso" onclick="eliminarRecurso(\''+x.id+'\')">×</button>' : '')+
-           '</div>';
+      var k = String(x.paso||'').trim();
+      if(!grupos[k]){ grupos[k]=[]; orden.push(k); }
+      grupos[k].push(x);
     });
-    cont.innerHTML = h + '</div>';
+    orden.sort(function(a,b){ return (parseInt(a,10)||0) - (parseInt(b,10)||0); });
+
+    var h = '';
+    orden.forEach(function(k){
+      h += '<div class="blockLbl" style="margin-top:18px;">◆ '+esc(etiquetaPaso_(k))+'</div>'+
+           '<div class="recLista">';
+      grupos[k].forEach(function(x){
+        var t = String(x.tipo||'').toLowerCase();
+        var cls = (t.indexOf('video')!==-1) ? 'video' : (t.indexOf('pdf')!==-1 ? 'pdf' : 'guía');
+        var et  = (cls==='video') ? '▶ video' : (cls==='pdf' ? 'PDF' : 'guía');
+        h += '<div class="recFila">'+
+             '<a class="recItem" style="flex:1;" href="'+esc(x.url)+'" target="_blank" rel="noopener">'+
+             '<span class="recTipo recTipo-'+cls+'">'+et+'</span>'+
+             '<span class="recTxt"><span class="recTit">'+esc(x.titulo||'(sin título)')+'</span>'+
+             '<span class="recDesc">'+esc(x.descripcion||'')+'</span></span>'+
+             '<span class="recFlecha">↗</span></a>'+
+             (SESION.docente ? '<button type="button" class="btnDel" style="padding:6px 9px;" '+
+               'title="Eliminar recurso" onclick="eliminarRecurso(\''+x.id+'\')">×</button>' : '')+
+             '</div>';
+      });
+      h += '</div>';
+    });
+    cont.innerHTML = h;
   }, function(){ cont.innerHTML=''; });
 }
 
@@ -878,7 +931,8 @@ function publicarRecurso(){
     descripcion: encodeURIComponent(val('rec_desc').trim()),
     tipo: encodeURIComponent(document.getElementById('rec_tipo').value),
     url: encodeURIComponent(url),
-    paso: '14', orden: '99'
+    paso: document.getElementById('rec_paso').value,
+    orden: val('rec_orden').trim() || '10'
   };
   toast('Publicando…');
   jsonpCall(params, function(r){
@@ -1558,9 +1612,6 @@ function render(){
     });
     h='<div class="card"><h2>14 · Referencias · <span style="font-weight:400;color:#8a6d3b;">eje transversal</span></h2>'+
       '<p class="note">Este paso no va después de los otros: va <b>a lo largo</b> de los trece. Cada fuente que consultes —al describir el problema, al elegir la línea, al hacer el análisis bibliométrico— se registra aquí en el momento, no al final. Dejarlo para el cierre es lo que obliga a reconstruir de memoria de dónde salió cada dato.</p>'+
-      '<div style="display:flex;justify-content:flex-end;margin:0 0 10px;">'+
-      '<button type="button" class="ejBtn" onclick="toggleEj(\'recursos\')">▷ recursos y tutoriales</button></div>'+
-      panelRecursosMendeley()+
       '<div class="varBox"><div class="varTit">Dónde se nota</div>'+
       '<p class="note" style="margin:0;font-size:13px;">El <b>paso 10</b> es el que más alimenta tu biblioteca: los documentos que salen de la búsqueda en Scopus se importan directo con el Web Importer y quedan listos para citar. Y el grupo de trabajo evita el problema clásico de entregar un informe donde cada integrante citó una edición distinta del mismo libro.</p></div>'+
       campos+
