@@ -355,6 +355,19 @@
   .plantMeta{display:block;font-size:11.5px;color:#8a948f;margin-bottom:2px;}
   .plantTit{display:block;font-size:14px;color:#1c2a33;line-height:1.45;}
 
+  /* Vínculo obligatorio con Planteamiento Investigativo */
+  .plantPick{border:1px solid #c9cfc6;border-left:3px solid #c8743b;border-radius:6px;
+             background:#fbfaf6;padding:12px 14px;margin-bottom:20px;}
+  .plantPickTit{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+                color:#b4552f;margin-bottom:6px;}
+  .plantPickTit .oblig{color:#8a7f5f;font-weight:600;}
+  .plantOk{display:flex;flex-direction:column;gap:3px;background:#fff;
+           border:1px solid #b9d2cf;border-radius:6px;padding:9px 11px;margin-bottom:9px;}
+  .plantOkTit{font-size:14px;color:#1c2a33;line-height:1.45;}
+  .plantOkMeta{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+               font-weight:700;color:#2f6d6a;}
+
+
 </style>
 </head>
 <body>
@@ -401,6 +414,14 @@
         <div style="font-weight:600;margin-bottom:8px;" id="txtCurso"></div>
         <div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Profesor</div>
         <div style="font-weight:600;" id="txtProfesor"></div>
+      </div>
+
+      <div class="plantPick" id="plantPick">
+        <div class="plantPickTit">Planteamiento vinculado <span class="oblig">· obligatorio</span></div>
+        <p class="note" style="font-size:12.5px;margin:0 0 8px;">Cada red de experimentos pertenece a <b>un</b> planteamiento. Elígelo aquí: de él salen el objetivo general y los específicos, y con él se guarda el vínculo.</p>
+        <div id="plantElegido"></div>
+        <div id="plantLista"></div>
+        <button type="button" class="btnMini" id="btnPlantPick" onclick="abrirSelectorPlant()">Elegir planteamiento…</button>
       </div>
 
       <label for="f_ciclo">Ciclo</label>
@@ -781,6 +802,7 @@ function arrancarApp(){
     CICLOS.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
   document.getElementById('txtCurso').textContent    = CURSO_FIJO;
   document.getElementById('txtProfesor').textContent = PROFESOR_FIJO;
+  pintarPlantElegido();
   renderAll();
   switchView('network');
   mostrarTab('trabajo');
@@ -792,7 +814,79 @@ function editarDatosGrupo(){
   document.getElementById('f_ngrupo').value = grupo.numero_grupo;
   document.getElementById('f_coord').value  = grupo.coordinador;
   document.getElementById('f_correo2').value = grupo.correoCompanero;
+  pintarPlantElegido();
   window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* ── Selector de planteamiento en el registro ──
+   Obligatorio: la red pertenece a un planteamiento concreto. Al elegirlo se
+   copian ciclo, grupo y coordinador desde allí, así los dos aplicativos no
+   pueden discrepar. */
+function pintarPlantElegido(){
+  var box = document.getElementById('plantElegido');
+  var btn = document.getElementById('btnPlantPick');
+  if(!box) return;
+  if(grupo.plantId){
+    box.innerHTML = '<div class="plantOk"><span class="plantOkTit">'+
+      esc(grupo.plantTitulo || '(sin título todavía)')+'</span>'+
+      '<span class="plantOkMeta">vinculado</span></div>';
+    if(btn) btn.textContent = 'Cambiar planteamiento…';
+  } else {
+    box.innerHTML = '';
+    if(btn) btn.textContent = 'Elegir planteamiento…';
+  }
+}
+
+function abrirSelectorPlant(){
+  var cont = document.getElementById('plantLista');
+  var btn  = document.getElementById('btnPlantPick');
+  cont.innerHTML = '<p class="note" style="font-size:12.5px;margin:6px 0;">Buscando tus planteamientos…</p>';
+  btn.disabled = true;
+
+  jsonpCall({ accion:'planteamientos' }, function(r){
+    btn.disabled = false;
+    if(!r || !r.ok){
+      cont.innerHTML = '<p class="hintWarn">'+esc((r&&r.error)||'No se pudo consultar Planteamiento Investigativo.')+'</p>';
+      return;
+    }
+    var lista = r.lista || [];
+    if(!lista.length){
+      cont.innerHTML = '<p class="hintWarn">No tienes planteamientos guardados. Créalo primero en el aplicativo de Planteamiento Investigativo.</p>';
+      return;
+    }
+    var h = '<div class="plantSel">';
+    lista.forEach(function(p){
+      var meta = [p.ciclo, p.numero_grupo ? ('Grupo '+p.numero_grupo) : '', p.coordinador]
+                   .filter(function(x){ return x; }).join(' · ');
+      h += '<button type="button" class="plantOpt" onclick="fijarPlanteamiento_('+
+           '\''+p.id+'\',\''+escAttr_(p.titulo)+'\',\''+escAttr_(p.ciclo)+'\','+
+           '\''+escAttr_(p.numero_grupo)+'\',\''+escAttr_(p.coordinador)+'\')">'+
+           '<span class="plantMeta">'+esc(meta||'—')+'</span>'+
+           '<span class="plantTit">'+esc(p.titulo || '(sin título todavía)')+'</span></button>';
+    });
+    cont.innerHTML = h + '</div>';
+  }, function(f){
+    btn.disabled = false;
+    cont.innerHTML = '<p class="hintWarn">Error de red. '+esc(textoFallo(f))+'</p>';
+  });
+}
+
+/* Escapa para meter texto dentro de un atributo onclick con comillas simples */
+function escAttr_(t){
+  return String(t==null?'':t).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+    .replace(/"/g,'&quot;').replace(/[\r\n]+/g,' ');
+}
+
+function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord){
+  grupo.plantId = id;
+  grupo.plantTitulo = titulo || '';
+  document.getElementById('plantLista').innerHTML = '';
+  /* Se copian los datos del planteamiento, pero quedan editables */
+  if(ciclo){ var sc=document.getElementById('f_ciclo'); if(sc) sc.value = ciclo; }
+  if(ngrupo) document.getElementById('f_ngrupo').value = ngrupo;
+  if(coord)  document.getElementById('f_coord').value  = coord;
+  pintarPlantElegido();
+  toast('Planteamiento vinculado');
 }
 
 function iniciarRed(){
@@ -801,6 +895,7 @@ function iniciarRed(){
   var coord  = document.getElementById('f_coord').value.trim();
   var comp   = document.getElementById('f_correo2').value.trim().toLowerCase();
 
+  if(!grupo.plantId) return toast('Elige primero el planteamiento al que pertenece esta red', true);
   if(!ciclo)  return toast('Selecciona el ciclo', true);
   if(!ngrupo) return toast('Indica el N° de grupo', true);
   if(!coord)  return toast('Indica el/la coordinador(a) del grupo', true);
@@ -808,7 +903,7 @@ function iniciarRed(){
   var btn = document.getElementById('btnIniciar');
   btn.disabled = true; btn.textContent = 'Buscando…';
 
-  jsonpCall({ accion:'buscar', ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
+  jsonpCall({ accion:'buscar', plant_id:grupo.plantId, ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
     btn.disabled = false; btn.textContent = 'Iniciar red →';
     if(!resp || !resp.ok){
       /* Si el proxy respondió con un motivo, se muestra tal cual: es un
