@@ -340,6 +340,21 @@
   }
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
   @media(max-width:680px){.row2{grid-template-columns:1fr;}}
+
+  /* Selector de planteamiento: el vínculo se elige, no se escribe */
+  .plantSel{border:1px solid var(--line,#c9cfc6);border-radius:8px;background:#fff;
+            padding:10px;margin-top:8px;}
+  .plantSelTit{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+               font-weight:700;color:#6a746f;margin-bottom:8px;}
+  .plantOpt{display:block;width:100%;text-align:left;background:#fafbfa;
+            border:1px solid var(--line,#c9cfc6);border-radius:6px;
+            padding:9px 11px;margin-bottom:7px;cursor:pointer;
+            font-family:inherit;transition:border-color .15s ease,background .15s ease;}
+  .plantOpt:last-child{margin-bottom:0;}
+  .plantOpt:hover{border-color:#2f6d6a;background:#f2f8f7;}
+  .plantMeta{display:block;font-size:11.5px;color:#8a948f;margin-bottom:2px;}
+  .plantTit{display:block;font-size:14px;color:#1c2a33;line-height:1.45;}
+
 </style>
 </head>
 <body>
@@ -703,7 +718,8 @@ function salirSesion(){
 /* ════════════════════════════════════════════════════════════
    ESTADO DEL GRUPO Y AUTOGUARDADO
 ════════════════════════════════════════════════════════════ */
-var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
+var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'',
+              plantId:'', plantTitulo:'', cargado:false };
 var suprimirAutoguardado = true;
 var guardarTimer = null;
 var guardadoEnCurso = false;
@@ -1369,23 +1385,78 @@ function traerDePlanteamiento(){
   if(!grupo.cargado){ toast('Primero inicia la red con los datos del grupo', true); return; }
   var btn = document.getElementById('btn-plant');
   var est = document.getElementById('cv-plant-estado');
+
+  /* Ya vinculado: se refresca por ID. El título puede haber cambiado en
+     Planteamiento y aquí se actualiza solo; el vínculo no depende de él. */
+  if(grupo.plantId){ cargarPlanteamiento_(grupo.plantId); return; }
+
   btn.disabled = true; btn.textContent = 'buscando…';
   est.textContent = ''; est.style.color = '';
 
-  jsonpCall({ accion:'planteamiento', ciclo:grupo.ciclo, numero_grupo:grupo.numero_grupo },
-  function(r){
+  jsonpCall({ accion:'planteamientos' }, function(r){
     btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
     if(!r || !r.ok){
       est.textContent = (r && r.error) ? r.error : 'No se pudo consultar Planteamiento Investigativo.';
       est.style.color = '#9a3b2c';
       return;
     }
-    if(!r.encontrado){
-      est.textContent = 'No hay un planteamiento guardado para ' + grupo.ciclo +
-                        ' · Grupo ' + grupo.numero_grupo + '. Escribe los objetivos a mano.';
+    var lista = r.lista || [];
+    if(!lista.length){
+      est.textContent = 'No hay planteamientos guardados a tu nombre. Créalo primero en el otro aplicativo.';
       est.style.color = '#8a6d1f';
       return;
     }
+    mostrarSelectorPlanteamiento_(lista);
+  },
+  function(f){
+    btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
+    est.textContent = 'Error de red. ' + textoFallo(f);
+    est.style.color = '#9a3b2c';
+  });
+}
+
+/* Selector: el alumno elige de una lista, nunca escribe el vínculo a mano.
+   Así no hay forma de que el título o el número de grupo no coincidan. */
+function mostrarSelectorPlanteamiento_(lista){
+  var est = document.getElementById('cv-plant-estado');
+  var h = '<div class="plantSel"><div class="plantSelTit">¿Cuál de tus planteamientos?</div>';
+  lista.forEach(function(p){
+    var meta = [p.ciclo, p.numero_grupo ? ('Grupo ' + p.numero_grupo) : '', p.coordinador]
+                 .filter(function(x){ return x; }).join(' · ');
+    h += '<button type="button" class="plantOpt" onclick="elegirPlanteamiento_(\''+p.id+'\')">'+
+         '<span class="plantMeta">'+esc(meta||'—')+'</span>'+
+         '<span class="plantTit">'+esc(p.titulo || '(sin título todavía)')+'</span></button>';
+  });
+  h += '</div>';
+  est.innerHTML = h; est.style.color = '';
+}
+
+function elegirPlanteamiento_(id){ cargarPlanteamiento_(id); }
+
+function cargarPlanteamiento_(id){
+  var btn = document.getElementById('btn-plant');
+  var est = document.getElementById('cv-plant-estado');
+  btn.disabled = true; btn.textContent = 'trayendo…';
+  est.innerHTML = ''; est.style.color = '';
+
+  jsonpCall({ accion:'planteamiento', plant_id:id }, function(r){
+    btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
+    if(!r || !r.ok){
+      est.textContent = (r && r.error) ? r.error : 'No se pudo traer el planteamiento.';
+      est.style.color = '#9a3b2c';
+      return;
+    }
+    if(!r.encontrado){
+      /* El vínculo apunta a un registro que ya no existe: se suelta para
+         que el grupo pueda elegir otro en vez de quedarse atascado. */
+      grupo.plantId = ''; grupo.plantTitulo = '';
+      est.textContent = 'El planteamiento vinculado ya no existe. Pulsa otra vez para elegir uno.';
+      est.style.color = '#8a6d1f';
+      return;
+    }
+    grupo.plantId = r.plant_id || id;
+    grupo.plantTitulo = r.titulo || '';
+    marcarCambio();
     mostrarPanelPlanteamiento_(r.datos);
   },
   function(f){
@@ -1567,6 +1638,8 @@ function guardarAhora(){
     numero_grupo: grupo.numero_grupo,
     coordinador: grupo.coordinador,
     correos: correos,
+    plant_id: grupo.plantId || '',
+    plant_titulo: grupo.plantTitulo || '',
     estructura: JSON.stringify(estadoCompleto_())
   };
 
@@ -2065,6 +2138,8 @@ function abrirRed(recId){
     grupo.ciclo = r.ciclo;
     grupo.numero_grupo = r.numero_grupo;
     grupo.coordinador = r.coordinador;
+    grupo.plantId = r.plant_id || '';
+    grupo.plantTitulo = r.plant_titulo || '';
     grupo.correoCompanero = String(r.correos||'').toLowerCase()
         .split(/[;,\s]+/).filter(function(x){ return x && x !== SESION.email; })[0] || '';
     aplicarEstadoCargado_(r.estructura);
