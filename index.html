@@ -126,6 +126,12 @@
   .tree-item.l5{background:#fafbf9;border-left:3px solid #3a6ea5;}
   .tree-head{display:flex;align-items:center;gap:8px;font-size:16px;}
   .tree-text{flex:1;}
+  /* El rótulo se edita en el sitio: se marca con un subrayado punteado al
+     pasar el cursor para que se note que es editable. */
+  .tree-text.editable{cursor:text;border-radius:3px;padding:1px 4px;margin:-1px -4px;}
+  .tree-text.editable:hover{background:#fff;box-shadow:inset 0 -1px 0 var(--line);}
+  .tree-text.editable:focus{outline:none;background:#fff;
+                            box-shadow:0 0 0 2px var(--teal);}
   .net-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;}
   .dot-purple{background:#534AB7;} .dot-teal{background:var(--teal);}
   .dot-coral{background:var(--amber);} .dot-pink{background:#a33e6d;}
@@ -2259,10 +2265,31 @@ function totalProds(){
 /* ════════════════════════════════
    HELPERS DE DOM
 ════════════════════════════════ */
-function makeHead(dotClass, text, badge, delFn){
+/* editFn recibe el texto nuevo. Si se pasa, el rótulo se puede corregir en el
+   sitio: antes solo quedaba borrar el nodo y volver a escribirlo, lo que hacía
+   perder todo lo que colgaba de él. */
+function makeHead(dotClass, text, badge, delFn, editFn){
   var head = document.createElement('div'); head.className = 'tree-head';
   var dot  = document.createElement('span'); dot.className  = 'net-dot ' + dotClass;
   var span = document.createElement('span'); span.className = 'tree-text'; span.textContent = text;
+
+  if(editFn){
+    span.classList.add('editable');
+    span.contentEditable = 'true';
+    span.spellcheck = false;
+    span.title = 'Haz clic para editar';
+    span.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter'){ ev.preventDefault(); span.blur(); }
+      if(ev.key === 'Escape'){ span.textContent = text; span.blur(); }
+    });
+    span.addEventListener('blur', function(){
+      var nuevo = span.textContent.replace(/\s+/g,' ').trim();
+      if(!nuevo){ span.textContent = text; return; }   // vacío: se deja como estaba
+      if(nuevo === text) return;                        // sin cambios: no re-renderiza
+      editFn(nuevo);
+    });
+  }
+
   head.appendChild(dot); head.appendChild(span);
   if(badge != null){
     var b = document.createElement('span'); b.className = 'tree-badge'; b.textContent = badge; head.appendChild(b);
@@ -2616,7 +2643,9 @@ function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
   /* La asociación con el proyecto se declara aquí, en el paso 2, cuando ya
      existen los proyectos (paso 1) y el enfoque se está construyendo. */
-  wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc', function(){ removeEnfoque(e.id); }));
+  wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc',
+    function(){ removeEnfoque(e.id); },
+    function(t){ e.text = t; renderAll(); }));
   if(nivelRed < 3){
     var fp = document.createElement('div'); fp.className = 'enf-proy';
     var lp = document.createElement('span'); lp.className = 'enf-proy-lbl';
@@ -2652,7 +2681,9 @@ function buildNetConcepto(eid, c){
   var badge = nivelRed < 3
     ? (nq ? nq + (nq===1?' pregunta':' preguntas') : null)
     : n + (n===1?' proc':' procs');
-  wrap.appendChild(makeHead('dot-teal', c.text, badge, function(){ removeConcepto(eid, c.id); }));
+  wrap.appendChild(makeHead('dot-teal', c.text, badge,
+    function(){ removeConcepto(eid, c.id); },
+    function(t){ c.text = t; renderAll(); }));
   if(nivelRed >= 3){
     wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
     wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
@@ -2662,7 +2693,9 @@ function buildNetConcepto(eid, c){
 function buildNetProc(cid, pr){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
   var n = (pr.herrs||[]).length;
-  wrap.appendChild(makeHead('dot-coral', pr.text, n + (n===1?' herr':' herrs'), function(){ removeProcRed(cid, pr.id); }));
+  wrap.appendChild(makeHead('dot-coral', pr.text, n + (n===1?' herr':' herrs'),
+    function(){ removeProcRed(cid, pr.id); },
+    function(t){ pr.text = t; renderAll(); }));
   wrap.appendChild(makeAddRow('Agregar herramienta (entregable o producto)…', function(v){ addHerrRed(pr.id, v); }));
   wrap.appendChild(makeChildren(pr.herrs||[], function(h){ return buildNetHerr(pr.id, h); }));
   return wrap;
@@ -2671,14 +2704,17 @@ function buildNetHerr(pid, h){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l4';
   var n = (h.prods||[]).length;
   wrap.appendChild(makeHead('dot-amber', h.text, n + (n===1?' prod':' prods'),
-    function(){ removeHerrRed(pid, h.id); }));
+    function(){ removeHerrRed(pid, h.id); },
+    function(t){ h.text = t; renderAll(); }));
   wrap.appendChild(makeAddRow('Agregar producto o entregable…', function(v){ addProdRed(h.id, v); }));
   wrap.appendChild(makeChildren(h.prods||[], function(pd){ return buildNetProd(h.id, pd); }));
   return wrap;
 }
 function buildNetProd(hid, pd){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l5';
-  wrap.appendChild(makeHead('dot-blue', pd.text, null, function(){ removeProdRed(hid, pd.id); }));
+  wrap.appendChild(makeHead('dot-blue', pd.text, null,
+    function(){ removeProdRed(hid, pd.id); },
+    function(t){ pd.text = t; renderAll(); }));
   return wrap;
 }
 
