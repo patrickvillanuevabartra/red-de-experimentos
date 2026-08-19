@@ -2771,8 +2771,15 @@ function renderNetwork(){
   var intro = document.getElementById('net-intro');
   if(intro){
     intro.innerHTML = nivelRed < 3
-      ? 'Define <b>qué vas a estudiar</b>: los enfoques (metodologías de solución) y, dentro de cada uno, sus conceptos (etapas). Las preguntas vienen en el paso 2 y los procedimientos en el paso 3.'
-      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos (sub etapas), la herramienta con que se ejecutan y el producto que dejan.';
+      ? 'Define <b>qué vas a estudiar</b>: los enfoques y, dentro de cada uno, sus conceptos. '+
+        'Lo que consignas aquí no se improvisa: sale de <b>consolidar las redes semánticas que construiste en ATLAS.ti</b>. '+
+        'Un mismo enfoque suele aparecer tratado por varios autores, cada uno con su recorte y su vocabulario. '+
+        'Como investigador te toca decidir qué conceptos adoptas, cuáles descartas y cuáles fusionas en uno solo '+
+        'porque nombran lo mismo con palabras distintas. Esa depuración es tu aporte, y debes poder sustentarla: '+
+        'de qué autor tomaste cada concepto y por qué. Las preguntas vienen en el paso 5 y los procedimientos en el paso 6.'
+      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos, la herramienta con que se ejecutan '+
+        'y el producto que dejan. Igual que en el paso 4, esto se desprende de tus redes en ATLAS.ti: los autores describen '+
+        'los procedimientos con distinto nivel de detalle, y tú decides cuáles conserva tu propuesta.';
   }
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
   data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
