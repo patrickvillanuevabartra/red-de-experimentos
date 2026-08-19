@@ -377,6 +377,18 @@
     .navPasosMid{text-align:center;}
   }
 
+  /* Datos heredados del planteamiento: se muestran, no se editan */
+  .datosBox{background:#eef5f4;border:1px solid #c3ded9;border-radius:6px;
+            padding:11px 13px;margin-bottom:20px;}
+  .datosTit{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+            font-weight:700;color:#2f6d6a;margin-bottom:8px;}
+  .datosFila{display:flex;gap:12px;padding:4px 0;border-top:1px solid #dbe7e4;font-size:14px;}
+  .datosFila:first-of-type{border-top:none;}
+  .datosEt{flex:0 0 130px;color:#6a746f;font-size:12.5px;font-weight:600;padding-top:1px;}
+  .datosVal{flex:1;color:#1c2a33;}
+  @media(max-width:600px){ .datosFila{flex-direction:column;gap:1px;} .datosEt{flex:none;} }
+
+
 
 
 </style>
@@ -418,7 +430,7 @@
     <!-- Registro del grupo -->
     <div class="card" id="registroCard">
       <h2>Registro del grupo</h2>
-      <p class="note">Antes de construir la red, consigna los datos básicos del grupo.</p>
+      <p class="note">Elige el planteamiento del que parte esta red. Sus datos de grupo se toman de allí.</p>
 
       <div class="coordsBox" style="margin-bottom:20px;">
         <div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Curso</div>
@@ -435,19 +447,10 @@
         <button type="button" class="btnMini" id="btnPlantPick" onclick="abrirSelectorPlant()">Elegir planteamiento…</button>
       </div>
 
-      <label for="f_ciclo">Ciclo</label>
-      <select id="f_ciclo"></select>
-
-      <div class="row2">
-        <div>
-          <label for="f_ngrupo">N° de grupo</label>
-          <input id="f_ngrupo" placeholder="Ej. 3">
-        </div>
-        <div>
-          <label for="f_coord">Coordinador(a) de grupo</label>
-          <input id="f_coord" placeholder="Nombres y apellidos">
-        </div>
-      </div>
+      <div id="datosPlant"></div>
+      <select id="f_ciclo" style="display:none;"></select>
+      <input id="f_ngrupo" type="hidden">
+      <input id="f_coord" type="hidden">
 
       <label for="f_correo2">Correo del compañero(a) de grupo</label>
       <input id="f_correo2" placeholder="compañero@urp.edu.pe">
@@ -816,6 +819,7 @@ function arrancarApp(){
   document.getElementById('txtCurso').textContent    = CURSO_FIJO;
   document.getElementById('txtProfesor').textContent = PROFESOR_FIJO;
   pintarPlantElegido();
+  pintarDatosPlant();
   renderAll();
   switchView('network');
   mostrarTab('trabajo');
@@ -828,6 +832,7 @@ function editarDatosGrupo(){
   document.getElementById('f_coord').value  = grupo.coordinador;
   document.getElementById('f_correo2').value = grupo.correoCompanero;
   pintarPlantElegido();
+  pintarDatosPlant();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -835,6 +840,32 @@ function editarDatosGrupo(){
    Obligatorio: la red pertenece a un planteamiento concreto. Al elegirlo se
    copian ciclo, grupo y coordinador desde allí, así los dos aplicativos no
    pueden discrepar. */
+/* Resumen de los datos que vienen del planteamiento. No son editables: la
+   fuente es Planteamiento Investigativo, y tener dos copias editables acaba
+   siempre en que discrepan. Si algo está mal, se corrige allá. */
+function pintarDatosPlant(){
+  var box = document.getElementById('datosPlant');
+  if(!box) return;
+  if(!grupo.plantId){ box.innerHTML=''; return; }
+
+  var ciclo  = document.getElementById('f_ciclo').value || '—';
+  var ngrupo = document.getElementById('f_ngrupo').value || '—';
+  var coord  = document.getElementById('f_coord').value || '—';
+  var falta  = (ciclo==='—' || ngrupo==='—' || coord==='—');
+
+  box.innerHTML =
+    '<div class="datosBox">'+
+    '<div class="datosTit">Datos del grupo · según el planteamiento</div>'+
+    '<div class="datosFila"><span class="datosEt">Ciclo</span><span class="datosVal">'+esc(ciclo)+'</span></div>'+
+    '<div class="datosFila"><span class="datosEt">N° de grupo</span><span class="datosVal">'+esc(ngrupo)+'</span></div>'+
+    '<div class="datosFila"><span class="datosEt">Coordinador(a)</span><span class="datosVal">'+esc(coord)+'</span></div>'+
+    '<p class="note" style="font-size:12px;margin:9px 0 0;">'+
+    (falta
+      ? 'Faltan datos en el planteamiento. Complétalos en <b>Planteamiento Investigativo</b>, paso 0, y vuelve a elegirlo aquí.'
+      : 'Si alguno está mal, corrígelo en <b>Planteamiento Investigativo</b>: esta pantalla solo lo refleja.')+
+    '</p></div>';
+}
+
 function pintarPlantElegido(){
   var box = document.getElementById('plantElegido');
   var btn = document.getElementById('btnPlantPick');
@@ -899,6 +930,7 @@ function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord){
   if(ngrupo) document.getElementById('f_ngrupo').value = ngrupo;
   if(coord)  document.getElementById('f_coord').value  = coord;
   pintarPlantElegido();
+  pintarDatosPlant();
   toast('Planteamiento vinculado');
 }
 
