@@ -414,6 +414,15 @@
   .datosVal{flex:1;color:#1c2a33;}
   @media(max-width:600px){ .datosFila{flex-direction:column;gap:1px;} .datosEt{flex:none;} }
 
+  /* Rótulo de parte: este aplicativo es la segunda de tres (Planteamiento ·
+     Estado del arte · Métodos y técnicas). Sitúa al alumno en el conjunto. */
+  .parte{display:flex;align-items:baseline;flex-wrap:wrap;gap:9px;margin-bottom:8px;
+         font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:var(--teal);}
+  .parteNum{background:var(--teal);color:#fff;border-radius:99px;padding:3px 10px;
+            font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+  @media(max-width:480px){ .parte{font-size:13.5px;} }
+
+
 
 
 
@@ -435,6 +444,7 @@
 
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · TALLER DE INVESTIGACIÓN EN INGENIERÍA I</div>
+  <div class="parte"><span class="parteNum">Segunda parte</span>El estado del arte</div>
   <h1>De la red semántica al experimento</h1>
   <p class="sub">Construye la red en cinco niveles —enfoque, concepto, procedimiento, herramienta y producto—, analiza las preguntas detrás de cada concepto y arma el canvas de experimentos.</p>
 
