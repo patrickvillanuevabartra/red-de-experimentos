@@ -339,8 +339,34 @@
     .rot-cuenta{display:block;margin:4px 0 0;}
   }
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-  @media(max-width:680px){.row2{grid-template-columns:1fr;}}
-
+  /* ---------- Tablet y celular ----------
+     Misma escala que Planteamiento Investigativo: los dos aplicativos son
+     parte del mismo recorrido y no deben verse distintos. */
+  @media(max-width:680px){
+    .row2{grid-template-columns:1fr;}
+    .wrap{padding:20px 14px 48px;}
+    h1{font-size:25px;}
+    .sub{font-size:14px;margin-bottom:18px;}
+    .card{padding:20px 16px;}
+    .tabs{gap:6px;}
+    .tab{flex:1 1 auto;text-align:center;}
+    .fases-head{flex-wrap:wrap;gap:6px;}
+    .fases-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:480px){
+    h1{font-size:22px;}
+    .card{padding:16px 14px;}
+    .fases-tit{font-size:14px;}
+    /* En la ruta solo se lee el paso actual; el resto queda como numeros */
+    .pill-t{display:none;}
+    .pill.pill-on .pill-t{display:inline;}
+    .pill{padding:6px 10px 6px 6px;}
+    .fase-pills{gap:6px;}
+    .actions{flex-direction:column-reverse;gap:8px;align-items:stretch;}
+    .actions .btn,.actions .btnGhost{width:100%;}
+    .grupoBar{flex-direction:column;align-items:stretch;}
+    .grupoBar .acts .btn,.grupoBar .acts .btnMini{flex:1;}
+  }
   /* Selector de planteamiento: el vínculo se elige, no se escribe */
   .plantSel{border:1px solid var(--line,#c9cfc6);border-radius:8px;background:#fff;
             padding:10px;margin-top:8px;}
