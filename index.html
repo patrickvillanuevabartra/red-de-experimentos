@@ -422,6 +422,16 @@
             font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
   @media(max-width:480px){ .parte{font-size:13.5px;} }
 
+  .accLista{display:flex;flex-direction:column;gap:5px;}
+  .accFila{display:flex;align-items:center;justify-content:space-between;gap:10px;
+           background:#fff;border:1px solid var(--line);border-radius:5px;padding:7px 11px;}
+  .accMail{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px;word-break:break-all;}
+  .accYo{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+         background:#e9f3f1;color:#2f6d6a;border-radius:99px;padding:2px 7px;flex-shrink:0;}
+  .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;}
+  .btnDel:hover{background:#fbf1ee;}
+
+
 
 
 
@@ -488,9 +498,10 @@
       <input id="f_ngrupo" type="hidden">
       <input id="f_coord" type="hidden">
 
-      <label for="f_correo2">Correo del compañero(a) de grupo</label>
-      <input id="f_correo2" placeholder="compañero@urp.edu.pe">
-      <p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b id="txtMiCorreo"></b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar esta red. Si trabajas solo, déjalo vacío.</p>
+      <label for="f_correo2">Añadir a alguien más <span style="text-transform:none;letter-spacing:0;">(opcional)</span></label>
+      <input id="f_correo2" placeholder="otro@urp.edu.pe, otra@urp.edu.pe">
+      <div id="panelAccesos"></div>
+      <p class="note" style="font-size:12px;margin:4px 0 0;">El equipo del planteamiento ya tiene acceso a esta red. Usa este campo solo si alguien más debe entrar sin figurar en el planteamiento; separa varios correos con comas. Los heredados no se pueden quitar desde aquí.</p>
 
       <div class="actions"><span></span>
         <button class="btn" id="btnIniciar" onclick="iniciarRed()">Iniciar red →</button>
@@ -792,7 +803,26 @@ function salirSesion(){
    ESTADO DEL GRUPO Y AUTOGUARDADO
 ════════════════════════════════════════════════════════════ */
 var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'',
+              /* correosPlant: heredados del planteamiento, no se pueden quitar.
+                 correosExtra: sumados aquí, para quien se une solo a la red. */
+              correosPlant:'', correosExtra:'', correosGuardados:'',
               plantId:'', plantTitulo:'', cargado:false };
+
+/* Normaliza una lista de correos separados por coma, punto y coma o espacios */
+function listaCorreos_(t){
+  return String(t||'').toLowerCase().split(/[;,\s]+/)
+         .filter(function(x){ return x && x.indexOf('@') !== -1; });
+}
+
+/* Todos los que tendrán acceso a esta red, sin repetidos */
+function correosDeLaRed_(){
+  var todos = [SESION.email]
+    .concat(listaCorreos_(grupo.correosPlant))
+    .concat(listaCorreos_(grupo.correosExtra));
+  var vistos = {}, out = [];
+  todos.forEach(function(c){ if(c && !vistos[c]){ vistos[c]=1; out.push(c); } });
+  return out;
+}
 var suprimirAutoguardado = true;
 var guardarTimer = null;
 var guardadoEnCurso = false;
@@ -856,6 +886,7 @@ function arrancarApp(){
   document.getElementById('txtProfesor').textContent = PROFESOR_FIJO;
   pintarPlantElegido();
   pintarDatosPlant();
+  pintarAccesos();
   renderAll();
   switchView('network');
   mostrarTab('trabajo');
@@ -866,9 +897,10 @@ function editarDatosGrupo(){
   document.getElementById('f_ciclo').value  = grupo.ciclo;
   document.getElementById('f_ngrupo').value = grupo.numero_grupo;
   document.getElementById('f_coord').value  = grupo.coordinador;
-  document.getElementById('f_correo2').value = grupo.correoCompanero;
+  document.getElementById('f_correo2').value = grupo.correosExtra;
   pintarPlantElegido();
   pintarDatosPlant();
+  pintarAccesos();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -879,6 +911,50 @@ function editarDatosGrupo(){
 /* Resumen de los datos que vienen del planteamiento. No son editables: la
    fuente es Planteamiento Investigativo, y tener dos copias editables acaba
    siempre en que discrepan. Si algo está mal, se corrige allá. */
+/* Quién tiene acceso a esta red. Quitar es potestad del docente. */
+function pintarAccesos(){
+  var box = document.getElementById('panelAccesos');
+  if(!box) return;
+  var lista = listaCorreos_(grupo.correosGuardados || correosDeLaRed_().join(', '));
+  if(!grupo.id || !lista.length){ box.innerHTML=''; return; }
+
+  var h = '<div class="datosBox" style="background:#fbfaf6;border-color:#e2ddcd;">'+
+          '<div class="datosTit" style="color:#8a6d3b;">Con acceso a esta red</div>'+
+          '<div class="accLista">';
+  lista.forEach(function(c){
+    var yo = (c === SESION.email);
+    h += '<div class="accFila"><span class="accMail">'+esc(c)+
+         (yo ? '<span class="accYo">tú</span>' : '')+'</span>'+
+         (SESION.docente && !yo && lista.length > 1
+           ? '<button type="button" class="btnDel" style="padding:4px 9px;font-size:12px;" '+
+             'onclick="quitarAccesoRed(\''+c+'\')">quitar</button>'
+           : '')+'</div>';
+  });
+  h += '</div>';
+  if(SESION.docente){
+    h += '<p class="note" style="font-size:12px;margin:8px 0 0;">Como docente puedes retirar el acceso de cualquiera. No se puede dejar la red sin ningún correo ni quitarte a ti mismo.</p>';
+  }
+  box.innerHTML = h + '</div>';
+}
+
+function quitarAccesoRed(correo){
+  if(!confirm('¿Retirar el acceso de '+correo+' a esta red?\n\nDejará de verla y de poder editarla.')) return;
+  toast('Quitando acceso…');
+  jsonpCall({ accion:'correo_quitar', id:grupo.id, correo:encodeURIComponent(correo) }, function(r){
+    if(!r || !r.ok){
+      var msg = (r && r.error === 'ULTIMO_CORREO')
+        ? 'No se puede quitar: es el único correo con acceso.'
+        : ((r && r.error) || 'No se pudo quitar el acceso');
+      return toast(msg, true);
+    }
+    grupo.correosGuardados = r.correos || '';
+    grupo.correosExtra = listaCorreos_(grupo.correosGuardados)
+        .filter(function(x){ return x !== SESION.email; }).join(', ');
+    pintarAccesos();
+    toast('Acceso retirado');
+  }, function(f){ toast('Error de red. '+textoFallo(f), true); });
+}
+
 function pintarDatosPlant(){
   var box = document.getElementById('datosPlant');
   if(!box) return;
@@ -895,6 +971,8 @@ function pintarDatosPlant(){
     '<div class="datosFila"><span class="datosEt">Ciclo</span><span class="datosVal">'+esc(ciclo)+'</span></div>'+
     '<div class="datosFila"><span class="datosEt">N° de grupo</span><span class="datosVal">'+esc(ngrupo)+'</span></div>'+
     '<div class="datosFila"><span class="datosEt">Coordinador(a)</span><span class="datosVal">'+esc(coord)+'</span></div>'+
+    '<div class="datosFila"><span class="datosEt">Equipo</span><span class="datosVal">'+
+      esc(listaCorreos_(grupo.correosPlant).join(', ') || '— solo tú')+'</span></div>'+
     '<p class="note" style="font-size:12px;margin:9px 0 0;">'+
     (falta
       ? 'Faltan datos en el planteamiento. Complétalos en <b>Planteamiento Investigativo</b>, paso 0, y vuelve a elegirlo aquí.'
@@ -940,7 +1018,8 @@ function abrirSelectorPlant(){
                    .filter(function(x){ return x; }).join(' · ');
       h += '<button type="button" class="plantOpt" onclick="fijarPlanteamiento_('+
            '\''+p.id+'\',\''+escAttr_(p.titulo)+'\',\''+escAttr_(p.ciclo)+'\','+
-           '\''+escAttr_(p.numero_grupo)+'\',\''+escAttr_(p.coordinador)+'\')">'+
+           '\''+escAttr_(p.numero_grupo)+'\',\''+escAttr_(p.coordinador)+'\','+
+           '\''+escAttr_(p.correos)+'\')">'+
            '<span class="plantMeta">'+esc(meta||'—')+'</span>'+
            '<span class="plantTit">'+esc(p.titulo || '(sin título todavía)')+'</span></button>';
     });
@@ -957,9 +1036,10 @@ function escAttr_(t){
     .replace(/"/g,'&quot;').replace(/[\r\n]+/g,' ');
 }
 
-function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord){
+function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord, correos){
   grupo.plantId = id;
   grupo.plantTitulo = titulo || '';
+  grupo.correosPlant = correos || '';
   document.getElementById('plantLista').innerHTML = '';
   /* Se copian los datos del planteamiento, pero quedan editables */
   if(ciclo){ var sc=document.getElementById('f_ciclo'); if(sc) sc.value = ciclo; }
@@ -967,6 +1047,7 @@ function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord){
   if(coord)  document.getElementById('f_coord').value  = coord;
   pintarPlantElegido();
   pintarDatosPlant();
+  pintarAccesos();
   toast('Planteamiento vinculado');
 }
 
@@ -974,7 +1055,7 @@ function iniciarRed(){
   var ciclo  = document.getElementById('f_ciclo').value.trim();
   var ngrupo = document.getElementById('f_ngrupo').value.trim();
   var coord  = document.getElementById('f_coord').value.trim();
-  var comp   = document.getElementById('f_correo2').value.trim().toLowerCase();
+  var extra  = document.getElementById('f_correo2').value.trim().toLowerCase();
 
   if(!grupo.plantId) return toast('Elige primero el planteamiento al que pertenece esta red', true);
   if(!ciclo)  return toast('Selecciona el ciclo', true);
@@ -993,7 +1074,7 @@ function iniciarRed(){
       return;
     }
     grupo.ciclo = ciclo; grupo.numero_grupo = ngrupo;
-    grupo.coordinador = coord; grupo.correoCompanero = comp;
+    grupo.coordinador = coord; grupo.correosExtra = extra;
 
     if(resp.record){
       grupo.id = resp.record.id;
@@ -1020,7 +1101,9 @@ function nuevaRed(){
      'Lo que tengas en pantalla sin guardar se pierde. ¿Continuar?')) return;
   clearTimeout(guardarTimer); guardarTimer = null;
   suprimirAutoguardado = true;
-  grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
+  grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'',
+            correosPlant:'', correosExtra:'', correosGuardados:'',
+            plantId:'', plantTitulo:'', cargado:false };
   data = []; idc = 0;
   canvasExp = { programa:'', og:'', rg:'', especificos:[], proyectos:[], notas:'' };
   pintarCamposCanvas_();
@@ -1632,6 +1715,7 @@ function cargarPlanteamiento_(id){
     }
     grupo.plantId = r.plant_id || id;
     grupo.plantTitulo = r.titulo || '';
+    if(r.correos) grupo.correosPlant = r.correos;
     marcarCambio();
     mostrarPanelPlanteamiento_(r.datos);
   },
@@ -1805,8 +1889,7 @@ function guardarAhora(){
   clearTimeout(guardarTimer); guardarTimer = null;
 
   setEstadoGuardado('guardando…');
-  var correos = [SESION.email, grupo.correoCompanero]
-                  .filter(function(x){ return x; }).join(', ');
+  var correos = correosDeLaRed_().join(', ');
   var params = {
     accion: grupo.id ? 'actualizar' : 'crear',
     id: grupo.id || '',
@@ -2316,8 +2399,11 @@ function abrirRed(recId){
     grupo.coordinador = r.coordinador;
     grupo.plantId = r.plant_id || '';
     grupo.plantTitulo = r.plant_titulo || '';
-    grupo.correoCompanero = String(r.correos||'').toLowerCase()
-        .split(/[;,\s]+/).filter(function(x){ return x && x !== SESION.email; })[0] || '';
+    /* Los correos guardados ya incluyen heredados y añadidos; se conservan
+       como extra para no perderlos si el planteamiento cambia después. */
+    grupo.correosGuardados = String(r.correos||'').toLowerCase();
+    grupo.correosExtra = listaCorreos_(r.correos)
+        .filter(function(x){ return x !== SESION.email; }).join(', ');
     aplicarEstadoCargado_(r.estructura);
     grupo.cargado = true;
     suprimirAutoguardado = false;
