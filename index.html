@@ -431,6 +431,10 @@
   .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;}
   .btnDel:hover{background:#fbf1ee;}
 
+  .campoBloq{background:#f4f6f2;border:1px solid var(--line);border-radius:4px;
+             padding:11px 12px;font-size:16.5px;color:#6a746f;}
+
+
 
 
 
@@ -498,10 +502,11 @@
       <input id="f_ngrupo" type="hidden">
       <input id="f_coord" type="hidden">
 
-      <label for="f_correo2">Añadir a alguien más <span style="text-transform:none;letter-spacing:0;">(opcional)</span></label>
+      <label for="f_correo2" id="lblCorreo2">Añadir a alguien más <span style="text-transform:none;letter-spacing:0;">(solo docentes)</span></label>
       <input id="f_correo2" placeholder="otro@urp.edu.pe, otra@urp.edu.pe">
+      <div id="correo2Bloq" class="campoBloq" style="display:none;">— lo asigna el docente</div>
       <div id="panelAccesos"></div>
-      <p class="note" style="font-size:12px;margin:4px 0 0;">El equipo del planteamiento ya tiene acceso a esta red. Usa este campo solo si alguien más debe entrar sin figurar en el planteamiento; separa varios correos con comas. Los heredados no se pueden quitar desde aquí.</p>
+      <p class="note" style="font-size:12px;margin:4px 0 0;"><span id="hintCorreo2"></span></p>
 
       <div class="actions"><span></span>
         <button class="btn" id="btnIniciar" onclick="iniciarRed()">Iniciar red →</button>
@@ -887,6 +892,7 @@ function arrancarApp(){
   pintarPlantElegido();
   pintarDatosPlant();
   pintarAccesos();
+  aplicarRolCorreos();
   renderAll();
   switchView('network');
   mostrarTab('trabajo');
@@ -901,6 +907,7 @@ function editarDatosGrupo(){
   pintarPlantElegido();
   pintarDatosPlant();
   pintarAccesos();
+  aplicarRolCorreos();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -912,6 +919,23 @@ function editarDatosGrupo(){
    fuente es Planteamiento Investigativo, y tener dos copias editables acaba
    siempre en que discrepan. Si algo está mal, se corrige allá. */
 /* Quién tiene acceso a esta red. Quitar es potestad del docente. */
+/* El campo de sumar correos es potestad del docente: un alumno no decide
+   quién más entra a la red. Los del planteamiento se heredan igual. */
+function aplicarRolCorreos(){
+  var inp = document.getElementById('f_correo2');
+  var blq = document.getElementById('correo2Bloq');
+  var hnt = document.getElementById('hintCorreo2');
+  if(!inp || !blq) return;
+  if(SESION.docente){
+    inp.style.display = ''; blq.style.display = 'none';
+    if(hnt) hnt.innerHTML = 'El equipo del planteamiento ya tiene acceso. Usa este campo solo si alguien m\u00e1s debe entrar sin figurar en el planteamiento; separa varios correos con comas.';
+  } else {
+    inp.style.display = 'none'; blq.style.display = 'block';
+    blq.textContent = listaCorreos_(grupo.correosExtra).join(', ') || '\u2014 lo asigna el docente';
+    if(hnt) hnt.innerHTML = 'El equipo del planteamiento ya tiene acceso a esta red. Si alguien m\u00e1s necesita entrar, p\u00eddeselo al docente.';
+  }
+}
+
 function pintarAccesos(){
   var box = document.getElementById('panelAccesos');
   if(!box) return;
@@ -951,6 +975,7 @@ function quitarAccesoRed(correo){
     grupo.correosExtra = listaCorreos_(grupo.correosGuardados)
         .filter(function(x){ return x !== SESION.email; }).join(', ');
     pintarAccesos();
+  aplicarRolCorreos();
     toast('Acceso retirado');
   }, function(f){ toast('Error de red. '+textoFallo(f), true); });
 }
@@ -1048,6 +1073,7 @@ function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord, correos){
   pintarPlantElegido();
   pintarDatosPlant();
   pintarAccesos();
+  aplicarRolCorreos();
   toast('Planteamiento vinculado');
 }
 
@@ -1055,7 +1081,9 @@ function iniciarRed(){
   var ciclo  = document.getElementById('f_ciclo').value.trim();
   var ngrupo = document.getElementById('f_ngrupo').value.trim();
   var coord  = document.getElementById('f_coord').value.trim();
-  var extra  = document.getElementById('f_correo2').value.trim().toLowerCase();
+  var extra  = SESION.docente
+    ? document.getElementById('f_correo2').value.trim().toLowerCase()
+    : grupo.correosExtra;
 
   if(!grupo.plantId) return toast('Elige primero el planteamiento al que pertenece esta red', true);
   if(!ciclo)  return toast('Selecciona el ciclo', true);
