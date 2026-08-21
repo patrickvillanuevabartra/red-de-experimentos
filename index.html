@@ -980,6 +980,36 @@ function quitarAccesoRed(correo){
   }, function(f){ toast('Error de red. '+textoFallo(f), true); });
 }
 
+/* Si ese planteamiento ya tiene una red, se abre directamente en vez de
+   pedirle al alumno que la "inicie" otra vez. */
+function buscarRedDelPlanteamiento_(){
+  if(!grupo.plantId){ return; }
+  toast('Buscando la red de este planteamiento…');
+  jsonpCall({ accion:'buscar', plant_id:grupo.plantId,
+              ciclo:grupo.ciclo||'', numero_grupo:grupo.numero_grupo||'' }, function(r){
+    if(r && r.ok && r.record){
+      grupo.id = r.record.id;
+      grupo.ciclo = r.record.ciclo || grupo.ciclo;
+      grupo.numero_grupo = r.record.numero_grupo || grupo.numero_grupo;
+      grupo.coordinador = r.record.coordinador || grupo.coordinador;
+      grupo.correosGuardados = String(r.record.correos||'').toLowerCase();
+      grupo.correosExtra = listaCorreos_(grupo.correosGuardados)
+          .filter(function(x){ return x !== SESION.email; }).join(', ');
+      aplicarEstadoCargado_(r.record.estructura);
+      grupo.cargado = true;
+      suprimirAutoguardado = false;
+      document.getElementById('registroCard').style.display = 'none';
+      document.getElementById('appCard').style.display = 'block';
+      renderGrupoBar();
+      toast('Se abrió la red que ya tenías para este planteamiento');
+      return;
+    }
+    toast('Planteamiento vinculado — pulsa «Iniciar red» para empezar');
+  }, function(){
+    toast('Planteamiento vinculado');
+  });
+}
+
 function pintarDatosPlant(){
   var box = document.getElementById('datosPlant');
   if(!box) return;
@@ -1067,14 +1097,31 @@ function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord, correos){
   grupo.correosPlant = correos || '';
   document.getElementById('plantLista').innerHTML = '';
   /* Se copian los datos del planteamiento, pero quedan editables */
-  if(ciclo){ var sc=document.getElementById('f_ciclo'); if(sc) sc.value = ciclo; }
+  if(ciclo){
+    var sc=document.getElementById('f_ciclo');
+    if(sc){
+      /* Si el ciclo del planteamiento no figura en CICLOS, hay que añadirlo:
+         de lo contrario asignar .value se ignora en silencio, el campo queda
+         vacío y luego «Iniciar red» reclama que falta el ciclo. */
+      var hay=false;
+      for(var q=0;q<sc.options.length;q++){ if(sc.options[q].value===ciclo){ hay=true; break; } }
+      if(!hay){
+        var op=document.createElement('option');
+        op.value=ciclo; op.textContent=ciclo; sc.appendChild(op);
+      }
+      sc.value = ciclo;
+    }
+  }
+  grupo.ciclo = ciclo || grupo.ciclo;
+  grupo.numero_grupo = ngrupo || grupo.numero_grupo;
+  grupo.coordinador = coord || grupo.coordinador;
   if(ngrupo) document.getElementById('f_ngrupo').value = ngrupo;
   if(coord)  document.getElementById('f_coord').value  = coord;
   pintarPlantElegido();
   pintarDatosPlant();
   pintarAccesos();
   aplicarRolCorreos();
-  toast('Planteamiento vinculado');
+  buscarRedDelPlanteamiento_();
 }
 
 function iniciarRed(){
