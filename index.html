@@ -434,6 +434,16 @@
   .campoBloq{background:#f4f6f2;border:1px solid var(--line);border-radius:4px;
              padding:11px 12px;font-size:16.5px;color:#6a746f;}
 
+  /* Preguntas recordadas bajo el concepto, en el paso de procedimientos */
+  .qRecordar{margin:6px 0 8px 22px;padding:8px 11px;border-left:2px solid #c9d6e8;
+             background:#f6f8fb;border-radius:0 5px 5px 0;}
+  .qRecordarTit{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+                font-weight:700;color:#3d5a80;margin-bottom:5px;}
+  .qRecordarItem{display:flex;flex-direction:column;gap:1px;padding:3px 0;font-size:13px;}
+  .qTxt{color:#1c2a33;line-height:1.45;}
+  .qAut{font-size:11.5px;color:#8a948f;}
+
+
 
 
 
@@ -695,8 +705,8 @@ function jsonpCall(params, onOk, onErr){
   }
   var timer = setTimeout(function(){
     fallar(cargo ? 'respondió, pero el contenido no era la respuesta esperada'
-                 : 'no respondió en 20 s');
-  }, 20000);
+                 : 'no respondió en 45 s');
+  }, 45000);   /* arranque en frío del proxy */
 
   window[cbName] = function(data){
     if(cerrado) return; cerrado = true;
@@ -1846,7 +1856,10 @@ function mostrarPanelPlanteamiento_(d){
   caja.appendChild(tit);
 
   var aviso = document.createElement('p'); aviso.className = 'plant-aviso';
-  if(aplicado.length){
+  if(aplicado.length && !String(canvasExp.og||'').trim()){
+    aviso.innerHTML = 'Se cargó: <b>' + esc(aplicado.join(', ')) + '</b>. '+
+      'Falta el <b>objetivo general</b>: elige abajo con qué texto partir.';
+  } else if(aplicado.length){
     aviso.innerHTML = 'Se cargó: <b>' + esc(aplicado.join(', ')) + '</b>. ' +
       (inds.length && oes.length && inds.length !== oes.length
         ? 'Ojo: hay ' + oes.length + ' objetivos y ' + inds.length + ' indicadores, así que algunos resultados quedaron vacíos. '
@@ -1858,8 +1871,13 @@ function mostrarPanelPlanteamiento_(d){
   }
   caja.appendChild(aviso);
 
-  /* ── Opciones de respaldo, siempre disponibles ── */
+  /* ── Opciones de respaldo ──
+     Solo aparecen si el planteamiento NO tenía el objetivo general lleno. Con
+     todo cargado no sirven de nada y confunden: parecen pedir una decisión que
+     ya está tomada. */
+  var mostrarRespaldo = !String(canvasExp.og||'').trim();
   function opcion(rotulo, valor, alAplicar){
+    if(!mostrarRespaldo) return;
     if(!String(valor||'').trim()) return;
     var fila = document.createElement('div'); fila.className = 'plant-op';
     var izq = document.createElement('div');
@@ -3107,6 +3125,24 @@ function buildNetConcepto(eid, c){
     function(){ removeConcepto(eid, c.id); },
     function(t){ c.text = t; renderAll(); }));
   if(nivelRed >= 3){
+    /* Las preguntas se recuerdan aquí, debajo del concepto: son las que el
+       procedimiento tiene que responder, y tenerlas a la vista evita subir al
+       paso 5 a comprobarlas. */
+    if(nq){
+      var qs = document.createElement('div'); qs.className = 'qRecordar';
+      var t = document.createElement('div'); t.className = 'qRecordarTit';
+      t.textContent = nq===1 ? 'Pregunta que debe responder' : 'Preguntas que debe responder';
+      qs.appendChild(t);
+      (c.preguntas||[]).forEach(function(q){
+        var li = document.createElement('div'); li.className = 'qRecordarItem';
+        var aut = (q.autores||[]).map(function(a){ return a.text || a; })
+                    .filter(function(x){ return x; }).join(' · ');
+        li.innerHTML = '<span class="qTxt">'+esc(q.text||'')+'</span>'+
+                       (aut ? '<span class="qAut">'+esc(aut)+'</span>' : '');
+        qs.appendChild(li);
+      });
+      wrap.appendChild(qs);
+    }
     wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
     wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
   }
