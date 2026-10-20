@@ -927,7 +927,7 @@ function rescatarOtros_(filas){
 }
 
 /* ════════════════════════════════════════════════════════════
-   CANVAS DE EXPERIMENTOS (fase 3)
+   CANVAS DE EXPERIMENTOS (pasos 1-3 y 7)
    Empaqueta lo construido: enfoque → proyecto → programa, y el
    programa responde al objetivo general y a los específicos.
    El proyecto se guarda EN el enfoque, así el vínculo no se puede
@@ -956,7 +956,7 @@ function addProyecto(){
   renderCanvas(); marcarCambio();
 }
 /* La relación se guarda en el enfoque (enfoque.proyectoId) porque se declara
-   en el paso 2, cuando el proyecto ya existe y el enfoque se está creando. */
+   en el paso 4, cuando el proyecto ya existe y el enfoque se está creando. */
 function enfoquesDelProyecto_(pyId){
   return data.filter(function(e){ return e.proyectoId === pyId; });
 }
@@ -1093,7 +1093,7 @@ function renderCanvas(){
     cont.appendChild(fila);
   });
 
-  /* ── proyectos: nombre y objetivo. El enfoque se asocia en el paso 2 ── */
+  /* ── proyectos: nombre y objetivo. El enfoque se asocia en el paso 4 ── */
   var pr = document.getElementById('cv-proyectos');
   pr.innerHTML = '';
   if(canvasExp.proyectos.length === 0){
@@ -1143,7 +1143,7 @@ function renderCanvas(){
 
     fila.appendChild(num); fila.appendChild(campos); fila.appendChild(del);
 
-    /* Enfoques que este proyecto adoptó: se asignan en el paso 2 */
+    /* Enfoques que este proyecto adoptó: se asignan en el paso 4 */
     var es = enfoquesDelProyecto_(py.id);
     var res = document.createElement('div'); res.className = 'cv-proy-res';
     if(es.length){
@@ -1714,15 +1714,15 @@ window.addEventListener('beforeunload', function(e){
 
 
 /* ════════════════════════════════════════════════════════════
-   EJEMPLO DE REFERENCIA — LAS DOS FASES ENLAZADAS
+   EJEMPLO DE REFERENCIA — LOS PASOS ENLAZADOS
    Tomado de la tabla de análisis de preguntas del Objetivo General
    de un trabajo real del curso (Grupo 4, TII I). El propio grupo
    declaró el mapeo en los encabezados de su tabla:
        Postura técnica              → Enfoque
-       Preguntas y conceptos        → Concepto + Preguntas (fase 2)
-       Autor (consultado)           → Autor (fase 2)
+       Preguntas y conceptos        → Concepto + Preguntas (paso 5)
+       Autor (consultado)           → Autor (paso 5)
        Herramienta para implementar → Procedimiento + Herramienta
-   Los MISMOS conceptos alimentan las dos fases: por eso al cargar
+   Los MISMOS conceptos alimentan los pasos 4 y 5: por eso al cargar
    el ejemplo se llenan a la vez la red semántica y la tabla.
    La empresa se mantiene en reserva.
 ════════════════════════════════════════════════════════════ */
@@ -1748,8 +1748,8 @@ function toggleEjemploRed(){
   var caja = document.getElementById('ej-red');
   var abierta = caja.style.display === 'block';
   caja.style.display = abierta ? 'none' : 'block';
-  /* Se reconstruye si cambió el paso: el ejemplo del paso 1 solo muestra
-     enfoques y conceptos; el del paso 3, los cinco niveles. */
+  /* Se reconstruye si cambió el paso: el ejemplo del paso 4 solo muestra
+     enfoques y conceptos; el del paso 6, los cinco niveles. */
   if(!abierta && caja.dataset.nivel !== String(nivelRed)){
     caja.innerHTML = construirEjemploHTML_();
     caja.dataset.nivel = String(nivelRed);
@@ -1829,14 +1829,14 @@ function construirEjemploHTML_(){
   h += '</div>'+
     '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
     'Cargar este ejemplo</button>'+
-    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez: '+
-    'la red completa, la tabla de an\u00e1lisis y el canvas.</p>';
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga el ejemplo completo: '+
+    'la red, la tabla de an\u00e1lisis y el canvas.</p>';
   return h;
 }
 
-/* ── Ejemplo de la fase 2: concepto → preguntas → autores ──
+/* ── Ejemplo del paso 5: concepto → preguntas → autores ──
    Usa los MISMOS conceptos del ejemplo de la red, para que se vea que la
-   segunda fase no crea conceptos nuevos sino que retoma los de la primera. */
+   tabla no crea conceptos nuevos sino que retoma los del paso 4. */
 function toggleEjemploTabla(){
   var caja = document.getElementById('ej-tabla');
   var abierta = caja.style.display === 'block';
@@ -1849,14 +1849,14 @@ function toggleEjemploTabla(){
 
 function construirEjemploTablaHTML_(){
   var n = contarEjemplo_();
-  var h = '<b>Los conceptos no se escriben aquí: vienen de la fase 1.</b>'+
+  var h = '<b>Los conceptos no se escriben aquí: vienen del paso 4.</b>'+
     '<p class="note" style="font-size:13px;margin:6px 0 10px;">Cada fila es un concepto que ya '+
-    'existe en la red semántica. Lo único que se agrega en esta fase son las <b>preguntas</b> que '+
+    'existe en la red semántica. Lo único que se agrega en este paso son las <b>preguntas</b> que '+
     'hay detrás de ese concepto y los <b>autores</b> que las sustentan.</p>'+
     '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>Dónde entra</th></tr></thead><tbody>'+
-    '<tr><td>Etapa / Concepto</td><td><b>Concepto</b> — heredado de la fase 1</td></tr>'+
-    '<tr><td>Preguntas y conceptos relacionados</td><td><b>Preguntas</b> — fase 2</td></tr>'+
-    '<tr><td>Autor (consultado)</td><td><b>Autor(es)</b> — fase 2</td></tr>'+
+    '<tr><td>Etapa / Concepto</td><td><b>Concepto</b> — heredado del paso 4</td></tr>'+
+    '<tr><td>Preguntas y conceptos relacionados</td><td><b>Preguntas</b> — paso 5</td></tr>'+
+    '<tr><td>Autor (consultado)</td><td><b>Autor(es)</b> — paso 5</td></tr>'+
     '</tbody></table>'+
     '<p class="note" style="font-size:13px;margin:10px 0 8px;">Ejemplo real del curso: '+
     '<b>'+n.q+' preguntas y '+n.a+' autores</b> sobre los '+n.c+' conceptos de la red. '+
@@ -1886,12 +1886,12 @@ function construirEjemploTablaHTML_(){
   h += '</tbody></table></div>'+
     '<button class="btnMini" style="margin-top:10px;" onclick="cargarEjemploRed()">'+
     'Cargar este ejemplo</button>'+
-    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez: '+
+    '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga el ejemplo completo: '+
     'la red, esta tabla y el canvas.</p>';
   return h;
 }
 
-/* ── Ejemplo del paso 4: proyectos ── */
+/* ── Ejemplo del paso 3: proyectos ── */
 function toggleEjemploProyectos(){
   var caja = document.getElementById('ej-proy');
   var abierta = caja.style.display === 'block';
@@ -1920,7 +1920,7 @@ function toggleEjemploProyectos(){
   }
 }
 
-/* ── Ejemplo del paso 5: programa ── */
+/* ── Ejemplo del paso 2: programa ── */
 function toggleEjemploPrograma(){
   var caja = document.getElementById('ej-prog');
   var abierta = caja.style.display === 'block';
@@ -1946,7 +1946,7 @@ function toggleEjemploPrograma(){
   }
 }
 
-/* ── Ejemplo de la fase 3: objetivos, proyectos, programa y canvas ── */
+/* ── Ejemplo del canvas: objetivos, proyectos, programa y consolidado ── */
 function toggleEjemploCanvas(){
   var caja = document.getElementById('ej-canvas');
   var abierta = caja.style.display === 'block';
@@ -1962,7 +1962,7 @@ function construirEjemploCanvasHTML_(){
   var h = '<b>El canvas no se escribe: se arma con lo anterior.</b>'+
     '<p class="note" style="font-size:13px;margin:6px 0 10px;">Solo se capturan los objetivos, '+
     'los proyectos y el programa. Todo lo demás —enfoque, etapas, sub etapas, herramientas y '+
-    'productos— entra solo desde la red que construiste en la fase 1, igual que en una matriz '+
+    'productos— entra solo desde la red que construiste en los pasos 4 y 6, igual que en una matriz '+
     'de consistencia.</p>';
 
   h += '<div class="ejc-bloque"><div class="ejc-rot">Paso 1 · Objetivo general y resultado general</div>'+
@@ -2024,7 +2024,7 @@ function construirEjemploCanvasHTML_(){
 
   h += '<button class="btnMini" style="margin-top:6px;" onclick="cargarEjemploRed()">'+
        'Cargar este ejemplo</button>'+
-       '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga las tres fases a la vez.</p>';
+       '<p class="note" style="font-size:12px;margin:6px 0 0;">Carga el ejemplo completo.</p>';
   return h;
 }
 
@@ -2051,7 +2051,7 @@ function filasEjemploCanvas_(){
 }
 
 /* Vuelca el ejemplo en el árbol de trabajo, generando ids nuevos.
-   Carga las dos fases juntas: la red y las preguntas/autores. */
+   Carga todo junto: la red, las preguntas/autores y el canvas. */
 function cargarEjemploRed(){
   if(!grupo.cargado){ toast('Primero inicia la red con los datos del grupo', true); return; }
   if(data.length && !confirm('Vas a reemplazar la red semántica y la tabla de análisis '+
@@ -2096,7 +2096,7 @@ function cargarEjemploRed(){
   renderAll();
   document.getElementById('ej-red').style.display = 'none';
   window.scrollTo({ top:0, behavior:'smooth' });
-  toast('Ejemplo cargado en las dos fases');
+  toast('Ejemplo cargado en todos los pasos');
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -2631,7 +2631,7 @@ function enlaceSVG_(x1, y1, x2, y2, color){
 
 function construirSVG_(paleta, conFondo){
   var lay = calcularLayout_();
-  /* El lienzo se recorta a las columnas visibles: en el paso 1 sobraría
+  /* El lienzo se recorta a las columnas visibles: en el paso 4 sobraría
      el espacio de las tres que aún no existen. */
   var W = NET.colX[nivelRed-1] + NET.nodeW[nivelRed-1] + 12;
   var H = lay.alto;
@@ -2827,8 +2827,8 @@ function nombreArchivoPNG_(){
 }
 function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
-  /* La asociación con el proyecto se declara aquí, en el paso 2, cuando ya
-     existen los proyectos (paso 1) y el enfoque se está construyendo. */
+  /* La asociación con el proyecto se declara aquí, en el paso 4, cuando ya
+     existen los proyectos (paso 3) y el enfoque se está construyendo. */
   wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc',
     function(){ removeEnfoque(e.id); },
     function(t){ e.text = t; renderAll(); }));
@@ -2906,8 +2906,8 @@ function buildNetConcepto(eid, c){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l2';
   var n = (c.procs||[]).length;
   var nq = (c.preguntas||[]).length;
-  /* En el paso 1 la insignia muestra las preguntas (lo que viene después);
-     en el paso 3, los procedimientos que se le van colgando. */
+  /* En el paso 4 la insignia muestra las preguntas (lo que viene después);
+     en el paso 6, los procedimientos que se le van colgando. */
   var badge = nivelRed < 3
     ? (nq ? nq + (nq===1?' pregunta':' preguntas') : null)
     : n + (n===1?' proc':' procs');
@@ -2952,7 +2952,7 @@ function buildNetProd(hid, pd){
    Tres columnas: Concepto | Preguntas | Autor.
    Los conceptos se HEREDAN de la red semántica: no se crean ni se
    editan aquí. Así el análisis se hace sobre lo ya construido en la
-   primera fase, y no sobre una lista paralela que se desincroniza. */
+   paso 4, y no sobre una lista paralela que se desincroniza. */
 function renderTable(){
   var cont = document.getElementById('qa-breakdown'); cont.innerHTML = '';
   if(data.length === 0){
@@ -3095,8 +3095,8 @@ var GRUPOS = [
 ];
 var TOTAL_PASOS = 7;
 
-/* Hasta qué nivel se muestra y se puede editar la red: 2 en el paso 1
-   (enfoque y concepto) y 5 en el paso 3 (hasta producto). */
+/* Hasta qué nivel se muestra y se puede editar la red: 2 en el paso 4
+   (enfoque y concepto) y 5 en el paso 6 (hasta producto). */
 var nivelRed = 2;
 var pasoActual  = 1;
 var vistaActual = 'network';
@@ -3120,14 +3120,14 @@ function irAPaso(n){
 }
 
 /* Dentro del canvas cada paso tiene su propio bloque: se muestra uno a la
-   vez para que el paso 3 no enseñe ya lo del 4 y el 5. */
+   vez para que el paso 1 no enseñe ya lo del 2 y el 3. */
 var BLOQUES_PASO = {
   1: { ids:['cv-b1','cv-b2'],
        intro:'Empieza por los objetivos: el general con su resultado y los específicos con los suyos. Puedes traerlos de Planteamiento Investigativo.' },
   2: { ids:['cv-b4'],
        intro:'El programa es el paraguas bajo el que se agrupará todo el trabajo.' },
   3: { ids:['cv-b3'],
-       intro:'Un proyecto por cada objetivo específico. En el paso 4 decidirás qué enfoque adopta cada uno.' },
+       intro:'Un proyecto por cada objetivo específico. En el paso 4 cada enfoque dirá de qué red de ATLAS.ti viene y a qué proyecto pertenece.' },
   7: { ids:['cv-b5','cv-b6'],
        intro:'Aquí no se escribe nada: el canvas se arma solo con todo lo anterior.' }
 };
