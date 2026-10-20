@@ -221,6 +221,19 @@
   .enf-proy-sel{flex:1;min-width:180px;font-size:15px;padding:5px 8px;
                 border:1px dashed var(--line);border-radius:3px;background:#fff;}
   .enf-proy-sel:focus{outline:none;border-style:solid;border-color:var(--teal);}
+  .enf-aviso{margin-top:6px;font-size:13px;line-height:1.45;color:#8a4a12;
+             background:#fdf4e7;border:1px solid #efd9b4;border-radius:3px;padding:6px 9px;}
+  /* Cabecera de cada red de ATLAS.ti dentro del paso de enfoques */
+  .redobj{margin:18px 0 6px;padding:7px 11px;border-radius:3px;
+          background:#f4f6f4;border-left:3px solid var(--amber);}
+  .redobj:first-child{margin-top:4px;}
+  .redobj-sig{font-size:12px;font-weight:700;letter-spacing:.07em;color:#8a6d2f;}
+  .redobj-txt{font-size:14px;line-height:1.45;color:#3c4440;margin-top:2px;}
+  .redobj-n{font-size:12.5px;color:#7b857f;margin-top:3px;}
+  .redobj-vacia{border-left-color:#d4d9d4;}
+  .redobj-vacia .redobj-sig{color:#8b938d;}
+  .redobj-suelta{border-left-color:#c97a2c;background:#fdf4e7;}
+  .redobj-suelta .redobj-sig{color:#8a4a12;}
   @media(max-width:820px){.cv-proy-campos2{grid-template-columns:1fr;}}
   .cad-proy-oe{font-size:12.5px;color:var(--amber);margin-top:3px;}
   @media(max-width:820px){.cv-proy-campos{grid-template-columns:1fr;}}
@@ -289,6 +302,9 @@
   .ejParTable td{border-bottom:1px solid #ddd;padding:5px 8px;}
   .ej-arbol{max-height:340px;overflow-y:auto;background:#fff;border:1px solid var(--line);
             border-radius:4px;padding:10px 12px;font-size:14px;line-height:1.5;}
+  .ej-red-obj{margin:14px 0 2px;font-size:12.5px;line-height:1.45;color:#8a6d2f;
+              border-top:1px solid #e6e2d6;padding-top:9px;}
+  .ej-arbol > .ej-red-obj:first-child{border-top:none;margin-top:2px;padding-top:0;}
   .ej-n1{font-weight:600;color:#26215C;margin-top:8px;}
   .ej-n1:first-child{margin-top:0;}
   .ej-n2{color:#04342C;margin-left:14px;margin-top:4px;}
@@ -339,117 +355,7 @@
     .rot-cuenta{display:block;margin:4px 0 0;}
   }
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-  /* ---------- Tablet y celular ----------
-     Misma escala que Planteamiento Investigativo: los dos aplicativos son
-     parte del mismo recorrido y no deben verse distintos. */
-  @media(max-width:680px){
-    .row2{grid-template-columns:1fr;}
-    .wrap{padding:20px 14px 48px;}
-    h1{font-size:25px;}
-    .sub{font-size:14px;margin-bottom:18px;}
-    .card{padding:20px 16px;}
-    .tabs{gap:6px;}
-    .tab{flex:1 1 auto;text-align:center;}
-    .fases-head{flex-wrap:wrap;gap:6px;}
-    .fases-grid{grid-template-columns:1fr;}
-  }
-  @media(max-width:480px){
-    h1{font-size:22px;}
-    .card{padding:16px 14px;}
-    .fases-tit{font-size:14px;}
-    /* En la ruta solo se lee el paso actual; el resto queda como numeros */
-    .pill-t{display:none;}
-    .pill.pill-on .pill-t{display:inline;}
-    .pill{padding:6px 10px 6px 6px;}
-    .fase-pills{gap:6px;}
-    .actions{flex-direction:column-reverse;gap:8px;align-items:stretch;}
-    .actions .btn,.actions .btnGhost{width:100%;}
-    .grupoBar{flex-direction:column;align-items:stretch;}
-    .grupoBar .acts .btn,.grupoBar .acts .btnMini{flex:1;}
-  }
-  /* Selector de planteamiento: el vínculo se elige, no se escribe */
-  .plantSel{border:1px solid var(--line,#c9cfc6);border-radius:8px;background:#fff;
-            padding:10px;margin-top:8px;}
-  .plantSelTit{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-               font-weight:700;color:#6a746f;margin-bottom:8px;}
-  .plantOpt{display:block;width:100%;text-align:left;background:#fafbfa;
-            border:1px solid var(--line,#c9cfc6);border-radius:6px;
-            padding:9px 11px;margin-bottom:7px;cursor:pointer;
-            font-family:inherit;transition:border-color .15s ease,background .15s ease;}
-  .plantOpt:last-child{margin-bottom:0;}
-  .plantOpt:hover{border-color:#2f6d6a;background:#f2f8f7;}
-  .plantMeta{display:block;font-size:11.5px;color:#8a948f;margin-bottom:2px;}
-  .plantTit{display:block;font-size:14px;color:#1c2a33;line-height:1.45;}
-
-  /* Vínculo obligatorio con Planteamiento Investigativo */
-  .plantPick{border:1px solid #c9cfc6;border-left:3px solid #c8743b;border-radius:6px;
-             background:#fbfaf6;padding:12px 14px;margin-bottom:20px;}
-  .plantPickTit{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
-                color:#b4552f;margin-bottom:6px;}
-  .plantPickTit .oblig{color:#8a7f5f;font-weight:600;}
-  .plantOk{display:flex;flex-direction:column;gap:3px;background:#fff;
-           border:1px solid #b9d2cf;border-radius:6px;padding:9px 11px;margin-bottom:9px;}
-  .plantOkTit{font-size:14px;color:#1c2a33;line-height:1.45;}
-  .plantOkMeta{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
-               font-weight:700;color:#2f6d6a;}
-
-  /* Navegación lineal al pie: avanzar/retroceder sin subir a la ruta */
-  .navPasos{display:flex;align-items:center;justify-content:space-between;gap:12px;
-            flex-wrap:wrap;margin-top:26px;padding-top:16px;border-top:1px solid #c9cfc6;}
-  .navPasosMid{font-size:12.5px;color:#8a948f;font-variant-numeric:tabular-nums;}
-  @media(max-width:600px){
-    .navPasos{flex-direction:column-reverse;align-items:stretch;}
-    .navPasos .btn,.navPasos .btnGhost{width:100%;}
-    .navPasosMid{text-align:center;}
-  }
-
-  /* Datos heredados del planteamiento: se muestran, no se editan */
-  .datosBox{background:#eef5f4;border:1px solid #c3ded9;border-radius:6px;
-            padding:11px 13px;margin-bottom:20px;}
-  .datosTit{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
-            font-weight:700;color:#2f6d6a;margin-bottom:8px;}
-  .datosFila{display:flex;gap:12px;padding:4px 0;border-top:1px solid #dbe7e4;font-size:14px;}
-  .datosFila:first-of-type{border-top:none;}
-  .datosEt{flex:0 0 130px;color:#6a746f;font-size:12.5px;font-weight:600;padding-top:1px;}
-  .datosVal{flex:1;color:#1c2a33;}
-  @media(max-width:600px){ .datosFila{flex-direction:column;gap:1px;} .datosEt{flex:none;} }
-
-  /* Rótulo de parte: este aplicativo es la segunda de tres (Planteamiento ·
-     Estado del arte · Métodos y técnicas). Sitúa al alumno en el conjunto. */
-  .parte{display:flex;align-items:baseline;flex-wrap:wrap;gap:9px;margin-bottom:8px;
-         font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;color:var(--teal);}
-  .parteNum{background:var(--teal);color:#fff;border-radius:99px;padding:3px 10px;
-            font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
-  @media(max-width:480px){ .parte{font-size:13.5px;} }
-
-  .accLista{display:flex;flex-direction:column;gap:5px;}
-  .accFila{display:flex;align-items:center;justify-content:space-between;gap:10px;
-           background:#fff;border:1px solid var(--line);border-radius:5px;padding:7px 11px;}
-  .accMail{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px;word-break:break-all;}
-  .accYo{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
-         background:#e9f3f1;color:#2f6d6a;border-radius:99px;padding:2px 7px;flex-shrink:0;}
-  .btnDel{background:transparent;color:#9a3b2c;border:1px solid #e0c3bb;border-radius:4px;}
-  .btnDel:hover{background:#fbf1ee;}
-
-  .campoBloq{background:#f4f6f2;border:1px solid var(--line);border-radius:4px;
-             padding:11px 12px;font-size:16.5px;color:#6a746f;}
-
-  /* Preguntas recordadas bajo el concepto, en el paso de procedimientos */
-  .qRecordar{margin:6px 0 8px 22px;padding:8px 11px;border-left:2px solid #c9d6e8;
-             background:#f6f8fb;border-radius:0 5px 5px 0;}
-  .qRecordarTit{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
-                font-weight:700;color:#3d5a80;margin-bottom:5px;}
-  .qRecordarItem{display:flex;flex-direction:column;gap:1px;padding:3px 0;font-size:13px;}
-  .qTxt{color:#1c2a33;line-height:1.45;}
-  .qAut{font-size:11.5px;color:#8a948f;}
-
-
-
-
-
-
-
-
+  @media(max-width:680px){.row2{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -468,12 +374,8 @@
 
 <div class="wrap">
   <div class="kicker">URP · INGENIERÍA · TALLER DE INVESTIGACIÓN EN INGENIERÍA I</div>
-  <div class="parte"><span class="parteNum">Segunda parte</span>El estado del arte</div>
   <h1>De la red semántica al experimento</h1>
-  <p class="sub">Parte del planteamiento que ya construiste y consolida en una sola red las
-  redes semánticas de tu ATLAS.ti: decide qué enfoques y conceptos adoptas de cada autor, cuáles descartas
-  y cuáles fusionas. Analiza las preguntas y los autores detrás de cada concepto, define los procedimientos,
-  herramientas y productos con que responderás, y cierra con el canvas de experimentos.</p>
+  <p class="sub">Construye la red en cinco niveles —enfoque, concepto, procedimiento, herramienta y producto—, analiza las preguntas detrás de cada concepto y arma el canvas de experimentos.</p>
 
   <div class="userBar" id="userBar" style="display:none;">
     <span id="userTxt"></span>
@@ -493,7 +395,7 @@
     <!-- Registro del grupo -->
     <div class="card" id="registroCard">
       <h2>Registro del grupo</h2>
-      <p class="note">Elige el planteamiento del que parte esta red. Sus datos de grupo se toman de allí.</p>
+      <p class="note">Antes de construir la red, consigna los datos básicos del grupo.</p>
 
       <div class="coordsBox" style="margin-bottom:20px;">
         <div style="font-size:12px;color:#6a746f;text-transform:uppercase;letter-spacing:.06em;">Curso</div>
@@ -502,24 +404,23 @@
         <div style="font-weight:600;" id="txtProfesor"></div>
       </div>
 
-      <div class="plantPick" id="plantPick">
-        <div class="plantPickTit">Planteamiento vinculado <span class="oblig">· obligatorio</span></div>
-        <p class="note" style="font-size:12.5px;margin:0 0 8px;">Cada red de experimentos pertenece a <b>un</b> planteamiento. Elígelo aquí: de él salen el objetivo general y los específicos, y con él se guarda el vínculo.</p>
-        <div id="plantElegido"></div>
-        <div id="plantLista"></div>
-        <button type="button" class="btnMini" id="btnPlantPick" onclick="abrirSelectorPlant()">Elegir planteamiento…</button>
+      <label for="f_ciclo">Ciclo</label>
+      <select id="f_ciclo"></select>
+
+      <div class="row2">
+        <div>
+          <label for="f_ngrupo">N° de grupo</label>
+          <input id="f_ngrupo" placeholder="Ej. 3">
+        </div>
+        <div>
+          <label for="f_coord">Coordinador(a) de grupo</label>
+          <input id="f_coord" placeholder="Nombres y apellidos">
+        </div>
       </div>
 
-      <div id="datosPlant"></div>
-      <select id="f_ciclo" style="display:none;"></select>
-      <input id="f_ngrupo" type="hidden">
-      <input id="f_coord" type="hidden">
-
-      <label for="f_correo2" id="lblCorreo2">Añadir a alguien más <span style="text-transform:none;letter-spacing:0;">(solo docentes)</span></label>
-      <input id="f_correo2" placeholder="otro@urp.edu.pe, otra@urp.edu.pe">
-      <div id="correo2Bloq" class="campoBloq" style="display:none;">— lo asigna el docente</div>
-      <div id="panelAccesos"></div>
-      <p class="note" style="font-size:12px;margin:4px 0 0;"><span id="hintCorreo2"></span></p>
+      <label for="f_correo2">Correo del compañero(a) de grupo</label>
+      <input id="f_correo2" placeholder="compañero@urp.edu.pe">
+      <p class="note" style="font-size:12px;margin:4px 0 0;">Tú ya estás dentro con <b id="txtMiCorreo"></b>. Añade aquí a tu compañero(a) para que también pueda abrir y continuar esta red. Si trabajas solo, déjalo vacío.</p>
 
       <div class="actions"><span></span>
         <button class="btn" id="btnIniciar" onclick="iniciarRed()">Iniciar red →</button>
@@ -552,9 +453,6 @@
 
       <!-- VISTA 2: TABLA DE ANÁLISIS -->
       <div id="view-table" style="display:none;">
-        <label for="qa-pregunta">Pregunta de investigación general</label>
-        <textarea id="qa-pregunta" rows="2" placeholder="Escribe aquí la pregunta general que vas a analizar…"></textarea>
-
         <div class="qa-head">
           <div class="qa-section-title" style="margin:0;">Análisis por concepto
             <span class="qa-hint-sub">— los conceptos vienen de tu red semántica; aquí les añades las preguntas que hay detrás y los autores consultados</span>
@@ -636,8 +534,6 @@
           <textarea id="cv-notas" rows="3" placeholder="Anotaciones libres sobre el canvas…"></textarea>
         </div>
       </div>
-
-      <div id="navPasos"></div>
     </div>
   </div>
 
@@ -705,8 +601,8 @@ function jsonpCall(params, onOk, onErr){
   }
   var timer = setTimeout(function(){
     fallar(cargo ? 'respondió, pero el contenido no era la respuesta esperada'
-                 : 'no respondió en 45 s');
-  }, 45000);   /* arranque en frío del proxy */
+                 : 'no respondió en 20 s');
+  }, 20000);
 
   window[cbName] = function(data){
     if(cerrado) return; cerrado = true;
@@ -820,28 +716,11 @@ function salirSesion(){
 /* ════════════════════════════════════════════════════════════
    ESTADO DEL GRUPO Y AUTOGUARDADO
 ════════════════════════════════════════════════════════════ */
-var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'',
-              /* correosPlant: heredados del planteamiento, no se pueden quitar.
-                 correosExtra: sumados aquí, para quien se une solo a la red. */
-              correosPlant:'', correosExtra:'', correosGuardados:'',
-              plantId:'', plantTitulo:'', cargado:false };
-
-/* Normaliza una lista de correos separados por coma, punto y coma o espacios */
-function listaCorreos_(t){
-  return String(t||'').toLowerCase().split(/[;,\s]+/)
-         .filter(function(x){ return x && x.indexOf('@') !== -1; });
-}
-
-/* Todos los que tendrán acceso a esta red, sin repetidos */
-function correosDeLaRed_(){
-  var todos = [SESION.email]
-    .concat(listaCorreos_(grupo.correosPlant))
-    .concat(listaCorreos_(grupo.correosExtra));
-  var vistos = {}, out = [];
-  todos.forEach(function(c){ if(c && !vistos[c]){ vistos[c]=1; out.push(c); } });
-  return out;
-}
+var grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
 var suprimirAutoguardado = true;
+/* Campo heredado de versiones anteriores; ya no se edita en pantalla, pero se
+   conserva en el registro para no perder lo que algún grupo escribió allí. */
+var preguntaHeredada = '';
 var guardarTimer = null;
 var guardadoEnCurso = false;
 var guardadoPendiente = false;
@@ -902,10 +781,6 @@ function arrancarApp(){
     CICLOS.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
   document.getElementById('txtCurso').textContent    = CURSO_FIJO;
   document.getElementById('txtProfesor').textContent = PROFESOR_FIJO;
-  pintarPlantElegido();
-  pintarDatosPlant();
-  pintarAccesos();
-  aplicarRolCorreos();
   renderAll();
   switchView('network');
   mostrarTab('trabajo');
@@ -916,236 +791,16 @@ function editarDatosGrupo(){
   document.getElementById('f_ciclo').value  = grupo.ciclo;
   document.getElementById('f_ngrupo').value = grupo.numero_grupo;
   document.getElementById('f_coord').value  = grupo.coordinador;
-  document.getElementById('f_correo2').value = grupo.correosExtra;
-  pintarPlantElegido();
-  pintarDatosPlant();
-  pintarAccesos();
-  aplicarRolCorreos();
+  document.getElementById('f_correo2').value = grupo.correoCompanero;
   window.scrollTo({ top:0, behavior:'smooth' });
-}
-
-/* ── Selector de planteamiento en el registro ──
-   Obligatorio: la red pertenece a un planteamiento concreto. Al elegirlo se
-   copian ciclo, grupo y coordinador desde allí, así los dos aplicativos no
-   pueden discrepar. */
-/* Resumen de los datos que vienen del planteamiento. No son editables: la
-   fuente es Planteamiento Investigativo, y tener dos copias editables acaba
-   siempre en que discrepan. Si algo está mal, se corrige allá. */
-/* Quién tiene acceso a esta red. Quitar es potestad del docente. */
-/* El campo de sumar correos es potestad del docente: un alumno no decide
-   quién más entra a la red. Los del planteamiento se heredan igual. */
-function aplicarRolCorreos(){
-  var inp = document.getElementById('f_correo2');
-  var blq = document.getElementById('correo2Bloq');
-  var hnt = document.getElementById('hintCorreo2');
-  if(!inp || !blq) return;
-  if(SESION.docente){
-    inp.style.display = ''; blq.style.display = 'none';
-    if(hnt) hnt.innerHTML = 'El equipo del planteamiento ya tiene acceso. Usa este campo solo si alguien m\u00e1s debe entrar sin figurar en el planteamiento; separa varios correos con comas.';
-  } else {
-    inp.style.display = 'none'; blq.style.display = 'block';
-    blq.textContent = listaCorreos_(grupo.correosExtra).join(', ') || '\u2014 lo asigna el docente';
-    if(hnt) hnt.innerHTML = 'El equipo del planteamiento ya tiene acceso a esta red. Si alguien m\u00e1s necesita entrar, p\u00eddeselo al docente.';
-  }
-}
-
-function pintarAccesos(){
-  var box = document.getElementById('panelAccesos');
-  if(!box) return;
-  var lista = listaCorreos_(grupo.correosGuardados || correosDeLaRed_().join(', '));
-  if(!grupo.id || !lista.length){ box.innerHTML=''; return; }
-
-  var h = '<div class="datosBox" style="background:#fbfaf6;border-color:#e2ddcd;">'+
-          '<div class="datosTit" style="color:#8a6d3b;">Con acceso a esta red</div>'+
-          '<div class="accLista">';
-  lista.forEach(function(c){
-    var yo = (c === SESION.email);
-    h += '<div class="accFila"><span class="accMail">'+esc(c)+
-         (yo ? '<span class="accYo">tú</span>' : '')+'</span>'+
-         (SESION.docente && !yo && lista.length > 1
-           ? '<button type="button" class="btnDel" style="padding:4px 9px;font-size:12px;" '+
-             'onclick="quitarAccesoRed(\''+c+'\')">quitar</button>'
-           : '')+'</div>';
-  });
-  h += '</div>';
-  if(SESION.docente){
-    h += '<p class="note" style="font-size:12px;margin:8px 0 0;">Como docente puedes retirar el acceso de cualquiera. No se puede dejar la red sin ningún correo ni quitarte a ti mismo.</p>';
-  }
-  box.innerHTML = h + '</div>';
-}
-
-function quitarAccesoRed(correo){
-  if(!confirm('¿Retirar el acceso de '+correo+' a esta red?\n\nDejará de verla y de poder editarla.')) return;
-  toast('Quitando acceso…');
-  jsonpCall({ accion:'correo_quitar', id:grupo.id, correo:encodeURIComponent(correo) }, function(r){
-    if(!r || !r.ok){
-      var msg = (r && r.error === 'ULTIMO_CORREO')
-        ? 'No se puede quitar: es el único correo con acceso.'
-        : ((r && r.error) || 'No se pudo quitar el acceso');
-      return toast(msg, true);
-    }
-    grupo.correosGuardados = r.correos || '';
-    grupo.correosExtra = listaCorreos_(grupo.correosGuardados)
-        .filter(function(x){ return x !== SESION.email; }).join(', ');
-    pintarAccesos();
-  aplicarRolCorreos();
-    toast('Acceso retirado');
-  }, function(f){ toast('Error de red. '+textoFallo(f), true); });
-}
-
-/* Si ese planteamiento ya tiene una red, se abre directamente en vez de
-   pedirle al alumno que la "inicie" otra vez. */
-function buscarRedDelPlanteamiento_(){
-  if(!grupo.plantId){ return; }
-  toast('Buscando la red de este planteamiento…');
-  jsonpCall({ accion:'buscar', plant_id:grupo.plantId,
-              ciclo:grupo.ciclo||'', numero_grupo:grupo.numero_grupo||'' }, function(r){
-    if(r && r.ok && r.record){
-      grupo.id = r.record.id;
-      grupo.ciclo = r.record.ciclo || grupo.ciclo;
-      grupo.numero_grupo = r.record.numero_grupo || grupo.numero_grupo;
-      grupo.coordinador = r.record.coordinador || grupo.coordinador;
-      grupo.correosGuardados = String(r.record.correos||'').toLowerCase();
-      grupo.correosExtra = listaCorreos_(grupo.correosGuardados)
-          .filter(function(x){ return x !== SESION.email; }).join(', ');
-      aplicarEstadoCargado_(r.record.estructura);
-      grupo.cargado = true;
-      suprimirAutoguardado = false;
-      document.getElementById('registroCard').style.display = 'none';
-      document.getElementById('appCard').style.display = 'block';
-      renderGrupoBar();
-      toast('Se abrió la red que ya tenías para este planteamiento');
-      return;
-    }
-    toast('Planteamiento vinculado — pulsa «Iniciar red» para empezar');
-  }, function(){
-    toast('Planteamiento vinculado');
-  });
-}
-
-function pintarDatosPlant(){
-  var box = document.getElementById('datosPlant');
-  if(!box) return;
-  if(!grupo.plantId){ box.innerHTML=''; return; }
-
-  var ciclo  = document.getElementById('f_ciclo').value || '—';
-  var ngrupo = document.getElementById('f_ngrupo').value || '—';
-  var coord  = document.getElementById('f_coord').value || '—';
-  var falta  = (ciclo==='—' || ngrupo==='—' || coord==='—');
-
-  box.innerHTML =
-    '<div class="datosBox">'+
-    '<div class="datosTit">Datos del grupo · según el planteamiento</div>'+
-    '<div class="datosFila"><span class="datosEt">Ciclo</span><span class="datosVal">'+esc(ciclo)+'</span></div>'+
-    '<div class="datosFila"><span class="datosEt">N° de grupo</span><span class="datosVal">'+esc(ngrupo)+'</span></div>'+
-    '<div class="datosFila"><span class="datosEt">Coordinador(a)</span><span class="datosVal">'+esc(coord)+'</span></div>'+
-    '<div class="datosFila"><span class="datosEt">Equipo</span><span class="datosVal">'+
-      esc(listaCorreos_(grupo.correosPlant).join(', ') || '— solo tú')+'</span></div>'+
-    '<p class="note" style="font-size:12px;margin:9px 0 0;">'+
-    (falta
-      ? 'Faltan datos en el planteamiento. Complétalos en <b>Planteamiento Investigativo</b>, paso 0, y vuelve a elegirlo aquí.'
-      : 'Si alguno está mal, corrígelo en <b>Planteamiento Investigativo</b>: esta pantalla solo lo refleja.')+
-    '</p></div>';
-}
-
-function pintarPlantElegido(){
-  var box = document.getElementById('plantElegido');
-  var btn = document.getElementById('btnPlantPick');
-  if(!box) return;
-  if(grupo.plantId){
-    box.innerHTML = '<div class="plantOk"><span class="plantOkTit">'+
-      esc(grupo.plantTitulo || '(sin título todavía)')+'</span>'+
-      '<span class="plantOkMeta">vinculado</span></div>';
-    if(btn) btn.textContent = 'Cambiar planteamiento…';
-  } else {
-    box.innerHTML = '';
-    if(btn) btn.textContent = 'Elegir planteamiento…';
-  }
-}
-
-function abrirSelectorPlant(){
-  var cont = document.getElementById('plantLista');
-  var btn  = document.getElementById('btnPlantPick');
-  cont.innerHTML = '<p class="note" style="font-size:12.5px;margin:6px 0;">Buscando tus planteamientos…</p>';
-  btn.disabled = true;
-
-  jsonpCall({ accion:'planteamientos' }, function(r){
-    btn.disabled = false;
-    if(!r || !r.ok){
-      cont.innerHTML = '<p class="hintWarn">'+esc((r&&r.error)||'No se pudo consultar Planteamiento Investigativo.')+'</p>';
-      return;
-    }
-    var lista = r.lista || [];
-    if(!lista.length){
-      cont.innerHTML = '<p class="hintWarn">No tienes planteamientos guardados. Créalo primero en el aplicativo de Planteamiento Investigativo.</p>';
-      return;
-    }
-    var h = '<div class="plantSel">';
-    lista.forEach(function(p){
-      var meta = [p.ciclo, p.numero_grupo ? ('Grupo '+p.numero_grupo) : '', p.coordinador]
-                   .filter(function(x){ return x; }).join(' · ');
-      h += '<button type="button" class="plantOpt" onclick="fijarPlanteamiento_('+
-           '\''+p.id+'\',\''+escAttr_(p.titulo)+'\',\''+escAttr_(p.ciclo)+'\','+
-           '\''+escAttr_(p.numero_grupo)+'\',\''+escAttr_(p.coordinador)+'\','+
-           '\''+escAttr_(p.correos)+'\')">'+
-           '<span class="plantMeta">'+esc(meta||'—')+'</span>'+
-           '<span class="plantTit">'+esc(p.titulo || '(sin título todavía)')+'</span></button>';
-    });
-    cont.innerHTML = h + '</div>';
-  }, function(f){
-    btn.disabled = false;
-    cont.innerHTML = '<p class="hintWarn">Error de red. '+esc(textoFallo(f))+'</p>';
-  });
-}
-
-/* Escapa para meter texto dentro de un atributo onclick con comillas simples */
-function escAttr_(t){
-  return String(t==null?'':t).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
-    .replace(/"/g,'&quot;').replace(/[\r\n]+/g,' ');
-}
-
-function fijarPlanteamiento_(id, titulo, ciclo, ngrupo, coord, correos){
-  grupo.plantId = id;
-  grupo.plantTitulo = titulo || '';
-  grupo.correosPlant = correos || '';
-  document.getElementById('plantLista').innerHTML = '';
-  /* Se copian los datos del planteamiento, pero quedan editables */
-  if(ciclo){
-    var sc=document.getElementById('f_ciclo');
-    if(sc){
-      /* Si el ciclo del planteamiento no figura en CICLOS, hay que añadirlo:
-         de lo contrario asignar .value se ignora en silencio, el campo queda
-         vacío y luego «Iniciar red» reclama que falta el ciclo. */
-      var hay=false;
-      for(var q=0;q<sc.options.length;q++){ if(sc.options[q].value===ciclo){ hay=true; break; } }
-      if(!hay){
-        var op=document.createElement('option');
-        op.value=ciclo; op.textContent=ciclo; sc.appendChild(op);
-      }
-      sc.value = ciclo;
-    }
-  }
-  grupo.ciclo = ciclo || grupo.ciclo;
-  grupo.numero_grupo = ngrupo || grupo.numero_grupo;
-  grupo.coordinador = coord || grupo.coordinador;
-  if(ngrupo) document.getElementById('f_ngrupo').value = ngrupo;
-  if(coord)  document.getElementById('f_coord').value  = coord;
-  pintarPlantElegido();
-  pintarDatosPlant();
-  pintarAccesos();
-  aplicarRolCorreos();
-  buscarRedDelPlanteamiento_();
 }
 
 function iniciarRed(){
   var ciclo  = document.getElementById('f_ciclo').value.trim();
   var ngrupo = document.getElementById('f_ngrupo').value.trim();
   var coord  = document.getElementById('f_coord').value.trim();
-  var extra  = SESION.docente
-    ? document.getElementById('f_correo2').value.trim().toLowerCase()
-    : grupo.correosExtra;
+  var comp   = document.getElementById('f_correo2').value.trim().toLowerCase();
 
-  if(!grupo.plantId) return toast('Elige primero el planteamiento al que pertenece esta red', true);
   if(!ciclo)  return toast('Selecciona el ciclo', true);
   if(!ngrupo) return toast('Indica el N° de grupo', true);
   if(!coord)  return toast('Indica el/la coordinador(a) del grupo', true);
@@ -1153,7 +808,7 @@ function iniciarRed(){
   var btn = document.getElementById('btnIniciar');
   btn.disabled = true; btn.textContent = 'Buscando…';
 
-  jsonpCall({ accion:'buscar', plant_id:grupo.plantId, ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
+  jsonpCall({ accion:'buscar', ciclo:ciclo, numero_grupo:ngrupo }, function(resp){
     btn.disabled = false; btn.textContent = 'Iniciar red →';
     if(!resp || !resp.ok){
       /* Si el proxy respondió con un motivo, se muestra tal cual: es un
@@ -1162,7 +817,7 @@ function iniciarRed(){
       return;
     }
     grupo.ciclo = ciclo; grupo.numero_grupo = ngrupo;
-    grupo.coordinador = coord; grupo.correosExtra = extra;
+    grupo.coordinador = coord; grupo.correoCompanero = comp;
 
     if(resp.record){
       grupo.id = resp.record.id;
@@ -1189,13 +844,11 @@ function nuevaRed(){
      'Lo que tengas en pantalla sin guardar se pierde. ¿Continuar?')) return;
   clearTimeout(guardarTimer); guardarTimer = null;
   suprimirAutoguardado = true;
-  grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'',
-            correosPlant:'', correosExtra:'', correosGuardados:'',
-            plantId:'', plantTitulo:'', cargado:false };
+  grupo = { id:null, ciclo:'', numero_grupo:'', coordinador:'', correoCompanero:'', cargado:false };
   data = []; idc = 0;
+  preguntaHeredada = '';
   canvasExp = { programa:'', og:'', rg:'', especificos:[], proyectos:[], notas:'' };
   pintarCamposCanvas_();
-  document.getElementById('qa-pregunta').value = '';
   document.getElementById('f_ciclo').value = '';
   document.getElementById('f_ngrupo').value = '';
   document.getElementById('f_coord').value = '';
@@ -1215,7 +868,10 @@ function aplicarEstadoCargado_(estructuraTxt){
     try{ estado = JSON.parse(estructuraTxt); }catch(e){ estado = null; }
   }
   if(!estado){ renderAll(); return; }
-  document.getElementById('qa-pregunta').value = estado.pregunta || '';
+  /* estado.pregunta existía en versiones anteriores (un cuadro de "pregunta de
+     investigación general" que resultó redundante con el paso 1). Se ignora al
+     cargar y ya no se vuelve a escribir, pero no se borra del registro guardado. */
+  preguntaHeredada = estado.pregunta || '';
   data = estado.enfoques || [];
   migrarInstrumentos_(data);
   reindexarIds_(data);
@@ -1225,6 +881,7 @@ function aplicarEstadoCargado_(estructuraTxt){
      nunca se cumplía y el programa, los objetivos y los proyectos se perdían
      al abrir una red guardada. restaurarCanvas_ ya distingue ambos formatos. */
   restaurarCanvas_(estado.canvas);
+  repararVinculosObjetivo_();
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   renderAll();
 }
@@ -1330,6 +987,84 @@ function enfoquePorId_(id){
   return null;
 }
 
+/* ── Enfoque ↔ objetivo ──────────────────────────────────────────────
+   En ATLAS.ti el grupo no construye una red, sino una por objetivo: la del
+   objetivo general y una por cada objetivo específico. Cada enfoque declara
+   de qué red proviene en e.objetivoId, que vale 'OG' o el id de un objetivo
+   específico. Es distinto de e.proyectoId: el objetivo dice de dónde salió el
+   enfoque; el proyecto, por dónde entra al canvas. ──────────────────── */
+var OBJ_GENERAL = 'OG';
+
+function recortar_(t, n){
+  t = String(t||'').replace(/\s+/g,' ').trim();
+  return t.length > n ? t.slice(0, n-1).trim() + '…' : t;
+}
+
+/* Lista de objetivos disponibles para clasificar enfoques, en el orden del
+   paso 1: primero el general, luego los específicos que tengan texto. */
+function objetivosDisponibles_(){
+  var out = [];
+  if((canvasExp.og||'').trim()){
+    out.push({ id:OBJ_GENERAL, sigla:'OG', texto:canvasExp.og.trim() });
+  }
+  canvasExp.especificos.forEach(function(oe, i){
+    if((oe.obj||'').trim()){
+      out.push({ id:oe.id, sigla:'OE'+(i+1), texto:oe.obj.trim() });
+    }
+  });
+  return out;
+}
+function objetivoPorId_(id){
+  if(!id) return null;
+  if(id === OBJ_GENERAL){
+    return (canvasExp.og||'').trim()
+      ? { id:OBJ_GENERAL, sigla:'OG', texto:canvasExp.og.trim() } : null;
+  }
+  var k = indiceEspecifico_(id);
+  if(k < 0) return null;
+  var oe = canvasExp.especificos[k];
+  return { id:oe.id, sigla:'OE'+(k+1), texto:(oe.obj||'').trim() };
+}
+/* Etiqueta corta para el diagrama y las cabeceras: "OE2 · Automatizar…" */
+function etiquetaObjetivo_(id){
+  var o = objetivoPorId_(id);
+  if(!o) return '';
+  return o.sigla + (o.texto ? ' · ' + o.texto : '');
+}
+/* El objetivo al que responde el proyecto de un enfoque, si lo tiene.
+   Sirve para avisar cuando el enfoque dice venir de una red y el proyecto
+   que lo recibe responde a otro objetivo. */
+function objetivoDelProyectoDe_(e){
+  var py = proyectoPorId_(e.proyectoId);
+  return py && py.oeId ? py.oeId : '';
+}
+function enfoquesDelObjetivo_(objId){
+  return data.filter(function(e){ return (e.objetivoId||'') === objId; });
+}
+
+/* Repara los vínculos que quedaron apuntando a un objetivo que ya no existe.
+   Pasa en dos casos: al abrir una red guardada antes de que el enfoque
+   declarara su objetivo, y al traer los objetivos de Planteamiento
+   Investigativo, que reemplaza los específicos por otros con ids nuevos. */
+function repararVinculosObjetivo_(){
+  var pys = canvasExp.proyectos || [];
+  var huerfanos = pys.filter(function(py){ return py.oeId && !especificoPorId_(py.oeId); });
+  if(huerfanos.length === pys.length && pys.length && pys.length <= canvasExp.especificos.length){
+    /* Se reemplazaron todos los específicos a la vez: se conserva el
+       apareamiento por posición, que es el que el grupo venía usando. */
+    pys.forEach(function(py, i){ py.oeId = canvasExp.especificos[i].id; });
+  } else {
+    huerfanos.forEach(function(py){ py.oeId = ''; });
+  }
+  /* El enfoque hereda el objetivo de su proyecto cuando no lo declaró o
+     cuando el que declaraba ya no existe. */
+  data.forEach(function(e){
+    if(objetivoPorId_(e.objetivoId)) return;
+    var oid = objetivoDelProyectoDe_(e);
+    e.objetivoId = (oid && objetivoPorId_(oid)) ? oid : '';
+  });
+}
+
 function renderCanvas(){
   var cont = document.getElementById('cv-especificos');
   if(!cont) return;
@@ -1418,7 +1153,7 @@ function renderCanvas(){
       }).join('<br>');
     } else {
       res.innerHTML = '<span class="cv-sin-enf">Sin enfoque adoptado. '+
-        'En el paso 2, cada enfoque indica a qué proyecto pertenece.</span>';
+        'En el paso 4, cada enfoque indica a qué proyecto pertenece.</span>';
     }
     fila.appendChild(res);
     pr.appendChild(fila);
@@ -1486,6 +1221,18 @@ function refrescarCadena_(){
     : ' enfoques de la red no fueron adoptados por ningún proyecto: quedan documentados pero fuera del canvas.'));
   if(nOE && conNombre.length && nOE !== conNombre.length){
     avisos.push('Hay ' + nOE + ' objetivos específicos y ' + conNombre.length + ' proyectos; normalmente va uno por cada uno.');
+  }
+  /* Cobertura de las redes de ATLAS.ti: una por objetivo. */
+  if(data.length){
+    var sinRed = data.filter(function(e){ return !objetivoPorId_(e.objetivoId); }).length;
+    if(sinRed) avisos.push(sinRed + (sinRed===1
+      ? ' enfoque no indica de qué red de ATLAS.ti viene. Decláralo en el paso 4.'
+      : ' enfoques no indican de qué red de ATLAS.ti vienen. Decláralo en el paso 4.'));
+    var vacias = objetivosDisponibles_().filter(function(o){
+      return enfoquesDelObjetivo_(o.id).length === 0;
+    }).map(function(o){ return o.sigla; });
+    if(vacias.length) avisos.push('Sin enfoques todavía en la red de ' + vacias.join(', ') +
+      '. En ATLAS.ti trabajas una red por objetivo, así que normalmente cada una aporta al menos un enfoque.');
   }
   avisos.forEach(function(a){
     h += '<p class="note" style="font-size:12.5px;margin:6px 0 0;color:#a8501e;">' + esc(a) + '</p>';
@@ -1732,79 +1479,23 @@ function traerDePlanteamiento(){
   if(!grupo.cargado){ toast('Primero inicia la red con los datos del grupo', true); return; }
   var btn = document.getElementById('btn-plant');
   var est = document.getElementById('cv-plant-estado');
-
-  /* Ya vinculado: se refresca por ID. El título puede haber cambiado en
-     Planteamiento y aquí se actualiza solo; el vínculo no depende de él. */
-  if(grupo.plantId){ cargarPlanteamiento_(grupo.plantId); return; }
-
   btn.disabled = true; btn.textContent = 'buscando…';
   est.textContent = ''; est.style.color = '';
 
-  jsonpCall({ accion:'planteamientos' }, function(r){
+  jsonpCall({ accion:'planteamiento', ciclo:grupo.ciclo, numero_grupo:grupo.numero_grupo },
+  function(r){
     btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
     if(!r || !r.ok){
       est.textContent = (r && r.error) ? r.error : 'No se pudo consultar Planteamiento Investigativo.';
       est.style.color = '#9a3b2c';
       return;
     }
-    var lista = r.lista || [];
-    if(!lista.length){
-      est.textContent = 'No hay planteamientos guardados a tu nombre. Créalo primero en el otro aplicativo.';
-      est.style.color = '#8a6d1f';
-      return;
-    }
-    mostrarSelectorPlanteamiento_(lista);
-  },
-  function(f){
-    btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
-    est.textContent = 'Error de red. ' + textoFallo(f);
-    est.style.color = '#9a3b2c';
-  });
-}
-
-/* Selector: el alumno elige de una lista, nunca escribe el vínculo a mano.
-   Así no hay forma de que el título o el número de grupo no coincidan. */
-function mostrarSelectorPlanteamiento_(lista){
-  var est = document.getElementById('cv-plant-estado');
-  var h = '<div class="plantSel"><div class="plantSelTit">¿Cuál de tus planteamientos?</div>';
-  lista.forEach(function(p){
-    var meta = [p.ciclo, p.numero_grupo ? ('Grupo ' + p.numero_grupo) : '', p.coordinador]
-                 .filter(function(x){ return x; }).join(' · ');
-    h += '<button type="button" class="plantOpt" onclick="elegirPlanteamiento_(\''+p.id+'\')">'+
-         '<span class="plantMeta">'+esc(meta||'—')+'</span>'+
-         '<span class="plantTit">'+esc(p.titulo || '(sin título todavía)')+'</span></button>';
-  });
-  h += '</div>';
-  est.innerHTML = h; est.style.color = '';
-}
-
-function elegirPlanteamiento_(id){ cargarPlanteamiento_(id); }
-
-function cargarPlanteamiento_(id){
-  var btn = document.getElementById('btn-plant');
-  var est = document.getElementById('cv-plant-estado');
-  btn.disabled = true; btn.textContent = 'trayendo…';
-  est.innerHTML = ''; est.style.color = '';
-
-  jsonpCall({ accion:'planteamiento', plant_id:id }, function(r){
-    btn.disabled = false; btn.textContent = 'traer de Planteamiento Investigativo';
-    if(!r || !r.ok){
-      est.textContent = (r && r.error) ? r.error : 'No se pudo traer el planteamiento.';
-      est.style.color = '#9a3b2c';
-      return;
-    }
     if(!r.encontrado){
-      /* El vínculo apunta a un registro que ya no existe: se suelta para
-         que el grupo pueda elegir otro en vez de quedarse atascado. */
-      grupo.plantId = ''; grupo.plantTitulo = '';
-      est.textContent = 'El planteamiento vinculado ya no existe. Pulsa otra vez para elegir uno.';
+      est.textContent = 'No hay un planteamiento guardado para ' + grupo.ciclo +
+                        ' · Grupo ' + grupo.numero_grupo + '. Escribe los objetivos a mano.';
       est.style.color = '#8a6d1f';
       return;
     }
-    grupo.plantId = r.plant_id || id;
-    grupo.plantTitulo = r.titulo || '';
-    if(r.correos) grupo.correosPlant = r.correos;
-    marcarCambio();
     mostrarPanelPlanteamiento_(r.datos);
   },
   function(f){
@@ -1846,7 +1537,7 @@ function mostrarPanelPlanteamiento_(d){
     aplicado.push('indicador general como resultado general');
   }
 
-  if(aplicado.length){ renderCanvas(); marcarCambio(); }
+  if(aplicado.length){ repararVinculosObjetivo_(); renderAll(); marcarCambio(); }
 
   var caja = document.createElement('div'); caja.className = 'plant-caja';
   var tit = document.createElement('div'); tit.className = 'plant-tit';
@@ -1856,10 +1547,7 @@ function mostrarPanelPlanteamiento_(d){
   caja.appendChild(tit);
 
   var aviso = document.createElement('p'); aviso.className = 'plant-aviso';
-  if(aplicado.length && !String(canvasExp.og||'').trim()){
-    aviso.innerHTML = 'Se cargó: <b>' + esc(aplicado.join(', ')) + '</b>. '+
-      'Falta el <b>objetivo general</b>: elige abajo con qué texto partir.';
-  } else if(aplicado.length){
+  if(aplicado.length){
     aviso.innerHTML = 'Se cargó: <b>' + esc(aplicado.join(', ')) + '</b>. ' +
       (inds.length && oes.length && inds.length !== oes.length
         ? 'Ojo: hay ' + oes.length + ' objetivos y ' + inds.length + ' indicadores, así que algunos resultados quedaron vacíos. '
@@ -1871,13 +1559,8 @@ function mostrarPanelPlanteamiento_(d){
   }
   caja.appendChild(aviso);
 
-  /* ── Opciones de respaldo ──
-     Solo aparecen si el planteamiento NO tenía el objetivo general lleno. Con
-     todo cargado no sirven de nada y confunden: parecen pedir una decisión que
-     ya está tomada. */
-  var mostrarRespaldo = !String(canvasExp.og||'').trim();
+  /* ── Opciones de respaldo, siempre disponibles ── */
   function opcion(rotulo, valor, alAplicar){
-    if(!mostrarRespaldo) return;
     if(!String(valor||'').trim()) return;
     var fila = document.createElement('div'); fila.className = 'plant-op';
     var izq = document.createElement('div');
@@ -1939,6 +1622,7 @@ function limpiarParaGuardar_(enfoques){
   return (enfoques||[]).map(function(e){
     return {
       id:e.id, text:e.text, proyectoId:e.proyectoId || '',
+      objetivoId:e.objetivoId || '',
       conceptos:(e.conceptos||[]).map(function(c){
         return {
           id:c.id, text:c.text,
@@ -1961,7 +1645,7 @@ function limpiarParaGuardar_(enfoques){
 
 function estadoCompleto_(){
   return {
-    pregunta: document.getElementById('qa-pregunta').value,
+    pregunta: preguntaHeredada,
     enfoques: limpiarParaGuardar_(data),
     canvas: serializarCanvas_()
   };
@@ -1985,7 +1669,8 @@ function guardarAhora(){
   clearTimeout(guardarTimer); guardarTimer = null;
 
   setEstadoGuardado('guardando…');
-  var correos = correosDeLaRed_().join(', ');
+  var correos = [SESION.email, grupo.correoCompanero]
+                  .filter(function(x){ return x; }).join(', ');
   var params = {
     accion: grupo.id ? 'actualizar' : 'crear',
     id: grupo.id || '',
@@ -1993,8 +1678,6 @@ function guardarAhora(){
     numero_grupo: grupo.numero_grupo,
     coordinador: grupo.coordinador,
     correos: correos,
-    plant_id: grupo.plantId || '',
-    plant_titulo: grupo.plantTitulo || '',
     estructura: JSON.stringify(estadoCompleto_())
   };
 
@@ -2094,16 +1777,16 @@ function construirEjemploHTML_(){
     : '<b>En este paso solo defines los dos primeros niveles.</b>'+
       '<p class="note" style="font-size:13px;margin:6px 0 10px;">El enfoque es la metodolog\u00eda de '+
       'soluci\u00f3n y el concepto es cada etapa dentro de \u00e9l. Los conceptos que definas aqu\u00ed son los '+
-      'que se retoman en el paso 2 para a\u00f1adirles preguntas, y en el paso 3 para detallar c\u00f3mo se '+
+      'que se retoman en el paso 5 para a\u00f1adirles preguntas, y en el paso 6 para detallar c\u00f3mo se '+
       'abordan.</p>';
 
   h += '<table class="ejParTable"><thead><tr><th>Columna del trabajo</th><th>D\u00f3nde entra</th></tr></thead><tbody>'+
-    '<tr><td>Metodolog\u00eda de soluci\u00f3n / Postura t\u00e9cnica</td><td><b>Enfoque</b> \u2014 paso 1</td></tr>'+
-    '<tr><td>Etapa</td><td><b>Concepto</b> \u2014 paso 1, se retoma en los pasos 2 y 3</td></tr>';
+    '<tr><td>Metodolog\u00eda de soluci\u00f3n / Postura t\u00e9cnica</td><td><b>Enfoque</b> \u2014 paso 4</td></tr>'+
+    '<tr><td>Etapa</td><td><b>Concepto</b> \u2014 paso 4, se retoma en los pasos 5 y 6</td></tr>';
   if(completo){
-    h += '<tr><td>Sub etapa</td><td><b>Procedimiento</b> \u2014 paso 3</td></tr>'+
-         '<tr><td>M\u00e9todos de recopilaci\u00f3n de datos</td><td><b>Herramienta</b> \u2014 paso 3</td></tr>'+
-         '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> \u2014 paso 3</td></tr>';
+    h += '<tr><td>Sub etapa</td><td><b>Procedimiento</b> \u2014 paso 6</td></tr>'+
+         '<tr><td>M\u00e9todos de recopilaci\u00f3n de datos</td><td><b>Herramienta</b> \u2014 paso 6</td></tr>'+
+         '<tr><td>Entregable / producto</td><td><b>Producto/entregable</b> \u2014 paso 6</td></tr>';
   }
   h += '</tbody></table>';
 
@@ -2121,7 +1804,13 @@ function construirEjemploHTML_(){
     '</b>. La empresa se mantiene en reserva.</p>'+
     '<div class="ej-arbol">';
 
-  EJEMPLO_RED.forEach(function(e){
+  EJEMPLO_RED.forEach(function(e, i){
+    /* Cada enfoque del ejemplo sale de la red de un objetivo espec\u00edfico:
+       tres objetivos, tres redes, tres enfoques. */
+    var oe = (EJEMPLO_CANVAS.oe||[])[i];
+    if(oe){
+      h += '<div class="ej-red-obj">Red de <b>OE'+(i+1)+'</b> \u00b7 '+esc(oe[0])+'</div>';
+    }
     h += '<div class="ej-n1">\u25a0 '+esc(e.t)+' <span class="ej-rot">('+ROTULOS.enf+')</span></div>';
     e.c.forEach(function(c){
       h += '<div class="ej-n2">\u25b8 '+esc(c.t)+' <span class="ej-rot">('+ROTULOS.con+')</span></div>';
@@ -2391,11 +2080,14 @@ function cargarEjemploRed(){
     proyectos: [],
     notas: canvasExp.notas
   };
-  /* Un proyecto por enfoque; la relación se guarda en el enfoque */
+  /* Un proyecto por enfoque; la relación se guarda en el enfoque. En el
+     trabajo de Orellana cada enfoque sale de la red de un objetivo
+     específico, así que el enfoque i declara venir de la red del OE i+1. */
   data.forEach(function(e, i){
+    var oe = canvasExp.especificos[i];
+    if(oe) e.objetivoId = oe.id;
     var nom = EJEMPLO_RED[i].proy || '';
     if(!nom) return;
-    var oe = canvasExp.especificos[i];
     var py = { id:uid('py'), nombre:nom, oeId: oe ? oe.id : '' };
     canvasExp.proyectos.push(py);
     e.proyectoId = py.id;
@@ -2493,13 +2185,8 @@ function abrirRed(recId){
     grupo.ciclo = r.ciclo;
     grupo.numero_grupo = r.numero_grupo;
     grupo.coordinador = r.coordinador;
-    grupo.plantId = r.plant_id || '';
-    grupo.plantTitulo = r.plant_titulo || '';
-    /* Los correos guardados ya incluyen heredados y añadidos; se conservan
-       como extra para no perderlos si el planteamiento cambia después. */
-    grupo.correosGuardados = String(r.correos||'').toLowerCase();
-    grupo.correosExtra = listaCorreos_(r.correos)
-        .filter(function(x){ return x !== SESION.email; }).join(', ');
+    grupo.correoCompanero = String(r.correos||'').toLowerCase()
+        .split(/[;,\s]+/).filter(function(x){ return x && x !== SESION.email; })[0] || '';
     aplicarEstadoCargado_(r.estructura);
     grupo.cargado = true;
     suprimirAutoguardado = false;
@@ -2550,7 +2237,12 @@ function findConcepto(cid){
 /* ── CRUD enfoques ── */
 function addEnfoqueTop(){
   var inp = document.getElementById('in-enfoques'), v = inp.value.trim(); if(!v) return;
-  data.push({id:uid('e'), text:v, conceptos:[]}); inp.value=''; inp.focus(); renderAll();
+  /* Si solo hay un objetivo declarado no hay nada que elegir: el enfoque
+     queda en esa red. Con varios, el grupo lo indica en el selector. */
+  var objs = objetivosDisponibles_();
+  data.push({ id:uid('e'), text:v, conceptos:[],
+              objetivoId: objs.length === 1 ? objs[0].id : '' });
+  inp.value=''; inp.focus(); renderAll();
 }
 function removeEnfoque(id){ data = data.filter(function(e){ return e.id !== id; }); renderAll(); }
 
@@ -2836,6 +2528,14 @@ function altoNodo_(txt, col, sub){
   return medirNodo_(txt, NET.nodeW[col], sub).alto;
 }
 
+/* Subtexto de un nodo. Solo lo tiene el enfoque, y es la red de la que
+   proviene: así el diagrama deja ver que las redes de ATLAS.ti son varias. */
+function subDeNodo_(n, col){
+  if(col !== 0) return '';
+  var o = objetivoPorId_(n.objetivoId);
+  return o ? o.sigla + (o.texto ? ' · ' + recortar_(o.texto, 90) : '') : '';
+}
+
 /* Hijos de un nodo, sea del nivel que sea */
 function hijosDe_(n, col){
   /* Por debajo del nivel visible el nodo se trata como hoja */
@@ -2847,7 +2547,7 @@ function hijosDe_(n, col){
    El subárbol nunca es menor que el propio nodo, así que un texto largo
    arriba abre espacio aunque tenga un solo hijo. */
 function medirSubarbol_(n, col){
-  n._h = altoNodo_(n.text, col) + NET.gap;
+  n._h = altoNodo_(n.text, col, subDeNodo_(n, col)) + NET.gap;
   var hijos = hijosDe_(n, col), suma = 0;
   hijos.forEach(function(hh){ suma += medirSubarbol_(hh, col + 1); });
   n._sh = Math.max(n._h, suma);
@@ -2966,7 +2666,8 @@ function construirSVG_(paleta, conFondo){
 
   /* Nodos */
   data.forEach(function(e){
-    s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque);
+    s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque,
+                  subDeNodo_(e, 0));
     (e.conceptos||[]).forEach(function(c){
       s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto);
       if(nivelRed < 3) return;
@@ -2985,22 +2686,67 @@ function construirSVG_(paleta, conFondo){
   return s + '</svg>';
 }
 
+/* Cabecera de la red de un objetivo dentro de la lista de enfoques */
+function cabeceraRedObjetivo_(o, n, suelta){
+  var h = document.createElement('div');
+  h.className = 'redobj' + (suelta ? ' redobj-suelta' : (n ? '' : ' redobj-vacia'));
+  var s = document.createElement('div'); s.className = 'redobj-sig';
+  s.textContent = suelta ? 'ENFOQUES SIN RED ASIGNADA' : 'RED DE ' + o.sigla;
+  h.appendChild(s);
+  if(o.texto){
+    var t = document.createElement('div'); t.className = 'redobj-txt';
+    t.textContent = o.texto;
+    h.appendChild(t);
+  }
+  var c = document.createElement('div'); c.className = 'redobj-n';
+  c.textContent = suelta
+    ? n + (n===1 ? ' enfoque no dice de qué objetivo viene.' : ' enfoques no dicen de qué objetivo vienen.') +
+      ' Indícalo en «Viene de la red del objetivo».'
+    : (n ? n + (n===1 ? ' enfoque' : ' enfoques') : 'Todavía sin enfoques en esta red.');
+  h.appendChild(c);
+  /* Agregar aquí deja el enfoque ya clasificado en esta red, en vez de
+     mandarlo al montón de «sin red asignada» al final de la lista. */
+  if(!suelta){
+    h.appendChild(makeAddRow('Agregar enfoque a la red de ' + o.sigla + '…', function(v){
+      data.push({ id:uid('e'), text:v, conceptos:[], objetivoId:o.id });
+      renderAll();
+    }));
+  }
+  return h;
+}
+
 function renderNetwork(){
   var intro = document.getElementById('net-intro');
   if(intro){
     intro.innerHTML = nivelRed < 3
-      ? 'Define <b>qué vas a estudiar</b>: los enfoques y, dentro de cada uno, sus conceptos. '+
-        'Lo que consignas aquí no se improvisa: sale de <b>consolidar las redes semánticas que construiste en ATLAS.ti</b>. '+
-        'Un mismo enfoque suele aparecer tratado por varios autores, cada uno con su recorte y su vocabulario. '+
-        'Como investigador te toca decidir qué conceptos adoptas, cuáles descartas y cuáles fusionas en uno solo '+
-        'porque nombran lo mismo con palabras distintas. Esa depuración es tu aporte, y debes poder sustentarla: '+
-        'de qué autor tomaste cada concepto y por qué. Las preguntas vienen en el paso 5 y los procedimientos en el paso 6.'
-      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos, la herramienta con que se ejecutan '+
-        'y el producto que dejan. Igual que en el paso 4, esto se desprende de tus redes en ATLAS.ti: los autores describen '+
-        'los procedimientos con distinto nivel de detalle, y tú decides cuáles conserva tu propuesta.';
+      ? 'Define <b>qué vas a estudiar</b>: los enfoques (metodologías de solución) y, dentro de cada uno, sus conceptos (etapas). '+
+        'Esto no se improvisa: sale de las <b>redes semánticas que construiste en ATLAS.ti</b>, que no son una sino <b>una por objetivo</b> '+
+        '—la del objetivo general y una por cada objetivo específico del paso 1—. Por eso cada enfoque declara de qué red viene: '+
+        'no se trata de fundirlas en una sola, sino de <b>mantenerlas trazables</b> hasta el canvas. '+
+        'Las preguntas vienen en el paso 5 y los procedimientos en el paso 6.'
+      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos (sub etapas), la herramienta con que se ejecutan y el producto que dejan.';
   }
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
-  data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+  /* En el paso de enfoques la lista se agrupa por objetivo: así se ve que
+     las redes de ATLAS.ti son varias —una por objetivo— y no una sola. En el
+     paso de procedimientos la lista va plana, porque ahí lo que importa es
+     colgar los niveles de abajo. */
+  var objsRed = objetivosDisponibles_();
+  if(nivelRed < 3 && objsRed.length){
+    objsRed.forEach(function(o){
+      var del = enfoquesDelObjetivo_(o.id);
+      list.appendChild(cabeceraRedObjetivo_(o, del.length, false));
+      del.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+    });
+    var sueltos = data.filter(function(e){ return !objetivoPorId_(e.objetivoId); });
+    if(sueltos.length){
+      list.appendChild(cabeceraRedObjetivo_(
+        { sigla:'SIN CLASIFICAR', texto:'' }, sueltos.length, true));
+      sueltos.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+    }
+  } else {
+    data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+  }
 
   var fila = document.getElementById('add-enfoque-row');
   if(fila) fila.style.display = (nivelRed < 3) ? 'flex' : 'none';
@@ -3014,7 +2760,7 @@ function renderNetwork(){
     wrap.innerHTML = '<div class="net-vacio">Agrega tu primer enfoque abajo.<br>'+
       'En este paso solo defines <b>Enfoque</b> (metodología de solución) y '+
       '<b>Concepto</b> (etapa). Los procedimientos, herramientas y productos '+
-      'vienen después, en el paso 3.</div>';
+      'vienen después, en el paso 6.</div>';
   } else {
     wrap.innerHTML = construirSVG_(paletaActual(), false);
   }
@@ -3087,13 +2833,37 @@ function buildNetEnfoque(e){
     function(){ removeEnfoque(e.id); },
     function(t){ e.text = t; renderAll(); }));
   if(nivelRed < 3){
+    /* De qué red de ATLAS.ti viene este enfoque: la del objetivo general o
+       la de uno de los específicos. */
+    var objs = objetivosDisponibles_();
+    var fo = document.createElement('div'); fo.className = 'enf-proy';
+    var lo = document.createElement('span'); lo.className = 'enf-proy-lbl';
+    lo.textContent = 'Viene de la red del objetivo:';
+    var so = document.createElement('select'); so.className = 'enf-proy-sel';
+    var oz = document.createElement('option'); oz.value = '';
+    oz.textContent = objs.length ? '— sin clasificar —'
+                                 : '— aún no hay objetivos (paso 1) —';
+    so.appendChild(oz);
+    objs.forEach(function(o){
+      var op = document.createElement('option');
+      op.value = o.id;
+      op.textContent = o.sigla + ' · ' + recortar_(o.texto, 70);
+      if(e.objetivoId === o.id) op.selected = true;
+      so.appendChild(op);
+    });
+    so.addEventListener('change', function(){
+      e.objetivoId = so.value; marcarCambio(); renderNetwork(); renderCanvas();
+    });
+    fo.appendChild(lo); fo.appendChild(so);
+    wrap.appendChild(fo);
+
     var fp = document.createElement('div'); fp.className = 'enf-proy';
     var lp = document.createElement('span'); lp.className = 'enf-proy-lbl';
     lp.textContent = 'Pertenece al proyecto:';
     var sp = document.createElement('select'); sp.className = 'enf-proy-sel';
     var o0 = document.createElement('option'); o0.value = '';
     o0.textContent = canvasExp.proyectos.length ? '— ninguno (no entra al canvas) —'
-                                                : '— aún no hay proyectos (paso 1) —';
+                                                : '— aún no hay proyectos (paso 3) —';
     sp.appendChild(o0);
     canvasExp.proyectos.forEach(function(py, k){
       var op = document.createElement('option');
@@ -3103,10 +2873,30 @@ function buildNetEnfoque(e){
       sp.appendChild(op);
     });
     sp.addEventListener('change', function(){
-      e.proyectoId = sp.value; marcarCambio(); renderNetwork(); renderCanvas();
+      e.proyectoId = sp.value;
+      /* Si el enfoque aún no decía de qué red viene, se toma el objetivo al
+         que responde el proyecto elegido: es el supuesto más razonable y el
+         grupo puede corregirlo en el selector de arriba. */
+      if(!e.objetivoId){
+        var oid = objetivoDelProyectoDe_(e);
+        if(oid && objetivoPorId_(oid)) e.objetivoId = oid;
+      }
+      marcarCambio(); renderNetwork(); renderCanvas();
     });
     fp.appendChild(lp); fp.appendChild(sp);
     wrap.appendChild(fp);
+
+    /* Aviso cuando el enfoque dice venir de una red y el proyecto que lo
+       recibe responde a otro objetivo: casi siempre es un descuido. */
+    var oProy = objetivoDelProyectoDe_(e);
+    if(e.objetivoId && e.objetivoId !== OBJ_GENERAL && oProy && oProy !== e.objetivoId){
+      var al = document.createElement('div'); al.className = 'enf-aviso';
+      al.textContent = 'Este enfoque viene de la red de ' +
+        (objetivoPorId_(e.objetivoId)||{sigla:'?'}).sigla +
+        ', pero el proyecto al que lo asociaste responde a ' +
+        (objetivoPorId_(oProy)||{sigla:'?'}).sigla + '. Revisa cuál de los dos corrige.';
+      wrap.appendChild(al);
+    }
   }
   wrap.appendChild(makeAddRow('Agregar concepto (etapa)…', function(v){ addConcepto(e.id, v); }));
   wrap.appendChild(makeChildren(e.conceptos, function(c){ return buildNetConcepto(e.id, c); }));
@@ -3125,24 +2915,6 @@ function buildNetConcepto(eid, c){
     function(){ removeConcepto(eid, c.id); },
     function(t){ c.text = t; renderAll(); }));
   if(nivelRed >= 3){
-    /* Las preguntas se recuerdan aquí, debajo del concepto: son las que el
-       procedimiento tiene que responder, y tenerlas a la vista evita subir al
-       paso 5 a comprobarlas. */
-    if(nq){
-      var qs = document.createElement('div'); qs.className = 'qRecordar';
-      var t = document.createElement('div'); t.className = 'qRecordarTit';
-      t.textContent = nq===1 ? 'Pregunta que debe responder' : 'Preguntas que debe responder';
-      qs.appendChild(t);
-      (c.preguntas||[]).forEach(function(q){
-        var li = document.createElement('div'); li.className = 'qRecordarItem';
-        var aut = (q.autores||[]).map(function(a){ return a.text || a; })
-                    .filter(function(x){ return x; }).join(' · ');
-        li.innerHTML = '<span class="qTxt">'+esc(q.text||'')+'</span>'+
-                       (aut ? '<span class="qAut">'+esc(aut)+'</span>' : '');
-        qs.appendChild(li);
-      });
-      wrap.appendChild(qs);
-    }
     wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
     wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
   }
@@ -3384,26 +3156,6 @@ function switchView(view, desdePaso){
   renderFases();
 }
 
-/* Barra inferior de avance: la ruta de arriba sirve para saltar a cualquier
-   paso, pero el recorrido normal es lineal y necesita "siguiente" a la vista. */
-function renderNavPasos(){
-  var cont = document.getElementById('navPasos');
-  if(!cont) return;
-  var prev = pasoPorId_(pasoActual - 1);
-  var next = pasoPorId_(pasoActual + 1);
-
-  var h = '<div class="navPasos">';
-  h += prev
-    ? '<button class="btnGhost" onclick="irAPaso('+(pasoActual-1)+')">← '+esc(prev.paso.nom)+'</button>'
-    : '<span></span>';
-  h += '<span class="navPasosMid">Paso '+pasoActual+' de '+TOTAL_PASOS+'</span>';
-  h += next
-    ? '<button class="btn" onclick="irAPaso('+(pasoActual+1)+')">'+esc(next.paso.nom)+' →</button>'
-    : '<button class="btn" onclick="guardarAhora()">Guardar</button>';
-  h += '</div>';
-  cont.innerHTML = h;
-}
-
 function renderFases(){
   var cont = document.getElementById('fases');
   if(!cont) return;
@@ -3445,11 +3197,9 @@ function renderFases(){
   });
   h += '</div>';
   cont.innerHTML = h;
-  renderNavPasos();
 }
 
 /* ── Listeners de autoguardado ── */
-document.getElementById('qa-pregunta').addEventListener('input', marcarCambio);
 ['cv-programa','cv-og','cv-rg','cv-notas'].forEach(function(id){
   var clave = { 'cv-programa':'programa','cv-og':'og','cv-rg':'rg','cv-notas':'notas' }[id];
   document.getElementById(id).addEventListener('input', function(){
