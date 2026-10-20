@@ -2136,6 +2136,16 @@ function cargarLista(forzar){
   });
 }
 
+/* Rótulo de una red guardada. El proxy ya manda `titulo`; `pregunta` es el
+   campo antiguo y sirve de respaldo mientras no se reimplemente el script. */
+function tituloRed_(g){
+  return recortar_(g.titulo || g.pregunta || '', 160);
+}
+function plural_(n, sing, plur){
+  n = n || 0;
+  return n + ' ' + (n === 1 ? sing : (plur || sing + 's'));
+}
+
 function pintarLista_(gs, cont){
     if(!gs.length){
       cont.innerHTML = '<p class="note">Aún no hay redes guardadas'+
@@ -2155,9 +2165,15 @@ function pintarLista_(gs, cont){
              '<span>'+esc(fechaCorta_(g.actualizado))+'</span>'+
              (enEdicion?'<span style="color:var(--teal);">● en edición</span>':'')+
            '</div>'+
-           '<div class="listTema">'+esc(g.pregunta || '(sin pregunta general)')+'</div>'+
-           '<div class="listPg">'+g.nEnfoques+' enfoques · '+g.nConceptos+' conceptos · '+
-             (g.nProcedimientos||0)+' procedimientos · '+(g.nHerramientas||0)+' herramientas</div>'+
+           /* Se rotula con el programa, o con el objetivo general, o con el
+              primer enfoque: lo primero que identifique el trabajo. Si no hay
+              nada de eso todavía, la línea no se dibuja. */
+           (tituloRed_(g) ? '<div class="listTema">'+esc(tituloRed_(g))+'</div>' : '')+
+           '<div class="listPg">'+plural_(g.nEnfoques,'enfoque')+' · '+
+             plural_(g.nConceptos,'concepto')+' · '+
+             plural_(g.nProcedimientos||0,'procedimiento')+' · '+
+             plural_(g.nHerramientas||0,'herramienta')+' · '+
+             plural_(g.nProductos||0,'producto')+'</div>'+
            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
              '<button class="btnMini" onclick="abrirRed(&quot;'+esc(g.id)+'&quot;)"'+
                (enEdicion?' disabled':'')+'>'+(enEdicion?'En edición':'Abrir →')+'</button>'+
