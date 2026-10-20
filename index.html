@@ -221,6 +221,8 @@
   .enf-proy-sel{flex:1;min-width:180px;font-size:15px;padding:5px 8px;
                 border:1px dashed var(--line);border-radius:3px;background:#fff;}
   .enf-proy-sel:focus{outline:none;border-style:solid;border-color:var(--teal);}
+  .enf-prog-val{flex:1;min-width:180px;font-size:15px;padding:5px 8px;color:var(--ink);}
+  .enf-prog-vacio{color:#a8b0aa;font-style:italic;}
   .enf-aviso{margin-top:6px;font-size:13px;line-height:1.45;color:#8a4a12;
              background:#fdf4e7;border:1px solid #efd9b4;border-radius:3px;padding:6px 9px;}
   /* Cabecera de cada red de ATLAS.ti dentro del paso de enfoques */
@@ -1215,7 +1217,11 @@ function refrescarCadena_(){
   if(sinEnf) avisos.push(sinEnf + (sinEnf===1?' proyecto sin enfoque adoptado.':' proyectos sin enfoque adoptado.'));
   var sinOE = canvasExp.proyectos.filter(function(p){ return !especificoPorId_(p.oeId); }).length;
   if(sinOE) avisos.push(sinOE + (sinOE===1?' proyecto sin objetivo específico asignado.':' proyectos sin objetivo específico asignado.'));
-  var libres = data.filter(function(e){ return !e.proyectoId; }).length;
+  /* El enfoque que viene de la red del objetivo general no necesita proyecto:
+     entra al canvas al nivel del programa, así que no se cuenta como suelto. */
+  var libres = data.filter(function(e){
+    return !e.proyectoId && e.objetivoId !== OBJ_GENERAL;
+  }).length;
   if(libres) avisos.push(libres + (libres===1
     ? ' enfoque de la red no fue adoptado por ningún proyecto: queda documentado pero fuera del canvas.'
     : ' enfoques de la red no fueron adoptados por ningún proyecto: quedan documentados pero fuera del canvas.'));
@@ -1237,6 +1243,14 @@ function refrescarCadena_(){
   avisos.forEach(function(a){
     h += '<p class="note" style="font-size:12.5px;margin:6px 0 0;color:#a8501e;">' + esc(a) + '</p>';
   });
+  /* Esto no es un aviso sino una aclaración: el enfoque del objetivo general
+     cuelga del programa, así que se informa en gris y no en rojo. */
+  var nOG = enfoquesDelObjetivo_(OBJ_GENERAL).length;
+  if(nOG){
+    h += '<p class="note" style="font-size:12.5px;margin:6px 0 0;">' + esc(nOG + (nOG===1
+      ? ' enfoque viene de la red del objetivo general: cuelga del programa y entra al canvas a ese nivel, sin objetivo específico ni proyecto.'
+      : ' enfoques vienen de la red del objetivo general: cuelgan del programa y entran al canvas a ese nivel, sin objetivo específico ni proyecto.')) + '</p>';
+  }
   box.innerHTML = h;
 }
 
@@ -1332,12 +1346,22 @@ function filasCanvas_(){
     });
   }
 
-  /* Solo entra al canvas lo ADOPTADO: los enfoques que el grupo asignó a un
-     proyecto. Los que estudió y descartó se quedan en la red, documentados,
-     pero fuera del canvas. */
+  /* El enfoque que viene de la red del objetivo general no responde a un
+     objetivo específico ni a un proyecto: cuelga del programa, que es el
+     paraguas de los tres proyectos. Entra al canvas al nivel del programa,
+     con las columnas de objetivo específico y proyecto en blanco. */
+  enfoquesDelObjetivo_(OBJ_GENERAL).forEach(function(e){
+    recorrer(e, '', '', '');
+  });
+
+  /* De los demás solo entra lo ADOPTADO: los enfoques que el grupo asignó a
+     un proyecto. Los que estudió y descartó se quedan en la red,
+     documentados, pero fuera del canvas. */
   canvasExp.proyectos.forEach(function(py){
     var esp = especificoPorId_(py.oeId) || { obj:'', res:'' };
-    var es = enfoquesDelProyecto_(py.id);
+    var es = enfoquesDelProyecto_(py.id).filter(function(e){
+      return e.objetivoId !== OBJ_GENERAL;   // ese ya entró arriba
+    });
     if(!es.length){ return; }
     es.forEach(function(e){
       recorrer(e, esp.obj || '', esp.res || '', py.nombre || '');
@@ -2718,7 +2742,9 @@ function cabeceraRedObjetivo_(o, n, suelta){
   c.textContent = suelta
     ? n + (n===1 ? ' enfoque no dice de qué objetivo viene.' : ' enfoques no dicen de qué objetivo vienen.') +
       ' Indícalo en «Viene de la red del objetivo».'
-    : (n ? n + (n===1 ? ' enfoque' : ' enfoques') : 'Todavía sin enfoques en esta red.');
+    : (n ? n + (n===1 ? ' enfoque' : ' enfoques') : 'Todavía sin enfoques en esta red.') +
+      (o.id === OBJ_GENERAL
+        ? ' · Esta red cuelga del programa, no de un proyecto.' : '');
   h.appendChild(c);
   /* Agregar aquí deja el enfoque ya clasificado en esta red, en vez de
      mandarlo al montón de «sin red asignada» al final de la lista. */
@@ -2874,11 +2900,32 @@ function buildNetEnfoque(e){
       so.appendChild(op);
     });
     so.addEventListener('change', function(){
-      e.objetivoId = so.value; marcarCambio(); renderNetwork(); renderCanvas();
+      e.objetivoId = so.value;
+      /* El enfoque del objetivo general cuelga del programa, no de un
+         proyecto: al pasarlo a esa red se suelta el proyecto que tuviera. */
+      if(e.objetivoId === OBJ_GENERAL) e.proyectoId = '';
+      marcarCambio(); renderNetwork(); renderCanvas();
     });
     fo.appendChild(lo); fo.appendChild(so);
     wrap.appendChild(fo);
+  }
 
+  /* Al enfoque del objetivo general no se le pregunta por proyecto: el
+     objetivo general no se responde con un proyecto sino con el programa
+     completo, que es el paraguas de los tres. */
+  if(nivelRed < 3 && e.objetivoId === OBJ_GENERAL){
+    var fg = document.createElement('div'); fg.className = 'enf-proy';
+    var lg = document.createElement('span'); lg.className = 'enf-proy-lbl';
+    lg.textContent = 'Pertenece al programa:';
+    var vg = document.createElement('span'); vg.className = 'enf-prog-val';
+    var nomProg = (canvasExp.programa||'').trim();
+    vg.textContent = nomProg || '— aún sin nombre (paso 2) —';
+    if(!nomProg) vg.classList.add('enf-prog-vacio');
+    fg.appendChild(lg); fg.appendChild(vg);
+    wrap.appendChild(fg);
+  }
+
+  if(nivelRed < 3 && e.objetivoId !== OBJ_GENERAL){
     var fp = document.createElement('div'); fp.className = 'enf-proy';
     var lp = document.createElement('span'); lp.className = 'enf-proy-lbl';
     lp.textContent = 'Pertenece al proyecto:';
