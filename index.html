@@ -2724,7 +2724,13 @@ function renderNetwork(){
         '—la del objetivo general y una por cada objetivo específico del paso 1—. Por eso cada enfoque declara de qué red viene: '+
         'no se trata de fundirlas en una sola, sino de <b>mantenerlas trazables</b> hasta el canvas. '+
         'Las preguntas vienen en el paso 5 y los procedimientos en el paso 6.'
-      : 'Ahora define <b>cómo vas a responder</b>: para cada concepto, sus procedimientos (sub etapas), la herramienta con que se ejecutan y el producto que dejan.';
+      : 'Ahora define <b>cómo vas a responder</b>. Cada concepto llega del paso 5 con sus '+
+        '<b>preguntas ya analizadas</b>, y son esas preguntas las que mandan aquí: para cada concepto '+
+        'declara los <b>procedimientos</b> (sub etapas) con que las respondes, la <b>herramienta</b> '+
+        'que ejecuta cada procedimiento y el <b>producto</b> que queda como evidencia. '+
+        'La cadena tiene que leerse de corrido: la pregunta pide un dato, el procedimiento lo obtiene, '+
+        'la herramienta lo recoge y el producto lo demuestra. Si un procedimiento no responde a ninguna '+
+        'pregunta, sobra; si una pregunta se queda sin procedimiento, queda sin responder.';
   }
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
   /* En el paso de enfoques la lista se agrupa por objetivo: así se ve que
