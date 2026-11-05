@@ -269,6 +269,9 @@
   .guia-tabla th{background:#e9eef3;color:#3a5266;text-align:left;font-weight:600;padding:6px 8px;border:1px solid #d5dde5;}
   .guia-tabla td{padding:7px 8px;border:1px solid #d5dde5;vertical-align:top;line-height:1.5;background:#fff;color:#26323d;}
   .guia-tabla td span{font-size:12.5px;color:#7b857f;}
+  .guia-clave{font-size:16px !important;background:#fff;border-left:4px solid #3a6ea5;padding:8px 12px;margin:6px 0 10px !important;}
+  .guia-nota{font-size:14.5px !important;color:#34424f !important;margin:8px 0 !important;}
+  .guia-tabla th span{font-weight:400;font-size:12px;color:#5b6b78;}
   .guia-no{margin:8px 0;padding:9px 12px;border-left:4px solid #c0392b;background:#fdf0ee;font-size:15px;line-height:1.55;}
   .guia-si{margin:8px 0;padding:9px 12px;border-left:4px solid #1f7a55;background:#eef8f3;font-size:15px;line-height:1.55;}
   .guia-no span, .guia-si > span{display:block;margin-top:6px;font-size:14px;color:#4a5560;}
@@ -278,17 +281,6 @@
     .guia-tabla tr{margin-bottom:8px;border:1px solid #d5dde5;}
     .guia-tabla td{border:none;border-bottom:1px solid #eef1f4;}
   }
-  /* Kit de herramientas transversal de cada enfoque, en el paso 6 */
-  .kit{margin:10px 0 6px;padding:10px 12px;border:1px solid #e6dcc0;border-radius:4px;background:#fdfaf1;}
-  .kit-tit{font-size:13.5px;font-weight:600;color:#6f5714;}
-  .kit-sub{font-size:13px;color:#8a7a4d;margin:2px 0 8px;line-height:1.45;}
-  .kit-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-  .kit-chip{display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:4px 10px;
-            border:1px solid #d9c98f;border-radius:14px;background:#fff;color:#3d3009;}
-  .kit-chip small{font-size:12px;color:#8a7a4d;}
-  .kit-chip button{border:none;background:none;color:#b0452a;font-size:15px;cursor:pointer;padding:0 0 0 2px;}
-  .kit-chip.kit-heredada{border-style:dashed;background:#fbf7ea;color:#6f5714;}
-  .kit-vacio{font-size:13.5px;color:#9a8a5d;font-style:italic;}
   .enf-prog-val{flex:1;min-width:180px;font-size:15px;padding:5px 8px;color:var(--ink);}
   .enf-prog-vacio{color:#a8b0aa;font-style:italic;}
   .enf-aviso{margin-top:6px;font-size:13px;line-height:1.45;color:#8a4a12;
@@ -2567,23 +2559,19 @@ function findProcRed(pid){
 function addHerrRed(pid, text){
   var pr = findProcRed(pid); if(!pr) return;
   if(!pr.herrs) pr.herrs = [];
-  /* Si la herramienta ya está en el kit del enfoque, se usa con el mismo
+  /* Si esa herramienta ya se escribió en el enfoque, se usa con el mismo
      nombre exacto: «power bi» y «Power BI» no deben quedar como dos. */
   var e = enfoqueDeProc_(pid);
   if(e) text = normalizarHerr_(e, text);
   pr.herrs.push({id:uid('hr'), text:text, prods:[]}); renderAll();
 }
 
-/* ── Kit de herramientas del enfoque ────────────────────────────────────
-   Lo transversal de un enfoque son sus HERRAMIENTAS: una metodología trae
-   su propio juego de herramientas y lo usa en varias de sus etapas (en el
-   ejemplo de Orellana, «Análisis documental» aparece en seis etapas). Los
-   procedimientos no son transversales: son las sub etapas de cada etapa, y
-   si fueran los mismos en todas, las etapas no se distinguirían. Los
-   productos tampoco: cada uno es la evidencia de un procedimiento concreto.
-   El kit reúne las herramientas declaradas para el enfoque y las que ya se
-   usan en sus procedimientos. Un enfoque desprendido de una etapa tiene su
-   propio kit y además hereda, como sugerencia, el del enfoque del que salió.
+/* ── Herramientas ya usadas en el enfoque ───────────────────────────────
+   La herramienta se decide en cada procedimiento: depende de qué hay que
+   hacer para conseguir el dato, así que no se declara aparte. Lo único que
+   se ofrece es autocompletar con las herramientas ya escritas en el mismo
+   enfoque (y, en un enfoque desprendido, en el de origen), para no escribir
+   dos veces la misma con distinta ortografía. Sugerir no obliga a nada.
    ─────────────────────────────────────────────────────────────────────── */
 function claveHerr_(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); }
 
@@ -2632,19 +2620,6 @@ function normalizarHerr_(e, text){
   var k = claveHerr_(text), sug = sugerenciasHerr_(e);
   for(var i=0;i<sug.length;i++){ if(claveHerr_(sug[i]) === k) return sug[i]; }
   return String(text).replace(/\s+/g,' ').trim();
-}
-function addKit(eid, text){
-  var e = findIn(data, eid); if(!e) return;
-  if(!e.kit) e.kit = [];
-  var t = normalizarHerr_(e, text), k = claveHerr_(t);
-  if(e.kit.some(function(x){ return claveHerr_(x) === k; })){ toast('Esa herramienta ya está en el kit'); return; }
-  e.kit.push(t); renderAll(); marcarCambio();
-}
-function removeKit(eid, text){
-  var e = findIn(data, eid); if(!e) return;
-  var k = claveHerr_(text);
-  e.kit = (e.kit||[]).filter(function(x){ return claveHerr_(x) !== k; });
-  renderAll(); marcarCambio();
 }
 function removeHerrRed(pid, hid){
   var pr = findProcRed(pid); if(!pr || !pr.herrs) return;
@@ -3188,101 +3163,85 @@ function pintarGuia_(){
   if(!abierta){ g.innerHTML = h + '</div>'; return; }
 
   h +=
-  '<div class="guia-blq"><div class="guia-tit">1 · La conexión: la pregunta pide un DATO</div>'+
-  '<p>Entre la pregunta y el procedimiento hay un paso que suele saltarse: <b>averiguar qué dato pide la pregunta</b>. '+
-  'El procedimiento es la acción para conseguir ese dato. Hazlo en cuatro pasos:</p>'+
+  /* 1 · La idea clave */
+  '<div class="guia-blq"><div class="guia-tit">1 · La idea clave</div>'+
+  '<p class="guia-clave">Cada pregunta pide un <b>dato</b>. El <b>procedimiento</b> es lo que tienes que <b>hacer para conseguir ese dato</b>. '+
+  'La <b>herramienta</b> es con qué lo haces, y el <b>producto</b> es donde queda el dato conseguido.</p>'+
+  '<p>Para cada pregunta, responde estas cuatro cosas en orden:</p>'+
   '<ol class="guia-pasos">'+
-  '<li><b>Lee la pregunta y subraya qué pide saber.</b> «¿Cuál es el estado actual del proceso de compras y qué actividades generan demoras?» pide: <u>las actividades</u>, <u>cuánto tarda cada una</u> y <u>dónde se acumula la demora</u>.</li>'+
-  '<li><b>Por cada dato, pregúntate de dónde sale.</b> De las personas, de documentos, de un sistema (ERP), o de observar el trabajo.</li>'+
-  '<li><b>Escribe el procedimiento: verbo + dato + fuente.</b> «Levantar las actividades y tiempos del proceso con el personal de compras». Un dato distinto o una fuente distinta es otro procedimiento: por eso una pregunta suele tener dos o tres.</li>'+
-  '<li><b>Comprueba con la frase de control:</b> <i>«Para responder P1 necesito saber ___; lo obtengo al ___ con ___, y queda en ___.»</i> Si la frase suena natural, la cadena está bien armada.</li>'+
+  '<li><b>¿Qué dato me pide la pregunta?</b> Lo que necesito saber para poder responderla.</li>'+
+  '<li><b>¿Dónde está ese dato?</b> En las personas, en un documento, en un sistema (ERP) o en el trabajo mismo, observándolo.</li>'+
+  '<li><b>¿Qué tengo que hacer para conseguirlo?</b> Eso es el procedimiento. Se escribe con <b>verbo + dato + fuente</b>: '+
+    '«<u>Entrevistar</u> al jefe de compras <u>para identificar qué hecho inicia una compra</u>».</li>'+
+  '<li><b>Comprueba con la frase de control:</b> <i>«Para responder esta pregunta necesito saber ___; lo consigo al ___ con ___, y queda en ___.»</i> '+
+    'Si la frase suena natural, la cadena está bien.</li>'+
   '</ol></div>'+
 
-  '<div class="guia-blq"><div class="guia-tit">2 · Qué va en cada nivel</div>'+
-  '<table class="guia-tabla"><thead><tr><th></th><th>Responde a</th><th>Qué es</th><th>Ejemplos</th><th>Error frecuente</th></tr></thead><tbody>'+
-  '<tr><td><b>Procedimiento</b><br><span>(sub etapa)</span></td><td>¿Qué hago para obtener el dato?</td>'+
-    '<td>Una acción de investigación, con verbo, sobre un dato y una fuente.</td>'+
-    '<td>Levantar actividades y tiempos con el personal · Extraer del ERP los tiempos de las solicitudes del semestre · Diagramar el proceso actual</td>'+
-    '<td>Copiar los pasos del proceso de la empresa («Creación de solicitudes»). Eso es lo que se estudia, no cómo se estudia.</td></tr>'+
-  '<tr><td><b>Herramienta</b></td><td>¿Con qué lo hago?</td>'+
-    '<td>El instrumento, técnica o software que recoge o procesa el dato. Es transversal: se reutiliza en varias etapas.</td>'+
-    '<td>Guía de entrevista · Ficha de registro · Cuestionario · Análisis documental · Reporte del ERP · Bizagi · Excel</td>'+
-    '<td>Poner un resultado («Diagrama TO-BE», «Dashboard»). Eso es un producto.</td></tr>'+
-  '<tr><td><b>Producto</b><br><span>(entregable)</span></td><td>¿Qué queda al terminar?</td>'+
-    '<td>La evidencia concreta que se puede entregar y revisar, y que responde la pregunta.</td>'+
-    '<td>Mapa AS-IS con tiempos · Tabla de tiempos de ciclo por solicitud · Diagrama BPMN con demoras marcadas · Informe de diagnóstico</td>'+
-    '<td>Poner la herramienta («Excel») o un documento de la empresa («Solicitud de compra»). La solicitud la genera la empresa, no la investigación.</td></tr>'+
-  '</tbody></table></div>'+
-
-  '<div class="guia-blq"><div class="guia-tit">3 · Ejemplo: así no, así sí</div>'+
-  '<p><b>Concepto:</b> Análisis de la situación actual (AS-IS) &nbsp;·&nbsp; <b>P1:</b> ¿Cuál es el estado actual del proceso de compras y qué actividades generan demoras?</p>'+
-  '<div class="guia-no"><b>Así no</b> — Creación de solicitudes → ERP Oracle → Solicitud de compra.<br>'+
-  '<span>Describe el proceso de la empresa: son los pasos que se van a estudiar, no lo que hace el investigador para estudiarlos. Y no responde a P1: no dice nada de demoras.</span></div>'+
-  '<div class="guia-si"><b>Así sí</b> — tres procedimientos, uno por cada dato que pide P1:'+
-  '<table class="guia-tabla guia-tabla-si"><thead><tr><th>Dato que pide P1</th><th>Procedimiento</th><th>Herramienta</th><th>Producto</th></tr></thead><tbody>'+
-  '<tr><td>Las actividades y quién las hace</td><td>Levantar las actividades, responsables y tiempos del proceso con el personal de compras</td><td>Guía de entrevista + Ficha de registro</td><td>Ficha AS-IS de actividades, tiempos y responsables</td></tr>'+
-  '<tr><td>Cuánto tarda realmente cada solicitud</td><td>Extraer del ERP los tiempos de las solicitudes del último semestre</td><td>Reporte del ERP Oracle + Excel</td><td>Base de tiempos de ciclo por solicitud</td></tr>'+
-  '<tr><td>Dónde se acumula la demora</td><td>Diagramar el proceso actual y marcar esperas y reprocesos</td><td>Bizagi Modeler</td><td>Diagrama BPMN AS-IS con demoras marcadas</td></tr>'+
+  /* 2 · Ejemplo completo con las cuatro preguntas */
+  '<div class="guia-blq"><div class="guia-tit">2 · Ejemplo completo: las cuatro preguntas de un concepto</div>'+
+  '<p><b>Enfoque:</b> Gestión por procesos (BPMN) &nbsp;·&nbsp; <b>Concepto:</b> Análisis de la situación actual (AS-IS)</p>'+
+  '<table class="guia-tabla guia-tabla-si"><thead><tr>'+
+    '<th>Pregunta</th><th>Dato que pide</th><th>Procedimiento<br><span>qué hago para conseguir el dato</span></th>'+
+    '<th>Herramienta<br><span>con qué</span></th><th>Producto<br><span>dónde queda el dato</span></th></tr></thead><tbody>'+
+  '<tr><td><b>P1.</b> ¿Cuál es el evento disparador (trigger) que da inicio al proceso?</td>'+
+    '<td>Qué hecho hace que empiece el proceso, quién lo genera y por qué canal llega.</td>'+
+    '<td>Entrevistar al jefe de compras y al área usuaria para identificar qué hecho inicia una compra y por qué canal llega.</td>'+
+    '<td>Guía de entrevista</td>'+
+    '<td>Lista de eventos disparadores, con quién los genera y por qué canal.</td></tr>'+
+  '<tr><td><b>P2.</b> ¿Cuál es el resultado final esperado y quién es el cliente (interno o externo) que lo recibe?</td>'+
+    '<td>Qué entrega el proceso al terminar, quién lo recibe y cuándo lo considera conforme.</td>'+
+    '<td>Entrevistar al área usuaria para identificar qué recibe al final del proceso y qué condiciones debe cumplir para aceptarlo.</td>'+
+    '<td>Guía de entrevista</td>'+
+    '<td>Ficha del cliente del proceso: resultado final, cliente y criterios de conformidad.</td></tr>'+
+  '<tr><td><b>P3.</b> ¿Cuáles son los límites formales de inicio y fin del proceso en su estado actual?</td>'+
+    '<td>Dónde dice la empresa, por escrito, que empieza y termina el proceso.</td>'+
+    '<td>Revisar el procedimiento documentado de compras para identificar el inicio y el fin que declara, y contrastarlos con lo obtenido en P1 y P2.</td>'+
+    '<td>Análisis documental</td>'+
+    '<td>Diagrama SIPOC del proceso actual, con inicio y fin formales frente a los reales.</td></tr>'+
+  '<tr><td><b>P4.</b> ¿Cuál es la alineación del proceso actual con los objetivos estratégicos de la organización?</td>'+
+    '<td>Qué objetivos estratégicos tiene la empresa y a cuáles aporta (o no) este proceso.</td>'+
+    '<td>Revisar el plan estratégico de la empresa para identificar a qué objetivos contribuye el proceso de compras, y validarlo con la gerencia.</td>'+
+    '<td>Análisis documental + Guía de entrevista</td>'+
+    '<td>Matriz de alineamiento: proceso frente a objetivos estratégicos.</td></tr>'+
   '</tbody></table>'+
-  '<span>Fíjate: el ERP Oracle sí tenía lugar, pero como <b>fuente del dato</b> (herramienta), no como paso del proceso. Leída de corrido: <i>«Para saber cuánto tarda cada solicitud, extraigo del ERP los tiempos del semestre con un reporte del ERP y Excel, y queda una base de tiempos de ciclo.»</i></span></div>'+
-  '</div>';
+  '<p class="guia-nota"><b>Leída de corrido, P1 dice:</b> <i>«Para saber cuál es el evento disparador, necesito saber qué hecho inicia una compra; '+
+    'lo consigo entrevistando al jefe de compras y al área usuaria con una guía de entrevista, y queda en una lista de eventos disparadores.»</i></p>'+
+  '<p class="guia-nota"><b>Tres cosas que muestra el ejemplo:</b></p>'+
+  '<ul class="guia-pasos">'+
+    '<li><b>Una misma reunión puede servir a dos preguntas.</b> La entrevista con el área usuaria recoge datos para P1 y P2, pero son dos procedimientos porque buscan datos distintos.</li>'+
+    '<li><b>La herramienta sale del procedimiento.</b> Primero decides qué tienes que hacer; la herramienta es con qué lo haces. P1 y P2 usan guía de entrevista porque ambos datos se consiguen conversando con personas; P3 usa análisis documental porque el dato está escrito en un documento.</li>'+
+    '<li><b>Los productos alimentan lo que viene.</b> El evento disparador (P1) es el evento de inicio del diagrama BPMN AS-IS, y el resultado final (P2) es su evento de fin.</li>'+
+  '</ul>'+
+  '<p class="guia-nota">Si quieres confirmar un dato, agrega otro procedimiento con otra fuente. Por ejemplo, para P1: '+
+    '«Revisar en el ERP el primer registro de 30 solicitudes recientes» → Reporte del ERP + Excel → Tabla de frecuencia de eventos disparadores. '+
+    'Lo que dice la gente, lo que dice el manual y lo que muestra el sistema no siempre coinciden, y esa diferencia ya es un hallazgo.</p>'+
+  '</div>'+
+
+  /* 3 · El error más frecuente */
+  '<div class="guia-blq"><div class="guia-tit">3 · El error más frecuente</div>'+
+  '<div class="guia-no"><b>Así no</b> — Procedimiento: «Creación de solicitudes» → Herramienta: ERP Oracle → Producto: Solicitud de compra.'+
+  '<span>«Creación de solicitudes» no es un procedimiento: probablemente es <b>la respuesta a P1</b>, el evento disparador. '+
+  'Es el dato que buscas, no lo que haces para conseguirlo. Y la «Solicitud de compra» la produce la empresa en su trabajo diario, no tu investigación.</span></div>'+
+  '<div class="guia-si"><b>Así sí</b> — Procedimiento: «Entrevistar al jefe de compras para identificar qué hecho inicia una compra» → '+
+  'Herramienta: Guía de entrevista → Producto: Lista de eventos disparadores.'+
+  '<span>Y en esa lista aparecerá, seguramente, «creación de la solicitud en el ERP». Ahí sí está en su sitio: como resultado de la investigación.</span></div>'+
+  '</div>'+
+
+  /* 4 · Resumen */
+  '<div class="guia-blq"><div class="guia-tit">4 · Resumen: qué va en cada nivel</div>'+
+  '<table class="guia-tabla"><thead><tr><th></th><th>Responde a</th><th>Cómo se escribe</th><th>Error frecuente</th></tr></thead><tbody>'+
+  '<tr><td><b>Procedimiento</b><br><span>(sub etapa)</span></td><td>¿Qué hago para conseguir el dato que pide la pregunta?</td>'+
+    '<td>Verbo + dato + fuente: «Entrevistar al área usuaria para identificar qué recibe al final del proceso».</td>'+
+    '<td>Escribir un paso del proceso de la empresa, que suele ser la respuesta y no la acción.</td></tr>'+
+  '<tr><td><b>Herramienta</b></td><td>¿Con qué lo hago?</td>'+
+    '<td>El instrumento, técnica o software: Guía de entrevista, Análisis documental, Cuestionario, Ficha de observación, Reporte del ERP, Excel, Bizagi.</td>'+
+    '<td>Poner un resultado («Diagrama TO-BE», «Dashboard»): eso es un producto.</td></tr>'+
+  '<tr><td><b>Producto</b><br><span>(entregable)</span></td><td>¿Dónde queda el dato conseguido?</td>'+
+    '<td>Algo que se puede entregar y revisar: Lista de eventos disparadores, Ficha del cliente, Diagrama SIPOC, Matriz de alineamiento.</td>'+
+    '<td>Poner la herramienta («Excel») o un documento que la empresa produce de todos modos («Solicitud de compra»).</td></tr>'+
+  '</tbody></table></div>';
 
   g.innerHTML = h + '</div>';
-}
-
-/* Caja del kit de herramientas de un enfoque */
-function construirKit_(e){
-  var box = document.createElement('div'); box.className = 'kit';
-  var t = document.createElement('div'); t.className = 'kit-tit';
-  t.textContent = 'Kit de herramientas del enfoque';
-  var sb = document.createElement('div'); sb.className = 'kit-sub';
-  sb.textContent = 'Son transversales: se declaran una vez y se eligen en cada procedimiento, '+
-                   'en cualquiera de sus etapas. Los procedimientos y productos, en cambio, '+
-                   'son propios de cada etapa.';
-  box.appendChild(t); box.appendChild(sb);
-
-  var items = kitDeEnfoque_(e);
-  var chips = document.createElement('div'); chips.className = 'kit-chips';
-  if(!items.length){
-    var v = document.createElement('span'); v.className = 'kit-vacio';
-    v.textContent = 'Todavía sin herramientas.';
-    chips.appendChild(v);
-  }
-  items.forEach(function(x){
-    var ch = document.createElement('span'); ch.className = 'kit-chip';
-    var tx = document.createElement('span'); tx.textContent = x.text;
-    var us = document.createElement('small');
-    us.textContent = x.usos ? (x.usos === 1 ? '1 uso' : x.usos + ' usos') : 'sin uso';
-    ch.appendChild(tx); ch.appendChild(us);
-    /* Solo se quita del kit lo que no está en uso: lo que se usa se quita
-       borrando la herramienta del procedimiento. */
-    if(!x.usos){
-      var b = document.createElement('button'); b.textContent = '×';
-      b.title = 'Quitar del kit';
-      b.addEventListener('click', function(){ removeKit(e.id, x.text); });
-      ch.appendChild(b);
-    }
-    chips.appendChild(ch);
-  });
-  box.appendChild(chips);
-
-  /* El enfoque desprendido ve también el kit del enfoque del que salió */
-  var her = kitHeredado_(e);
-  if(her.padre && her.items.length){
-    var ht = document.createElement('div'); ht.className = 'kit-sub';
-    ht.textContent = 'También disponibles, del enfoque «' + recortar_(her.padre.text, 60) + '» del que se desprendió:';
-    box.appendChild(ht);
-    var hc = document.createElement('div'); hc.className = 'kit-chips';
-    her.items.forEach(function(x){
-      var ch = document.createElement('span'); ch.className = 'kit-chip kit-heredada';
-      ch.textContent = x.text;
-      hc.appendChild(ch);
-    });
-    box.appendChild(hc);
-  }
-
-  box.appendChild(makeAddRow('Agregar herramienta al kit…', function(v){ addKit(e.id, v); }));
-  return box;
 }
 
 /* Lleva la vista hasta un enfoque de la lista y lo resalta un momento.
@@ -3465,8 +3424,6 @@ function buildNetEnfoque(e){
     function(){ removeEnfoque(e.id); },
     function(t){ e.text = t; renderAll(); }));
 
-  /* Kit de herramientas transversal del enfoque, solo en el paso 6. */
-  if(nivelRed >= 3) wrap.appendChild(construirKit_(e));
 
   /* De dónde salió, cuando se desprendió de una etapa de otro enfoque. */
   if(nivelRed < 3 && esEnfoqueDesprendido_(e)){
@@ -3637,7 +3594,7 @@ function buildNetConcepto(eid, c){
         bq.appendChild(fa);
       }
       bq.appendChild(makeChildren(mios, function(pr){ return buildNetProc(c.id, pr); }));
-      bq.appendChild(makeAddRow('Procedimiento que responde a P' + (i+1) + ' (verbo + dato + fuente)…',
+      bq.appendChild(makeAddRow('Procedimiento: ¿qué haces para conseguir el dato que pide P' + (i+1) + '?…',
         function(v){ addProcRed(c.id, v, q.id); }));
       wrap.appendChild(bq);
     });
@@ -3713,7 +3670,7 @@ function buildNetProc(cid, pr){
       'dice QUÉ haces con ella: «Entrevistar al jefe de compras para levantar los tiempos de aprobación».'));
   }
 
-  wrap.appendChild(makeAddRow('Herramienta: ¿con qué lo haces? Elige del kit o escribe…',
+  wrap.appendChild(makeAddRow('Herramienta: ¿con qué haces este procedimiento?…',
     function(v){ addHerrRed(pr.id, v); },
     eKit ? sugerenciasHerr_(eKit) : null));
   wrap.appendChild(makeChildren(pr.herrs||[], function(h){ return buildNetHerr(pr.id, h); }));
