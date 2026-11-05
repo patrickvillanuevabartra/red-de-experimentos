@@ -221,6 +221,21 @@
   .enf-proy-sel{flex:1;min-width:180px;font-size:15px;padding:5px 8px;
                 border:1px dashed var(--line);border-radius:3px;background:#fff;}
   .enf-proy-sel:focus{outline:none;border-style:solid;border-color:var(--teal);}
+  /* Etapa que se desprende como enfoque propio, y enfoque que salió de una */
+  /* Acción poco frecuente: se ofrece sin competir con el texto de la etapa */
+  .con-desp{display:inline-block;margin:5px 0 0;font-size:12.5px;line-height:1.4;
+            color:#8a8ab0;background:none;border:none;padding:2px 0;cursor:pointer;
+            text-decoration:underline;text-underline-offset:3px;}
+  .con-desp:hover{color:#5b5296;}
+  .con-vinc{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;
+            font-size:13.5px;line-height:1.45;color:#4a4480;background:#f3f2fb;
+            border-left:3px solid #7d73c4;border-radius:3px;padding:6px 10px;}
+  .con-vinc-btn{font-size:12.5px;padding:2px 9px;border:1px solid #cdc8ea;border-radius:3px;
+                background:#fff;color:#4a4480;cursor:pointer;}
+  .con-vinc-btn:hover{background:#eceafa;}
+  .enf-origen{margin-top:6px;font-size:13px;line-height:1.45;color:#5b5296;}
+  .enf-desprendido{border-left:3px solid #7d73c4;}
+  .enf-resalte{box-shadow:0 0 0 3px #bdb5e6;transition:box-shadow .3s;}
   .enf-prog-val{flex:1;min-width:180px;font-size:15px;padding:5px 8px;color:var(--ink);}
   .enf-prog-vacio{color:#a8b0aa;font-style:italic;}
   .enf-aviso{margin-top:6px;font-size:13px;line-height:1.45;color:#8a4a12;
@@ -1065,6 +1080,13 @@ function repararVinculosObjetivo_(){
     var oid = objetivoDelProyectoDe_(e);
     e.objetivoId = (oid && objetivoPorId_(oid)) ? oid : '';
   });
+  /* Vínculos de desprendimiento que quedaron apuntando a algo borrado. */
+  data.forEach(function(e){
+    if(e.origenConceptoId && !conceptoPorId_(e.origenConceptoId)) e.origenConceptoId = '';
+    (e.conceptos||[]).forEach(function(c){
+      if(c.desarrolladoEnId && !enfoquePorId_(c.desarrolladoEnId)) c.desarrolladoEnId = '';
+    });
+  });
 }
 
 function renderCanvas(){
@@ -1330,7 +1352,13 @@ function filasCanvas_(){
     var base = { og:og, rg:rg, oe:oe, re:re, prog:prog, proy:proy, enf:(e?e.text:'') };
     if(!e || !(e.conceptos||[]).length){ filas.push(base); return; }
     e.conceptos.forEach(function(c){
-      var fc = Object.assign({}, base, { con:c.text });
+      /* La etapa que se desarrolla en otro enfoque lo deja anotado en su
+         propia celda. No se repiten aquí las filas de ese enfoque: ya entran
+         por su cuenta, y duplicarlas haría que el EDT y el presupuesto
+         contaran el mismo trabajo dos veces. */
+      var hijoDe = enfoquePorId_(c.desarrolladoEnId);
+      var txtCon = c.text + (hijoDe ? ' → se desarrolla en «' + hijoDe.text + '»' : '');
+      var fc = Object.assign({}, base, { con:txtCon });
       if(!(c.procs||[]).length){ filas.push(fc); return; }
       c.procs.forEach(function(pc){
         var fp = Object.assign({}, fc, { proc:pc.text });
@@ -1647,9 +1675,10 @@ function limpiarParaGuardar_(enfoques){
     return {
       id:e.id, text:e.text, proyectoId:e.proyectoId || '',
       objetivoId:e.objetivoId || '',
+      origenConceptoId:e.origenConceptoId || '',
       conceptos:(e.conceptos||[]).map(function(c){
         return {
-          id:c.id, text:c.text,
+          id:c.id, text:c.text, desarrolladoEnId:c.desarrolladoEnId || '',
           procs:(c.procs||[]).map(function(pr){
             return {
               id:pr.id, text:pr.text,
@@ -2284,7 +2313,95 @@ function addEnfoqueTop(){
               objetivoId: objs.length === 1 ? objs[0].id : '' });
   inp.value=''; inp.focus(); renderAll();
 }
-function removeEnfoque(id){ data = data.filter(function(e){ return e.id !== id; }); renderAll(); }
+function removeEnfoque(id){
+  data = data.filter(function(e){ return e.id !== id; });
+  /* Si algún concepto se desarrollaba en ese enfoque, el vínculo queda roto:
+     se suelta para que el concepto vuelva a ser una etapa normal. */
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      if(c.desarrolladoEnId === id) c.desarrolladoEnId = '';
+    });
+  });
+  renderAll();
+}
+
+/* ── Concepto que resulta ser, él mismo, una metodología ─────────────────
+   Cuando una etapa se resuelve aplicando otra metodología completa, con sus
+   propias etapas, el concepto no se anida: se DESPRENDE. Sube a la raíz como
+   un enfoque con su red de cinco niveles y en su lugar queda un vínculo.
+   Así el canvas conserva sus once columnas y, sobre todo, el trabajo no se
+   cuenta dos veces cuando después pasa al EDT y al presupuesto.
+   Un solo nivel: lo que ya se desprendió de un concepto no vuelve a abrirse,
+   para que ni el diagrama ni el canvas se vuelvan ilegibles. ────────────── */
+function esEnfoqueDesprendido_(e){ return !!(e && e.origenConceptoId); }
+
+function enfoqueDelConcepto_(cid){
+  for(var i=0;i<data.length;i++){
+    var cs = data[i].conceptos || [];
+    for(var j=0;j<cs.length;j++){ if(cs[j].id === cid) return data[i]; }
+  }
+  return null;
+}
+function conceptoPorId_(cid){
+  for(var i=0;i<data.length;i++){
+    var cs = data[i].conceptos || [];
+    for(var j=0;j<cs.length;j++){ if(cs[j].id === cid) return cs[j]; }
+  }
+  return null;
+}
+/* ¿Puede este concepto convertirse en enfoque? Solo si su enfoque padre no
+   es a su vez un desprendimiento, y si todavía no está vinculado. */
+function puedeDesprenderse_(e, c){
+  return !esEnfoqueDesprendido_(e) && !enfoquePorId_(c.desarrolladoEnId);
+}
+
+function desprenderConcepto(eid, cid){
+  var e = findIn(data, eid); if(!e) return;
+  var c = null;
+  (e.conceptos||[]).forEach(function(x){ if(x.id === cid) c = x; });
+  if(!c || !puedeDesprenderse_(e, c)) return;
+
+  var procs = c.procs || [];
+  if(procs.length && !confirm(
+      'Esta etapa ya tiene ' + procs.length + (procs.length===1?' procedimiento':' procedimientos') + '.\n\n'+
+      'Al convertirla en enfoque, esos procedimientos pasan al nuevo enfoque, '+
+      'agrupados en una primera etapa con el mismo nombre.\n\n¿Continuar?')) return;
+
+  var nuevo = {
+    id: uid('e'),
+    text: c.text,
+    conceptos: [],
+    /* Hereda la red y el proyecto del enfoque del que sale: sigue sirviendo
+       al mismo objetivo, solo que desarrollado aparte. */
+    objetivoId: e.objetivoId || '',
+    proyectoId: e.proyectoId || '',
+    origenConceptoId: c.id
+  };
+  if(procs.length){
+    nuevo.conceptos.push({
+      id: uid('c'), text: c.text, procs: procs,
+      preguntas: [], autores: [], desarrolladoEnId: ''
+    });
+    c.procs = [];
+  }
+  /* Se inserta justo después del enfoque padre, para que se lean seguidos. */
+  var pos = data.indexOf(e);
+  data.splice(pos < 0 ? data.length : pos + 1, 0, nuevo);
+  c.desarrolladoEnId = nuevo.id;
+  renderAll(); marcarCambio();
+  toast('«' + recortar_(c.text, 40) + '» ahora es un enfoque con su propia red');
+}
+
+/* Deshace el vínculo sin borrar nada: el enfoque desprendido se queda como
+   un enfoque más y la etapa vuelve a ser una etapa normal. */
+function soltarDesprendimiento(cid){
+  var c = conceptoPorId_(cid); if(!c) return;
+  var hijo = enfoquePorId_(c.desarrolladoEnId);
+  if(hijo) hijo.origenConceptoId = '';
+  c.desarrolladoEnId = '';
+  renderAll(); marcarCambio();
+  toast('Vínculo deshecho — el enfoque sigue existiendo por separado');
+}
 
 /* ── CRUD conceptos ── */
 function addConcepto(eid, text){
@@ -2293,6 +2410,14 @@ function addConcepto(eid, text){
 }
 function removeConcepto(eid, cid){
   var e = findIn(data, eid); if(!e) return;
+  /* El enfoque que se desprendió de esta etapa no se borra con ella: es
+     trabajo propio. Solo deja de declarar de dónde salió. */
+  var c = null;
+  (e.conceptos||[]).forEach(function(x){ if(x.id === cid) c = x; });
+  if(c && c.desarrolladoEnId){
+    var hijo = enfoquePorId_(c.desarrolladoEnId);
+    if(hijo) hijo.origenConceptoId = '';
+  }
   e.conceptos = e.conceptos.filter(function(c){ return c.id !== cid; }); renderAll();
 }
 
@@ -2571,9 +2696,23 @@ function altoNodo_(txt, col, sub){
 /* Subtexto de un nodo. Solo lo tiene el enfoque, y es la red de la que
    proviene: así el diagrama deja ver que las redes de ATLAS.ti son varias. */
 function subDeNodo_(n, col){
-  if(col !== 0) return '';
-  var o = objetivoPorId_(n.objetivoId);
-  return o ? o.sigla + (o.texto ? ' · ' + recortar_(o.texto, 90) : '') : '';
+  if(col === 0){
+    var o = objetivoPorId_(n.objetivoId);
+    /* Un enfoque que se desprendió de una etapa lo dice, para que en el
+       diagrama se vea de dónde viene y no parezca una metodología suelta.
+       Como entran dos datos en el mismo subtexto, el objetivo se abrevia. */
+    var desp = esEnfoqueDesprendido_(n) ? conceptoPorId_(n.origenConceptoId) : null;
+    var s = o ? o.sigla + (o.texto ? ' · ' + recortar_(o.texto, desp ? 34 : 90) : '') : '';
+    if(desp) s += (s ? ' · ' : '') + '↱ de la etapa «' + recortar_(desp.text, 40) + '»';
+    return s;
+  }
+  /* Una etapa que se desarrolla en otro enfoque lo señala en su propio nodo:
+     así se sigue el hilo sin salir del diagrama. */
+  if(col === 1 && n.desarrolladoEnId){
+    var hijo = enfoquePorId_(n.desarrolladoEnId);
+    if(hijo) return '↳ se desarrolla en «' + recortar_(hijo.text, 55) + '»';
+  }
+  return '';
 }
 
 /* Hijos de un nodo, sea del nivel que sea */
@@ -2709,7 +2848,8 @@ function construirSVG_(paleta, conFondo){
     s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque,
                   subDeNodo_(e, 0));
     (e.conceptos||[]).forEach(function(c){
-      s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto);
+      s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto,
+                    subDeNodo_(c, 1));
       if(nivelRed < 3) return;
       (c.procs||[]).forEach(function(pr){
         s += nodoSVG_(NET.colX[2], pr._y, NET.nodeW[2], pr.text, paleta.procedimiento);
@@ -2724,6 +2864,16 @@ function construirSVG_(paleta, conFondo){
   });
 
   return s + '</svg>';
+}
+
+/* Lleva la vista hasta un enfoque de la lista y lo resalta un momento.
+   Sirve para seguir el vínculo de una etapa desprendida sin perderse. */
+function irAEnfoque_(id){
+  var nodo = document.getElementById('enf-' + id);
+  if(!nodo) return;
+  nodo.scrollIntoView({ behavior:'smooth', block:'center' });
+  nodo.classList.add('enf-resalte');
+  setTimeout(function(){ nodo.classList.remove('enf-resalte'); }, 1800);
 }
 
 /* Cabecera de la red de un objetivo dentro de la lista de enfoques */
@@ -2875,11 +3025,26 @@ function nombreArchivoPNG_(){
 }
 function buildNetEnfoque(e){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l1';
+  wrap.id = 'enf-' + e.id;   // destino del vínculo «ir» de una etapa desprendida
+  if(esEnfoqueDesprendido_(e)) wrap.classList.add('enf-desprendido');
   /* La asociación con el proyecto se declara aquí, en el paso 4, cuando ya
      existen los proyectos (paso 3) y el enfoque se está construyendo. */
   wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc',
     function(){ removeEnfoque(e.id); },
     function(t){ e.text = t; renderAll(); }));
+
+  /* De dónde salió, cuando se desprendió de una etapa de otro enfoque. */
+  if(nivelRed < 3 && esEnfoqueDesprendido_(e)){
+    var orig = conceptoPorId_(e.origenConceptoId);
+    var padre = orig ? enfoqueDelConcepto_(orig.id) : null;
+    if(orig){
+      var og = document.createElement('div'); og.className = 'enf-origen';
+      og.innerHTML = 'Se desprendió de la etapa <b>' + esc(recortar_(orig.text, 60)) + '</b>' +
+        (padre ? ' del enfoque <b>' + esc(recortar_(padre.text, 60)) + '</b>' : '') + '.';
+      wrap.appendChild(og);
+    }
+  }
+
   if(nivelRed < 3){
     /* De qué red de ATLAS.ti viene este enfoque: la del objetivo general o
        la de uno de los específicos. */
@@ -2983,6 +3148,37 @@ function buildNetConcepto(eid, c){
   wrap.appendChild(makeHead('dot-teal', c.text, badge,
     function(){ removeConcepto(eid, c.id); },
     function(t){ c.text = t; renderAll(); }));
+
+  /* Una etapa que resulta ser una metodología con sus propias etapas se
+     desprende como enfoque aparte, en vez de anidarse aquí dentro. */
+  if(nivelRed < 3){
+    var padre = findIn(data, eid);
+    var hijo  = enfoquePorId_(c.desarrolladoEnId);
+    if(hijo){
+      var vb = document.createElement('div'); vb.className = 'con-vinc';
+      var vt = document.createElement('span');
+      vt.innerHTML = 'Se desarrolla en el enfoque <b>' + esc(recortar_(hijo.text, 70)) + '</b>';
+      vb.appendChild(vt);
+      var vi = document.createElement('button'); vi.className = 'con-vinc-btn';
+      vi.textContent = 'ir';
+      vi.title = 'Ver ese enfoque en la lista';
+      vi.addEventListener('click', function(){ irAEnfoque_(hijo.id); });
+      var vd = document.createElement('button'); vd.className = 'con-vinc-btn';
+      vd.textContent = 'deshacer';
+      vd.title = 'Separar el vínculo; el enfoque no se borra';
+      vd.addEventListener('click', function(){ soltarDesprendimiento(c.id); });
+      vb.appendChild(vi); vb.appendChild(vd);
+      wrap.appendChild(vb);
+    } else if(padre && puedeDesprenderse_(padre, c)){
+      var db = document.createElement('button'); db.className = 'con-desp';
+      db.textContent = '⤴ convertir en enfoque propio';
+      db.title = 'Si esta etapa es, a su vez, una metodología con sus propias '+
+                 'etapas, se desprende como enfoque aparte con su propia red';
+      db.addEventListener('click', function(){ desprenderConcepto(eid, c.id); });
+      wrap.appendChild(db);
+    }
+  }
+
   if(nivelRed >= 3){
     wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
     wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
