@@ -236,6 +236,59 @@
   .enf-origen{margin-top:6px;font-size:13px;line-height:1.45;color:#5b5296;}
   .enf-desprendido{border-left:3px solid #7d73c4;}
   .enf-resalte{box-shadow:0 0 0 3px #bdb5e6;transition:box-shadow .3s;}
+  /* Preguntas del paso 5 dentro de cada concepto, en el paso 6 */
+  .con-preg{margin:8px 0 4px;padding:8px 12px;border:1px dashed #b7c3cf;border-radius:4px;
+            background:#f5f7fa;}
+  .con-preg-tit{font-size:13px;font-weight:600;color:#4b5f72;margin-bottom:4px;}
+  .con-preg ul{margin:0;padding-left:18px;}
+  .con-preg li{font-size:14.5px;line-height:1.5;color:#26323d;margin:2px 0;}
+  .con-preg-vacia{border-color:#e3c9a5;background:#fdf7ee;}
+  .con-preg-vacia .con-preg-tit{color:#8a4a12;}
+  .con-preg-nota{font-size:13.5px;color:#8a6a4a;line-height:1.45;}
+  /* Bloques pregunta → procedimientos, en el paso 6 */
+  .pq{margin:10px 0 6px;padding:9px 12px 4px;border:1px dashed #b7c3cf;border-radius:4px;background:#f5f7fa;}
+  .pq-head{display:flex;gap:10px;align-items:baseline;margin-bottom:6px;}
+  .pq-sig{flex:0 0 auto;font-size:13px;font-weight:700;color:#fff;background:#5b7083;
+          border-radius:3px;padding:1px 7px;}
+  .pq-sig-av{background:#a8501e;}
+  .pq-txt{font-size:15px;line-height:1.5;color:#1f2d3a;}
+  .pq-falta{border-color:#e3c9a5;background:#fdf7ee;}
+  .pq-aviso{font-size:13.5px;color:#8a4a12;line-height:1.45;margin:2px 0 8px;}
+  .nivel-aviso{margin:6px 0 4px;font-size:13px;line-height:1.45;color:#8a4a12;
+               background:#fdf4e7;border:1px solid #efd9b4;border-radius:3px;padding:5px 9px;}
+  /* Guía del paso 6 */
+  .guia{margin:4px 0 16px;padding:12px 14px;border:1px solid #d5dde5;border-radius:6px;background:#f8fafc;}
+  .guia-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:16px;color:#1f2d3a;}
+  .guia-blq{margin-top:14px;}
+  .guia-tit{font-size:15px;font-weight:700;color:#3a5266;margin-bottom:6px;}
+  .guia p, .guia li{font-size:15px;line-height:1.6;color:#26323d;}
+  .guia p{margin:4px 0;}
+  .guia-pasos{margin:4px 0;padding-left:22px;}
+  .guia-pasos li{margin:4px 0;}
+  .guia-tabla{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px;}
+  .guia-tabla th{background:#e9eef3;color:#3a5266;text-align:left;font-weight:600;padding:6px 8px;border:1px solid #d5dde5;}
+  .guia-tabla td{padding:7px 8px;border:1px solid #d5dde5;vertical-align:top;line-height:1.5;background:#fff;color:#26323d;}
+  .guia-tabla td span{font-size:12.5px;color:#7b857f;}
+  .guia-no{margin:8px 0;padding:9px 12px;border-left:4px solid #c0392b;background:#fdf0ee;font-size:15px;line-height:1.55;}
+  .guia-si{margin:8px 0;padding:9px 12px;border-left:4px solid #1f7a55;background:#eef8f3;font-size:15px;line-height:1.55;}
+  .guia-no span, .guia-si > span{display:block;margin-top:6px;font-size:14px;color:#4a5560;}
+  @media(max-width:760px){
+    .guia-tabla, .guia-tabla tbody, .guia-tabla tr, .guia-tabla td{display:block;width:100%;}
+    .guia-tabla thead{display:none;}
+    .guia-tabla tr{margin-bottom:8px;border:1px solid #d5dde5;}
+    .guia-tabla td{border:none;border-bottom:1px solid #eef1f4;}
+  }
+  /* Kit de herramientas transversal de cada enfoque, en el paso 6 */
+  .kit{margin:10px 0 6px;padding:10px 12px;border:1px solid #e6dcc0;border-radius:4px;background:#fdfaf1;}
+  .kit-tit{font-size:13.5px;font-weight:600;color:#6f5714;}
+  .kit-sub{font-size:13px;color:#8a7a4d;margin:2px 0 8px;line-height:1.45;}
+  .kit-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .kit-chip{display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:4px 10px;
+            border:1px solid #d9c98f;border-radius:14px;background:#fff;color:#3d3009;}
+  .kit-chip small{font-size:12px;color:#8a7a4d;}
+  .kit-chip button{border:none;background:none;color:#b0452a;font-size:15px;cursor:pointer;padding:0 0 0 2px;}
+  .kit-chip.kit-heredada{border-style:dashed;background:#fbf7ea;color:#6f5714;}
+  .kit-vacio{font-size:13.5px;color:#9a8a5d;font-style:italic;}
   .enf-prog-val{flex:1;min-width:180px;font-size:15px;padding:5px 8px;color:var(--ink);}
   .enf-prog-vacio{color:#a8b0aa;font-style:italic;}
   .enf-aviso{margin-top:6px;font-size:13px;line-height:1.45;color:#8a4a12;
@@ -353,10 +406,8 @@
   /* El diagrama conserva su tamaño real y se desplaza de lado cuando no cabe.
      Encogerlo dejaría el texto ilegible: al 61% de una tablet queda en 7 px, y
      en un celular, en 4 px. Mejor mantenerlo nítido y que el usuario deslice. */
-  @media(max-width:1180px){
-    #net-wrap:after{content:'Desliza de lado para ver todo el diagrama';
-      display:block;font-size:11.5px;color:#8a948f;padding:5px 2px 0;}
-  }
+  #net-wrap.net-desborda:after{content:'Desliza de lado para ver todo el diagrama →';
+    display:block;font-size:13px;color:#8a948f;padding:6px 2px 0;}
   @media(max-width:640px){
     #qa-analisis, #qa-analisis tbody, #qa-analisis tr, #qa-analisis td{display:block;width:100%;}
     #qa-analisis thead{display:none;}
@@ -452,6 +503,7 @@
       <!-- VISTA 1: RED SEMÁNTICA -->
       <div id="view-network">
         <p class="note" id="net-intro"></p>
+        <div id="guia-red" style="display:none;"></div>
         <div class="net-toolbar">
           <span id="net-resumen" class="net-resumen"></span>
           <span style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -899,6 +951,7 @@ function aplicarEstadoCargado_(estructuraTxt){
      al abrir una red guardada. restaurarCanvas_ ya distingue ambos formatos. */
   restaurarCanvas_(estado.canvas);
   repararVinculosObjetivo_();
+  repararPreguntasDeProcs_();
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   renderAll();
 }
@@ -1676,12 +1729,13 @@ function limpiarParaGuardar_(enfoques){
       id:e.id, text:e.text, proyectoId:e.proyectoId || '',
       objetivoId:e.objetivoId || '',
       origenConceptoId:e.origenConceptoId || '',
+      kit:(e.kit||[]).slice(),
       conceptos:(e.conceptos||[]).map(function(c){
         return {
           id:c.id, text:c.text, desarrolladoEnId:c.desarrolladoEnId || '',
           procs:(c.procs||[]).map(function(pr){
             return {
-              id:pr.id, text:pr.text,
+              id:pr.id, text:pr.text, preguntaId:pr.preguntaId || '',
               herrs:(pr.herrs||[]).map(function(h){
               return { id:h.id, text:h.text,
                 prods:(h.prods||[]).map(function(pd){ return { id:pd.id, text:pd.text }; }) };
@@ -2145,11 +2199,41 @@ function cargarEjemploRed(){
     canvasExp.proyectos.push(py);
     e.proyectoId = py.id;
   });
+  asignarPreguntasEjemplo_();
   pintarCamposCanvas_();
   renderAll();
   document.getElementById('ej-red').style.display = 'none';
   window.scrollTo({ top:0, behavior:'smooth' });
   toast('Ejemplo cargado en todos los pasos');
+}
+
+/* El trabajo de Orellana no dice a qué pregunta responde cada sub etapa.
+   Para el ejemplo se asigna cada procedimiento a la pregunta de su concepto
+   con la que comparte más palabras de contenido; con una sola pregunta, a
+   esa. Es una reconstrucción para ilustrar, no un dato del grupo. */
+function asignarPreguntasEjemplo_(){
+  var vacias = /^(el|la|los|las|de|del|y|e|o|u|en|con|por|para|que|qué|un|una|se|al|a|es|son|su|sus|como|cómo|cuál|cuáles|debe|deben|lograr|mediante|proceso)$/;
+  function palabras(t){
+    return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9 ]/g,' ').split(/\s+/)
+      .filter(function(w){ return w.length > 2 && !vacias.test(w); })
+      .map(function(w){ return w.slice(0,6); });   // raíz aproximada
+  }
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      var qs = preguntasDe_(c);
+      if(!qs.length) return;
+      var pq = qs.map(function(q){ return palabras(q.text); });
+      (c.procs||[]).forEach(function(pr){
+        var pp = palabras(pr.text), mejor = 0, punt = -1;
+        pq.forEach(function(ws, i){
+          var n = 0; pp.forEach(function(w){ if(ws.indexOf(w) >= 0) n++; });
+          if(n > punt){ punt = n; mejor = i; }
+        });
+        pr.preguntaId = qs[mejor].id;
+      });
+    });
+  });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -2423,10 +2507,49 @@ function removeConcepto(eid, cid){
 
 /* ── CRUD procedimientos y herramientas de la red ── */
 /* Nivel 3 de la red: PROCEDIMIENTO (la "sub etapa" del canvas) */
-function addProcRed(cid, text){
+function addProcRed(cid, text, preguntaId){
   var c = findConcepto(cid); if(!c) return;
   if(!c.procs) c.procs = [];
-  c.procs.push({id:uid('pc'), text:text, herrs:[]}); renderAll();
+  c.procs.push({id:uid('pc'), text:text, herrs:[], preguntaId:preguntaId || ''}); renderAll();
+}
+
+/* ── Pregunta ↔ procedimiento ──────────────────────────────────────────
+   Es el eslabón más difícil de la cadena, así que se hace explícito: cada
+   procedimiento declara a qué pregunta de su concepto responde
+   (pr.preguntaId). Una pregunta suele necesitar varios procedimientos —uno
+   por cada dato que pide—; un procedimiento responde a una pregunta.
+   Así se ven las dos fallas: el procedimiento que no responde a ninguna
+   pregunta (sobra) y la pregunta que no tiene procedimiento (queda sin
+   responder). ─────────────────────────────────────────────────────────── */
+function preguntasDe_(c){
+  return (c.preguntas||[]).filter(function(q){ return String(q.text||'').trim(); });
+}
+function preguntaValida_(c, qid){
+  return !!qid && preguntasDe_(c).some(function(q){ return q.id === qid; });
+}
+function procsDePregunta_(c, qid){
+  return (c.procs||[]).filter(function(pr){ return pr.preguntaId === qid; });
+}
+function procsSinPregunta_(c){
+  return (c.procs||[]).filter(function(pr){ return !preguntaValida_(c, pr.preguntaId); });
+}
+function asignarPregunta(cid, pid, qid){
+  var c = findConcepto(cid); if(!c) return;
+  (c.procs||[]).forEach(function(pr){ if(pr.id === pid) pr.preguntaId = qid || ''; });
+  renderAll(); marcarCambio();
+}
+/* Al abrir una red: si el concepto tiene UNA sola pregunta, los
+   procedimientos sin asignar no tienen otra opción y se le asignan. Los
+   que apuntan a una pregunta borrada en el paso 5 quedan sin asignar. */
+function repararPreguntasDeProcs_(){
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      var qs = preguntasDe_(c);
+      (c.procs||[]).forEach(function(pr){
+        if(!preguntaValida_(c, pr.preguntaId)) pr.preguntaId = (qs.length === 1) ? qs[0].id : '';
+      });
+    });
+  });
 }
 function removeProcRed(cid, pid){
   var c = findConcepto(cid); if(!c || !c.procs) return;
@@ -2444,7 +2567,84 @@ function findProcRed(pid){
 function addHerrRed(pid, text){
   var pr = findProcRed(pid); if(!pr) return;
   if(!pr.herrs) pr.herrs = [];
+  /* Si la herramienta ya está en el kit del enfoque, se usa con el mismo
+     nombre exacto: «power bi» y «Power BI» no deben quedar como dos. */
+  var e = enfoqueDeProc_(pid);
+  if(e) text = normalizarHerr_(e, text);
   pr.herrs.push({id:uid('hr'), text:text, prods:[]}); renderAll();
+}
+
+/* ── Kit de herramientas del enfoque ────────────────────────────────────
+   Lo transversal de un enfoque son sus HERRAMIENTAS: una metodología trae
+   su propio juego de herramientas y lo usa en varias de sus etapas (en el
+   ejemplo de Orellana, «Análisis documental» aparece en seis etapas). Los
+   procedimientos no son transversales: son las sub etapas de cada etapa, y
+   si fueran los mismos en todas, las etapas no se distinguirían. Los
+   productos tampoco: cada uno es la evidencia de un procedimiento concreto.
+   El kit reúne las herramientas declaradas para el enfoque y las que ya se
+   usan en sus procedimientos. Un enfoque desprendido de una etapa tiene su
+   propio kit y además hereda, como sugerencia, el del enfoque del que salió.
+   ─────────────────────────────────────────────────────────────────────── */
+function claveHerr_(t){ return String(t||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+function enfoqueDeProc_(pid){
+  for(var i=0;i<data.length;i++){
+    var cs = data[i].conceptos || [];
+    for(var j=0;j<cs.length;j++){
+      var ps = cs[j].procs || [];
+      for(var k=0;k<ps.length;k++){ if(ps[k].id === pid) return data[i]; }
+    }
+  }
+  return null;
+}
+/* Herramientas del kit propio de un enfoque, con cuántas veces se usan.
+   Primero las declaradas, en su orden; luego las que solo aparecen en uso. */
+function kitDeEnfoque_(e){
+  var mapa = {}, orden = [];
+  function sumar(t, declarada, uso){
+    var k = claveHerr_(t); if(!k) return;
+    if(!mapa[k]){ mapa[k] = { text:String(t).replace(/\s+/g,' ').trim(), usos:0, declarada:false }; orden.push(k); }
+    if(declarada) mapa[k].declarada = true;
+    mapa[k].usos += uso;
+  }
+  (e.kit||[]).forEach(function(t){ sumar(t, true, 0); });
+  (e.conceptos||[]).forEach(function(c){
+    (c.procs||[]).forEach(function(pr){
+      (pr.herrs||[]).forEach(function(h){ sumar(h.text, false, 1); });
+    });
+  });
+  return orden.map(function(k){ return mapa[k]; });
+}
+/* Lo que un enfoque desprendido hereda del enfoque del que salió */
+function kitHeredado_(e){
+  if(!esEnfoqueDesprendido_(e)) return { padre:null, items:[] };
+  var padre = enfoqueDelConcepto_(e.origenConceptoId);
+  if(!padre) return { padre:null, items:[] };
+  var propias = {};
+  kitDeEnfoque_(e).forEach(function(x){ propias[claveHerr_(x.text)] = true; });
+  return { padre:padre,
+           items: kitDeEnfoque_(padre).filter(function(x){ return !propias[claveHerr_(x.text)]; }) };
+}
+function sugerenciasHerr_(e){
+  return kitDeEnfoque_(e).concat(kitHeredado_(e).items).map(function(x){ return x.text; });
+}
+function normalizarHerr_(e, text){
+  var k = claveHerr_(text), sug = sugerenciasHerr_(e);
+  for(var i=0;i<sug.length;i++){ if(claveHerr_(sug[i]) === k) return sug[i]; }
+  return String(text).replace(/\s+/g,' ').trim();
+}
+function addKit(eid, text){
+  var e = findIn(data, eid); if(!e) return;
+  if(!e.kit) e.kit = [];
+  var t = normalizarHerr_(e, text), k = claveHerr_(t);
+  if(e.kit.some(function(x){ return claveHerr_(x) === k; })){ toast('Esa herramienta ya está en el kit'); return; }
+  e.kit.push(t); renderAll(); marcarCambio();
+}
+function removeKit(eid, text){
+  var e = findIn(data, eid); if(!e) return;
+  var k = claveHerr_(text);
+  e.kit = (e.kit||[]).filter(function(x){ return claveHerr_(x) !== k; });
+  renderAll(); marcarCambio();
 }
 function removeHerrRed(pid, hid){
   var pr = findProcRed(pid); if(!pr || !pr.herrs) return;
@@ -2590,7 +2790,10 @@ function makeHead(dotClass, text, badge, delFn, editFn){
   }
   return head;
 }
-function makeAddRow(placeholder, onSubmit){
+var contadorListas_ = 0;
+/* Fila para agregar. Si recibe sugerencias, el campo las ofrece al escribir
+   (se usa para elegir del kit de herramientas en vez de reescribirlas). */
+function makeAddRow(placeholder, onSubmit, sugerencias){
   var row = document.createElement('div'); row.className = 'tree-add';
   var inp = document.createElement('input'); inp.placeholder = placeholder;
   var btn = document.createElement('button'); btn.textContent = '+';
@@ -2598,6 +2801,15 @@ function makeAddRow(placeholder, onSubmit){
   btn.addEventListener('click', go);
   inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); go(); } });
   row.appendChild(inp); row.appendChild(btn);
+  if(sugerencias && sugerencias.length){
+    var dl = document.createElement('datalist');
+    dl.id = 'sug-' + (++contadorListas_);
+    sugerencias.forEach(function(t){
+      var o = document.createElement('option'); o.value = t; dl.appendChild(o);
+    });
+    inp.setAttribute('list', dl.id);
+    row.appendChild(dl);
+  }
   return row;
 }
 function makeChildren(items, buildFn){
@@ -2624,7 +2836,8 @@ var PALETA_CLARA = {
   concepto:    { fill:'#E1F5EE', stroke:'#0F6E56', texto:'#04342C' },
   procedimiento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' },
   herramienta: { fill:'#FBF3DC', stroke:'#8A6D1F', texto:'#3D3009' },
-  producto:    { fill:'#E6EFF7', stroke:'#3A6EA5', texto:'#152B40' }
+  producto:    { fill:'#E6EFF7', stroke:'#3A6EA5', texto:'#152B40' },
+  pregunta:    { fill:'#F3F5F8', stroke:'#5B7083', texto:'#1F2D3A', aviso:'#A8501E' }
 };
 var PALETA_OSCURA = {
   fondo:'#1F1E1D', linea:'#4A4844', textoTenue:'#A5A199',
@@ -2632,7 +2845,8 @@ var PALETA_OSCURA = {
   concepto:    { fill:'#085041', stroke:'#5DCAA5', texto:'#9FE1CB' },
   procedimiento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' },
   herramienta: { fill:'#5C4A12', stroke:'#E0C46A', texto:'#F2E2B0' },
-  producto:    { fill:'#1F3A52', stroke:'#7FB2DC', texto:'#C3DDF2' }
+  producto:    { fill:'#1F3A52', stroke:'#7FB2DC', texto:'#C3DDF2' },
+  pregunta:    { fill:'#262D35', stroke:'#8FA6BC', texto:'#D3DEE8', aviso:'#F0B07A' }
 };
 function paletaActual(){
   var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -2642,8 +2856,6 @@ function paletaActual(){
 /* El texto real de un canvas es largo, así que los nodos crecen en alto
    según su contenido en vez de tener una altura fija. */
 var NET = {
-  colX:  [12, 250, 488, 726, 964],
-  nodeW: [226, 226, 226, 226, 226],
   minH:   38,
   lineH:  17,
   padY:   15,
@@ -2654,8 +2866,7 @@ var NET = {
   subLineH: 15,
   subMaxLines: 3,
   topPad: 48,
-  botPad: 22,
-  width:  1202
+  botPad: 22
 };
 
 function escapeXml(s){
@@ -2688,26 +2899,146 @@ function partirTexto(txt, anchoPx, fontPx, maxLineas){
   return lineas;
 }
 
-/* Alto que necesita un nodo según su texto y su entregable */
-function altoNodo_(txt, col, sub){
-  return medirNodo_(txt, NET.nodeW[col], sub).alto;
+/* ── Columnas del diagrama ──
+   En el paso 4 solo hay enfoques y conceptos. En el paso 6 se intercala,
+   entre conceptos y procedimientos, la columna de PREGUNTAS: no se escribe
+   aquí, se trae de la tabla del paso 5, para que cada procedimiento se lea
+   como la respuesta a las preguntas de su concepto. */
+var COLS_RED = {
+  enf:  { tit:'Enfoques',                w:226, color:'enfoque' },
+  con:  { tit:'Conceptos',               w:226, color:'concepto' },
+  preg: { tit:'Preguntas',               w:290, color:'pregunta' },
+  proc: { tit:'Procedimientos',          w:226, color:'procedimiento' },
+  herr: { tit:'Herramientas',            w:226, color:'herramienta' },
+  prod: { tit:'Productos / entregables', w:226, color:'producto' }
+};
+var NET_SEP = 12;   // separación horizontal entre columnas
+var PREG = { font:13, lineH:16, maxLineas:6, sepPreg:5 };
+
+function columnasVisibles_(){
+  return nivelRed < 3 ? ['enf','con'] : ['enf','con','preg','proc','herr','prod'];
+}
+/* Posición x de cada columna visible, acumulando anchos */
+function geometriaColumnas_(){
+  var x = NET_SEP, out = [];
+  columnasVisibles_().forEach(function(k){
+    out.push({ k:k, x:x, w:COLS_RED[k].w });
+    x += COLS_RED[k].w + NET_SEP;
+  });
+  return { cols:out, ancho:x };
 }
 
-/* Subtexto de un nodo. Solo lo tiene el enfoque, y es la red de la que
-   proviene: así el diagrama deja ver que las redes de ATLAS.ti son varias. */
+/* Árbol que se dibuja. No es el árbol de datos: en el paso 6 cada concepto
+   tiene un único hijo, el bloque de sus preguntas, y de ese bloque cuelgan
+   los procedimientos. Así el diagrama se lee de izquierda a derecha como la
+   cadena que se le pide al estudiante:
+   concepto → preguntas → procedimiento → herramienta → producto. */
+function arbolVisual_(){
+  var conPreg = columnasVisibles_().length > 2;
+  function nodo(k, text, sub){ return { k:k, text:text||'', sub:sub||'', kids:[] }; }
+  return data.map(function(e){
+    var ne = nodo('enf', e.text, subDeNodo_(e, 0));
+    ne.kids = (e.conceptos||[]).map(function(c){
+      var nc = nodo('con', c.text, subDeNodo_(c, 1));
+      if(!conPreg) return nc;
+      function nodoProc(pr){
+        var npr = nodo('proc', pr.text);
+        npr.kids = (pr.herrs||[]).map(function(h){
+          var nh = nodo('herr', h.text);
+          nh.kids = (h.prods||[]).map(function(pd){ return nodo('prod', pd.text); });
+          return nh;
+        });
+        return npr;
+      }
+      /* Cada pregunta es su propio nodo y de ella cuelgan SOLO los
+         procedimientos que la responden. La que no tiene ninguno lo dice. */
+      var qs = preguntasDe_(c);
+      qs.forEach(function(q, i){
+        var nq = nodo('preg', String(q.text).trim());
+        nq.sigla = 'P' + (i+1);
+        nq.kids = procsDePregunta_(c, q.id).map(nodoProc);
+        nq.sinProc = !nq.kids.length && !c.desarrolladoEnId;
+        nc.kids.push(nq);
+      });
+      /* Procedimientos que no declaran pregunta, o concepto sin preguntas */
+      var sueltos = procsSinPregunta_(c);
+      if(sueltos.length || !qs.length){
+        var na = nodo('preg');
+        na.aviso = qs.length ? 'Sin pregunta asignada' : 'Sin preguntas en el paso 5';
+        na.kids = sueltos.map(nodoProc);
+        nc.kids.push(na);
+      }
+      return nc;
+    });
+    return ne;
+  });
+}
+
+/* Nodo de pregunta: la sigla (P1, P2…) a la izquierda y el texto partido
+   al ancho. Debajo, si nadie la responde, el aviso en ámbar. El nodo de
+   aviso («Sin pregunta asignada») recoge los procedimientos sueltos. */
+function lineasPreguntas_(n, w){
+  var grupos = [];
+  if(n.aviso){
+    grupos.push({ tipo:'aviso', lineas:[n.aviso] });
+  } else {
+    grupos.push({ tipo:'preg', lineas: partirTexto(n.text, w - 40, PREG.font, PREG.maxLineas) });
+    if(n.sinProc) grupos.push({ tipo:'falta', lineas:['↳ sin procedimiento: queda sin responder'] });
+  }
+  return { grupos:grupos };
+}
+function altoContenidoPreguntas_(L){
+  var k = 0; L.grupos.forEach(function(g){ k += g.lineas.length; });
+  return k * PREG.lineH + (L.grupos.length - 1) * PREG.sepPreg;
+}
+function altoPreguntas_(n, w){
+  return Math.max(NET.minH, altoContenidoPreguntas_(lineasPreguntas_(n, w)) + NET.padY + 4);
+}
+function altoVisual_(n){
+  var w = COLS_RED[n.k].w;
+  if(n.k === 'preg') return altoPreguntas_(n, w);
+  return medirNodo_(n.text, w, n.sub).alto;
+}
+
+function nodoPreguntasSVG_(x, y, w, n, color){
+  var L = lineasPreguntas_(n, w);
+  var h = altoPreguntas_(n, w), top = y - h/2;
+  var borde = (n.aviso || n.sinProc) ? color.aviso : color.stroke;
+  /* Borde punteado: el texto viene del paso 5 y se edita allá. */
+  var s = '<g><rect x="'+x+'" y="'+top.toFixed(1)+'" width="'+w+'" height="'+h.toFixed(1)+'" rx="8" '
+        + 'fill="'+color.fill+'" stroke="'+borde+'" stroke-width="1.1" stroke-dasharray="4 3"/>';
+  var cy = top + (h - altoContenidoPreguntas_(L)) / 2 + PREG.lineH - 4;
+  var fuente = 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="'+PREG.font+'"';
+  L.grupos.forEach(function(g){
+    g.lineas.forEach(function(lin, i){
+      if(g.tipo === 'preg'){
+        if(i === 0 && n.sigla){
+          s += '<text x="'+(x+10)+'" y="'+cy.toFixed(1)+'" '+fuente+' font-weight="700" fill="'+color.stroke+'">'
+             + escapeXml(n.sigla)+'</text>';
+        }
+        s += '<text x="'+(x+34)+'" y="'+cy.toFixed(1)+'" '+fuente+' fill="'+color.texto+'">'+escapeXml(lin)+'</text>';
+      } else {
+        s += '<text x="'+(x+12)+'" y="'+cy.toFixed(1)+'" '+fuente+' font-style="italic" fill="'+color.aviso+'">'
+           + escapeXml(lin)+'</text>';
+      }
+      cy += PREG.lineH;
+    });
+    cy += PREG.sepPreg;
+  });
+  return s + '</g>';
+}
+
+/* Subtexto de un nodo: en el enfoque, la red de la que proviene (y, si se
+   desprendió de una etapa, de cuál); en la etapa, el enfoque en que se
+   desarrolla. */
 function subDeNodo_(n, col){
   if(col === 0){
     var o = objetivoPorId_(n.objetivoId);
-    /* Un enfoque que se desprendió de una etapa lo dice, para que en el
-       diagrama se vea de dónde viene y no parezca una metodología suelta.
-       Como entran dos datos en el mismo subtexto, el objetivo se abrevia. */
     var desp = esEnfoqueDesprendido_(n) ? conceptoPorId_(n.origenConceptoId) : null;
     var s = o ? o.sigla + (o.texto ? ' · ' + recortar_(o.texto, desp ? 34 : 90) : '') : '';
     if(desp) s += (s ? ' · ' : '') + '↱ de la etapa «' + recortar_(desp.text, 40) + '»';
     return s;
   }
-  /* Una etapa que se desarrolla en otro enfoque lo señala en su propio nodo:
-     así se sigue el hilo sin salir del diagrama. */
   if(col === 1 && n.desarrolladoEnId){
     var hijo = enfoquePorId_(n.desarrolladoEnId);
     if(hijo) return '↳ se desarrolla en «' + recortar_(hijo.text, 55) + '»';
@@ -2715,50 +3046,36 @@ function subDeNodo_(n, col){
   return '';
 }
 
-/* Hijos de un nodo, sea del nivel que sea */
-function hijosDe_(n, col){
-  /* Por debajo del nivel visible el nodo se trata como hoja */
-  if(col !== undefined && col >= nivelRed - 1) return [];
-  return n.conceptos || n.procs || n.herrs || n.prods || [];
-}
-
 /* 1.ª pasada: alto propio (_h) y alto del subárbol (_sh) de cada nodo.
    El subárbol nunca es menor que el propio nodo, así que un texto largo
    arriba abre espacio aunque tenga un solo hijo. */
-function medirSubarbol_(n, col){
-  n._h = altoNodo_(n.text, col, subDeNodo_(n, col)) + NET.gap;
-  var hijos = hijosDe_(n, col), suma = 0;
-  hijos.forEach(function(hh){ suma += medirSubarbol_(hh, col + 1); });
+function medirSubarbol_(n){
+  n._h = altoVisual_(n) + NET.gap;
+  var suma = 0;
+  n.kids.forEach(function(hh){ suma += medirSubarbol_(hh); });
   n._sh = Math.max(n._h, suma);
   return n._sh;
 }
 
 /* 2.ª pasada: posiciona el subárbol dentro de su banda y centra al padre */
-function colocarSubarbol_(n, top, col){
-  col = col || 0;
-  var hijos = hijosDe_(n, col);
-  if(hijos.length === 0){ n._y = top + n._sh / 2; return; }
+function colocarSubarbol_(n, top){
+  if(!n.kids.length){ n._y = top + n._sh / 2; return; }
   var suma = 0;
-  hijos.forEach(function(hh){ suma += hh._sh; });
+  n.kids.forEach(function(hh){ suma += hh._sh; });
   var y = top + (n._sh - suma) / 2;
-  hijos.forEach(function(hh){ colocarSubarbol_(hh, y, col + 1); y += hh._sh; });
-  n._y = (hijos[0]._y + hijos[hijos.length-1]._y) / 2;
+  n.kids.forEach(function(hh){ colocarSubarbol_(hh, y); y += hh._sh; });
+  n._y = (n.kids[0]._y + n.kids[n.kids.length-1]._y) / 2;
 }
 
 function calcularLayout_(){
-  var y = NET.topPad, hojas = 0;
-  data.forEach(function(e){
-    medirSubarbol_(e, 0);
-    colocarSubarbol_(e, y, 0);
+  var arbol = arbolVisual_(), y = NET.topPad;
+  arbol.forEach(function(e){
+    medirSubarbol_(e);
+    colocarSubarbol_(e, y);
     y += e._sh;
   });
-  function contar(n, col){
-    var hs = hijosDe_(n, col);
-    if(hs.length === 0){ hojas++; return; }
-    hs.forEach(function(x){ contar(x, col + 1); });
-  }
-  data.forEach(function(e){ contar(e, 0); });
-  return { filas: hojas, alto: y + NET.botPad };
+  var g = geometriaColumnas_();
+  return { arbol:arbol, alto: y + NET.botPad, ancho: g.ancho, cols: g.cols };
 }
 
 /* Alto de un nodo con texto principal y, opcionalmente, un subtexto
@@ -2810,60 +3127,162 @@ function enlaceSVG_(x1, y1, x2, y2, color){
 
 function construirSVG_(paleta, conFondo){
   var lay = calcularLayout_();
-  /* El lienzo se recorta a las columnas visibles: en el paso 4 sobraría
-     el espacio de las tres que aún no existen. */
-  var W = NET.colX[nivelRed-1] + NET.nodeW[nivelRed-1] + 12;
-  var H = lay.alto;
+  /* El lienzo se ajusta a las columnas visibles: en el paso 4 sobraría el
+     espacio de las que aún no existen. */
+  var W = lay.ancho, H = lay.alto;
+  var col = {};
+  lay.cols.forEach(function(c){ col[c.k] = c; });
+
   var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img">';
-  s += '<title>Red semántica: enfoques, conceptos, procedimientos y herramientas</title>';
+  s += '<title>Red semántica: enfoques, conceptos, preguntas, procedimientos, herramientas y productos</title>';
   if(conFondo) s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+paleta.fondo+'"/>';
 
   /* Encabezados de columna */
-  var titulos = ['Enfoques','Conceptos','Procedimientos','Herramientas','Productos / entregables'];
-  for(var k=0;k<nivelRed;k++){
-    s += '<text x="'+(NET.colX[k] + NET.nodeW[k]/2)+'" y="24" text-anchor="middle" '
+  lay.cols.forEach(function(c){
+    s += '<text x="'+(c.x + c.w/2)+'" y="24" text-anchor="middle" '
        + 'font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="13.5" font-weight="600" '
-       + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+titulos[k].toUpperCase()+'</text>';
-  }
+       + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+COLS_RED[c.k].tit.toUpperCase()+'</text>';
+  });
 
   /* Enlaces primero, para que queden detrás de los nodos */
-  data.forEach(function(e){
-    (e.conceptos||[]).forEach(function(c){
-      s += enlaceSVG_(NET.colX[0]+NET.nodeW[0], e._y, NET.colX[1], c._y, paleta.linea);
-      if(nivelRed < 3) return;
-      (c.procs||[]).forEach(function(pr){
-        s += enlaceSVG_(NET.colX[1]+NET.nodeW[1], c._y, NET.colX[2], pr._y, paleta.linea);
-        (pr.herrs||[]).forEach(function(h){
-          s += enlaceSVG_(NET.colX[2]+NET.nodeW[2], pr._y, NET.colX[3], h._y, paleta.linea);
-          (h.prods||[]).forEach(function(pd){
-            s += enlaceSVG_(NET.colX[3]+NET.nodeW[3], h._y, NET.colX[4], pd._y, paleta.linea);
-          });
-        });
-      });
+  function enlaces(n){
+    n.kids.forEach(function(k){
+      s += enlaceSVG_(col[n.k].x + col[n.k].w, n._y, col[k.k].x, k._y, paleta.linea);
+      enlaces(k);
     });
-  });
-
+  }
   /* Nodos */
-  data.forEach(function(e){
-    s += nodoSVG_(NET.colX[0], e._y, NET.nodeW[0], e.text, paleta.enfoque,
-                  subDeNodo_(e, 0));
-    (e.conceptos||[]).forEach(function(c){
-      s += nodoSVG_(NET.colX[1], c._y, NET.nodeW[1], c.text, paleta.concepto,
-                    subDeNodo_(c, 1));
-      if(nivelRed < 3) return;
-      (c.procs||[]).forEach(function(pr){
-        s += nodoSVG_(NET.colX[2], pr._y, NET.nodeW[2], pr.text, paleta.procedimiento);
-        (pr.herrs||[]).forEach(function(h){
-          s += nodoSVG_(NET.colX[3], h._y, NET.nodeW[3], h.text, paleta.herramienta);
-          (h.prods||[]).forEach(function(pd){
-            s += nodoSVG_(NET.colX[4], pd._y, NET.nodeW[4], pd.text, paleta.producto);
-          });
-        });
-      });
-    });
-  });
+  function nodos(n){
+    var c = col[n.k], color = paleta[COLS_RED[n.k].color];
+    s += (n.k === 'preg')
+      ? nodoPreguntasSVG_(c.x, n._y, c.w, n, color)
+      : nodoSVG_(c.x, n._y, c.w, n.text, color, n.sub);
+    n.kids.forEach(nodos);
+  }
+  lay.arbol.forEach(enlaces);
+  lay.arbol.forEach(nodos);
 
   return s + '</svg>';
+}
+
+/* ── Guía del paso 6 ──
+   Visible por defecto: los usuarios necesitan la explicación a la vista, no
+   escondida. Se puede plegar, y se recuerda en este navegador. */
+function guiaAbierta_(){
+  try{ return localStorage.getItem('redexp-guia6') !== 'cerrada'; }catch(e){ return true; }
+}
+function alternarGuia(){
+  var abierta = !guiaAbierta_();
+  try{ localStorage.setItem('redexp-guia6', abierta ? 'abierta' : 'cerrada'); }catch(e){}
+  pintarGuia_();
+}
+function pintarGuia_(){
+  var g = document.getElementById('guia-red');
+  if(!g) return;
+  if(nivelRed < 3){ g.style.display = 'none'; return; }
+  g.style.display = 'block';
+  var abierta = guiaAbierta_();
+  var h = '<div class="guia">'+
+    '<div class="guia-cab"><b>Guía: cómo pasar de la pregunta al producto</b>'+
+    '<button class="btnMini" onclick="alternarGuia()">'+(abierta ? 'Ocultar guía' : 'Ver guía')+'</button></div>';
+  if(!abierta){ g.innerHTML = h + '</div>'; return; }
+
+  h +=
+  '<div class="guia-blq"><div class="guia-tit">1 · La conexión: la pregunta pide un DATO</div>'+
+  '<p>Entre la pregunta y el procedimiento hay un paso que suele saltarse: <b>averiguar qué dato pide la pregunta</b>. '+
+  'El procedimiento es la acción para conseguir ese dato. Hazlo en cuatro pasos:</p>'+
+  '<ol class="guia-pasos">'+
+  '<li><b>Lee la pregunta y subraya qué pide saber.</b> «¿Cuál es el estado actual del proceso de compras y qué actividades generan demoras?» pide: <u>las actividades</u>, <u>cuánto tarda cada una</u> y <u>dónde se acumula la demora</u>.</li>'+
+  '<li><b>Por cada dato, pregúntate de dónde sale.</b> De las personas, de documentos, de un sistema (ERP), o de observar el trabajo.</li>'+
+  '<li><b>Escribe el procedimiento: verbo + dato + fuente.</b> «Levantar las actividades y tiempos del proceso con el personal de compras». Un dato distinto o una fuente distinta es otro procedimiento: por eso una pregunta suele tener dos o tres.</li>'+
+  '<li><b>Comprueba con la frase de control:</b> <i>«Para responder P1 necesito saber ___; lo obtengo al ___ con ___, y queda en ___.»</i> Si la frase suena natural, la cadena está bien armada.</li>'+
+  '</ol></div>'+
+
+  '<div class="guia-blq"><div class="guia-tit">2 · Qué va en cada nivel</div>'+
+  '<table class="guia-tabla"><thead><tr><th></th><th>Responde a</th><th>Qué es</th><th>Ejemplos</th><th>Error frecuente</th></tr></thead><tbody>'+
+  '<tr><td><b>Procedimiento</b><br><span>(sub etapa)</span></td><td>¿Qué hago para obtener el dato?</td>'+
+    '<td>Una acción de investigación, con verbo, sobre un dato y una fuente.</td>'+
+    '<td>Levantar actividades y tiempos con el personal · Extraer del ERP los tiempos de las solicitudes del semestre · Diagramar el proceso actual</td>'+
+    '<td>Copiar los pasos del proceso de la empresa («Creación de solicitudes»). Eso es lo que se estudia, no cómo se estudia.</td></tr>'+
+  '<tr><td><b>Herramienta</b></td><td>¿Con qué lo hago?</td>'+
+    '<td>El instrumento, técnica o software que recoge o procesa el dato. Es transversal: se reutiliza en varias etapas.</td>'+
+    '<td>Guía de entrevista · Ficha de registro · Cuestionario · Análisis documental · Reporte del ERP · Bizagi · Excel</td>'+
+    '<td>Poner un resultado («Diagrama TO-BE», «Dashboard»). Eso es un producto.</td></tr>'+
+  '<tr><td><b>Producto</b><br><span>(entregable)</span></td><td>¿Qué queda al terminar?</td>'+
+    '<td>La evidencia concreta que se puede entregar y revisar, y que responde la pregunta.</td>'+
+    '<td>Mapa AS-IS con tiempos · Tabla de tiempos de ciclo por solicitud · Diagrama BPMN con demoras marcadas · Informe de diagnóstico</td>'+
+    '<td>Poner la herramienta («Excel») o un documento de la empresa («Solicitud de compra»). La solicitud la genera la empresa, no la investigación.</td></tr>'+
+  '</tbody></table></div>'+
+
+  '<div class="guia-blq"><div class="guia-tit">3 · Ejemplo: así no, así sí</div>'+
+  '<p><b>Concepto:</b> Análisis de la situación actual (AS-IS) &nbsp;·&nbsp; <b>P1:</b> ¿Cuál es el estado actual del proceso de compras y qué actividades generan demoras?</p>'+
+  '<div class="guia-no"><b>Así no</b> — Creación de solicitudes → ERP Oracle → Solicitud de compra.<br>'+
+  '<span>Describe el proceso de la empresa: son los pasos que se van a estudiar, no lo que hace el investigador para estudiarlos. Y no responde a P1: no dice nada de demoras.</span></div>'+
+  '<div class="guia-si"><b>Así sí</b> — tres procedimientos, uno por cada dato que pide P1:'+
+  '<table class="guia-tabla guia-tabla-si"><thead><tr><th>Dato que pide P1</th><th>Procedimiento</th><th>Herramienta</th><th>Producto</th></tr></thead><tbody>'+
+  '<tr><td>Las actividades y quién las hace</td><td>Levantar las actividades, responsables y tiempos del proceso con el personal de compras</td><td>Guía de entrevista + Ficha de registro</td><td>Ficha AS-IS de actividades, tiempos y responsables</td></tr>'+
+  '<tr><td>Cuánto tarda realmente cada solicitud</td><td>Extraer del ERP los tiempos de las solicitudes del último semestre</td><td>Reporte del ERP Oracle + Excel</td><td>Base de tiempos de ciclo por solicitud</td></tr>'+
+  '<tr><td>Dónde se acumula la demora</td><td>Diagramar el proceso actual y marcar esperas y reprocesos</td><td>Bizagi Modeler</td><td>Diagrama BPMN AS-IS con demoras marcadas</td></tr>'+
+  '</tbody></table>'+
+  '<span>Fíjate: el ERP Oracle sí tenía lugar, pero como <b>fuente del dato</b> (herramienta), no como paso del proceso. Leída de corrido: <i>«Para saber cuánto tarda cada solicitud, extraigo del ERP los tiempos del semestre con un reporte del ERP y Excel, y queda una base de tiempos de ciclo.»</i></span></div>'+
+  '</div>';
+
+  g.innerHTML = h + '</div>';
+}
+
+/* Caja del kit de herramientas de un enfoque */
+function construirKit_(e){
+  var box = document.createElement('div'); box.className = 'kit';
+  var t = document.createElement('div'); t.className = 'kit-tit';
+  t.textContent = 'Kit de herramientas del enfoque';
+  var sb = document.createElement('div'); sb.className = 'kit-sub';
+  sb.textContent = 'Son transversales: se declaran una vez y se eligen en cada procedimiento, '+
+                   'en cualquiera de sus etapas. Los procedimientos y productos, en cambio, '+
+                   'son propios de cada etapa.';
+  box.appendChild(t); box.appendChild(sb);
+
+  var items = kitDeEnfoque_(e);
+  var chips = document.createElement('div'); chips.className = 'kit-chips';
+  if(!items.length){
+    var v = document.createElement('span'); v.className = 'kit-vacio';
+    v.textContent = 'Todavía sin herramientas.';
+    chips.appendChild(v);
+  }
+  items.forEach(function(x){
+    var ch = document.createElement('span'); ch.className = 'kit-chip';
+    var tx = document.createElement('span'); tx.textContent = x.text;
+    var us = document.createElement('small');
+    us.textContent = x.usos ? (x.usos === 1 ? '1 uso' : x.usos + ' usos') : 'sin uso';
+    ch.appendChild(tx); ch.appendChild(us);
+    /* Solo se quita del kit lo que no está en uso: lo que se usa se quita
+       borrando la herramienta del procedimiento. */
+    if(!x.usos){
+      var b = document.createElement('button'); b.textContent = '×';
+      b.title = 'Quitar del kit';
+      b.addEventListener('click', function(){ removeKit(e.id, x.text); });
+      ch.appendChild(b);
+    }
+    chips.appendChild(ch);
+  });
+  box.appendChild(chips);
+
+  /* El enfoque desprendido ve también el kit del enfoque del que salió */
+  var her = kitHeredado_(e);
+  if(her.padre && her.items.length){
+    var ht = document.createElement('div'); ht.className = 'kit-sub';
+    ht.textContent = 'También disponibles, del enfoque «' + recortar_(her.padre.text, 60) + '» del que se desprendió:';
+    box.appendChild(ht);
+    var hc = document.createElement('div'); hc.className = 'kit-chips';
+    her.items.forEach(function(x){
+      var ch = document.createElement('span'); ch.className = 'kit-chip kit-heredada';
+      ch.textContent = x.text;
+      hc.appendChild(ch);
+    });
+    box.appendChild(hc);
+  }
+
+  box.appendChild(makeAddRow('Agregar herramienta al kit…', function(v){ addKit(e.id, v); }));
+  return box;
 }
 
 /* Lleva la vista hasta un enfoque de la lista y lo resalta un momento.
@@ -2924,6 +3343,7 @@ function renderNetwork(){
         'la herramienta lo recoge y el producto lo demuestra. Si un procedimiento no responde a ninguna '+
         'pregunta, sobra; si una pregunta se queda sin procedimiento, queda sin responder.';
   }
+  pintarGuia_();
   var list = document.getElementById('enfoques-list'); list.innerHTML = '';
   /* En el paso de enfoques la lista se agrupa por objetivo: así se ve que
      las redes de ATLAS.ti son varias —una por objetivo— y no una sola. En el
@@ -2962,10 +3382,20 @@ function renderNetwork(){
   } else {
     wrap.innerHTML = construirSVG_(paletaActual(), false);
   }
+  /* El aviso de «desliza de lado» solo aparece cuando el diagrama de verdad
+     no cabe: con seis columnas pasa incluso en un escritorio. */
+  var svgEl = wrap.querySelector('svg');
+  wrap.classList.toggle('net-desborda',
+    !!svgEl && wrap.clientWidth > 0 &&
+    parseFloat(svgEl.getAttribute('width')) > wrap.clientWidth);
+
   var res = nEnf + (nEnf===1?' enfoque':' enfoques') + ' · ' +
             nCon + (nCon===1?' concepto':' conceptos');
   if(nivelRed >= 3){
-    res += ' · ' + nPro + (nPro===1?' procedimiento':' procedimientos') +
+    var nPreg = 0;
+    data.forEach(function(e){ (e.conceptos||[]).forEach(function(c){ nPreg += (c.preguntas||[]).length; }); });
+    res += ' · ' + nPreg + (nPreg===1?' pregunta':' preguntas') +
+           ' · ' + nPro + (nPro===1?' procedimiento':' procedimientos') +
            ' · ' + nHer + (nHer===1?' herramienta':' herramientas') +
            ' · ' + totalProds() + (totalProds()===1?' producto':' productos');
   }
@@ -2992,7 +3422,9 @@ function descargarPNG(){
 
   img.onload = function(){
     var canvas = document.createElement('canvas');
-    canvas.width  = Math.round(NET.width * escala);
+    /* El ancho sale del propio diagrama. Antes era una constante y en el
+       paso 4, con dos columnas, la imagen salía estirada. */
+    canvas.width  = Math.round(lay.ancho * escala);
     canvas.height = Math.round(lay.alto  * escala);
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFFFFF';
@@ -3032,6 +3464,9 @@ function buildNetEnfoque(e){
   wrap.appendChild(makeHead('dot-purple', e.text, e.conceptos.length + ' conc',
     function(){ removeEnfoque(e.id); },
     function(t){ e.text = t; renderAll(); }));
+
+  /* Kit de herramientas transversal del enfoque, solo en el paso 6. */
+  if(nivelRed >= 3) wrap.appendChild(construirKit_(e));
 
   /* De dónde salió, cuando se desprendió de una etapa de otro enfoque. */
   if(nivelRed < 3 && esEnfoqueDesprendido_(e)){
@@ -3180,18 +3615,107 @@ function buildNetConcepto(eid, c){
   }
 
   if(nivelRed >= 3){
-    wrap.appendChild(makeAddRow('Agregar procedimiento (sub etapa)…', function(v){ addProcRed(c.id, v); }));
-    wrap.appendChild(makeChildren(c.procs||[], function(pr){ return buildNetProc(c.id, pr); }));
+    /* Cada pregunta del paso 5 abre su propio bloque, y dentro van los
+       procedimientos que la responden. Es la forma de que el estudiante
+       escriba el procedimiento MIRANDO la pregunta, no de memoria. */
+    var qs = preguntasDe_(c);
+    if(c.desarrolladoEnId){
+      var nd = document.createElement('div'); nd.className = 'con-preg-nota';
+      nd.textContent = 'Esta etapa se desarrolla en otro enfoque: sus procedimientos se definen allá.';
+      wrap.appendChild(nd);
+    }
+    qs.forEach(function(q, i){
+      var bq = document.createElement('div');
+      var mios = procsDePregunta_(c, q.id);
+      bq.className = 'pq' + (mios.length || c.desarrolladoEnId ? '' : ' pq-falta');
+      var hq = document.createElement('div'); hq.className = 'pq-head';
+      hq.innerHTML = '<span class="pq-sig">P' + (i+1) + '</span><span class="pq-txt">' + esc(String(q.text).trim()) + '</span>';
+      bq.appendChild(hq);
+      if(!mios.length && !c.desarrolladoEnId){
+        var fa = document.createElement('div'); fa.className = 'pq-aviso';
+        fa.textContent = 'Todavía ningún procedimiento responde a esta pregunta: queda sin responder.';
+        bq.appendChild(fa);
+      }
+      bq.appendChild(makeChildren(mios, function(pr){ return buildNetProc(c.id, pr); }));
+      bq.appendChild(makeAddRow('Procedimiento que responde a P' + (i+1) + ' (verbo + dato + fuente)…',
+        function(v){ addProcRed(c.id, v, q.id); }));
+      wrap.appendChild(bq);
+    });
+
+    /* Procedimientos que no dicen a qué pregunta responden */
+    var sueltos = procsSinPregunta_(c);
+    if(!qs.length){
+      var bv = document.createElement('div'); bv.className = 'pq pq-falta';
+      bv.innerHTML = '<div class="pq-aviso">Este concepto no tiene preguntas en el paso 5. '+
+        'Sin pregunta no hay a qué responder: vuelve al paso 5 antes de definir procedimientos.</div>';
+      if(sueltos.length) bv.appendChild(makeChildren(sueltos, function(pr){ return buildNetProc(c.id, pr); }));
+      wrap.appendChild(bv);
+    } else if(sueltos.length){
+      var bs = document.createElement('div'); bs.className = 'pq pq-falta';
+      bs.innerHTML = '<div class="pq-head"><span class="pq-sig pq-sig-av">?</span>'+
+        '<span class="pq-txt">Procedimientos sin pregunta asignada</span></div>'+
+        '<div class="pq-aviso">Indica en cada uno a qué pregunta responde. Si no responde a ninguna, sobra.</div>';
+      bs.appendChild(makeChildren(sueltos, function(pr){ return buildNetProc(c.id, pr); }));
+      wrap.appendChild(bs);
+    }
   }
   return wrap;
 }
+/* ── Avisos de nivel equivocado ──
+   Las confusiones más frecuentes: poner una herramienta como procedimiento
+   («Entrevista»), un resultado como herramienta («Diagrama TO-BE») o una
+   herramienta como producto («Excel»). Son avisos suaves, no bloquean. */
+var RX_TECNICA  = /^(entrevistas?|encuestas?|cuestionarios?|observaci[oó]n( directa)?|an[aá]lisis documental|focus group|grupo focal)$/i;
+var RX_PRODUCTO = /^(informe|reporte|diagrama|mapa|acta|plan|matriz|manual|tablero|dashboard|gr[aá]fico|tabla|presentaci[oó]n|cronograma|propuesta|base de datos|sop)\b/i;
+var RX_SOFTWARE = /^(microsoft )?(excel|power ?bi|bizagi( modeler)?|visio|lucidchart|sap|erp( oracle)?|oracle|software|ms project)\b/i;
+
+function avisoNivel_(texto){
+  var d = document.createElement('div'); d.className = 'nivel-aviso'; d.textContent = texto;
+  return d;
+}
+function enKit_(e, t){
+  if(!e) return false;
+  var k = claveHerr_(t);
+  return kitDeEnfoque_(e).some(function(x){ return claveHerr_(x.text) === k; });
+}
+
 function buildNetProc(cid, pr){
   var wrap = document.createElement('div'); wrap.className = 'tree-item l3';
   var n = (pr.herrs||[]).length;
   wrap.appendChild(makeHead('dot-coral', pr.text, n + (n===1?' herr':' herrs'),
     function(){ removeProcRed(cid, pr.id); },
     function(t){ pr.text = t; renderAll(); }));
-  wrap.appendChild(makeAddRow('Agregar herramienta (entregable o producto)…', function(v){ addHerrRed(pr.id, v); }));
+
+  var c = findConcepto(cid), eKit = enfoqueDelConcepto_(cid);
+
+  /* A qué pregunta responde: se puede cambiar aquí mismo */
+  var qs = c ? preguntasDe_(c) : [];
+  if(qs.length){
+    var fr = document.createElement('div'); fr.className = 'enf-proy';
+    var lr = document.createElement('span'); lr.className = 'enf-proy-lbl';
+    lr.textContent = 'Responde a:';
+    var sr = document.createElement('select'); sr.className = 'enf-proy-sel';
+    var o0 = document.createElement('option'); o0.value = '';
+    o0.textContent = '— ninguna pregunta (sobra) —'; sr.appendChild(o0);
+    qs.forEach(function(q, i){
+      var op = document.createElement('option'); op.value = q.id;
+      op.textContent = 'P' + (i+1) + ' · ' + recortar_(q.text, 80);
+      if(pr.preguntaId === q.id) op.selected = true;
+      sr.appendChild(op);
+    });
+    sr.addEventListener('change', function(){ asignarPregunta(cid, pr.id, sr.value); });
+    fr.appendChild(lr); fr.appendChild(sr);
+    wrap.appendChild(fr);
+  }
+
+  if(RX_TECNICA.test(String(pr.text).trim()) || enKit_(eKit, pr.text)){
+    wrap.appendChild(avisoNivel_('Esto parece una herramienta, no un procedimiento. El procedimiento '+
+      'dice QUÉ haces con ella: «Entrevistar al jefe de compras para levantar los tiempos de aprobación».'));
+  }
+
+  wrap.appendChild(makeAddRow('Herramienta: ¿con qué lo haces? Elige del kit o escribe…',
+    function(v){ addHerrRed(pr.id, v); },
+    eKit ? sugerenciasHerr_(eKit) : null));
   wrap.appendChild(makeChildren(pr.herrs||[], function(h){ return buildNetHerr(pr.id, h); }));
   return wrap;
 }
@@ -3201,7 +3725,12 @@ function buildNetHerr(pid, h){
   wrap.appendChild(makeHead('dot-amber', h.text, n + (n===1?' prod':' prods'),
     function(){ removeHerrRed(pid, h.id); },
     function(t){ h.text = t; renderAll(); }));
-  wrap.appendChild(makeAddRow('Agregar producto o entregable…', function(v){ addProdRed(h.id, v); }));
+  if(RX_PRODUCTO.test(String(h.text).trim())){
+    wrap.appendChild(avisoNivel_('Esto parece un producto, no una herramienta. La herramienta es CON QUÉ '+
+      'trabajas; un informe, diagrama o mapa es lo que QUEDA al terminar.'));
+  }
+  wrap.appendChild(makeAddRow('Producto: ¿qué queda como evidencia?…',
+    function(v){ addProdRed(h.id, v); }));
   wrap.appendChild(makeChildren(h.prods||[], function(pd){ return buildNetProd(h.id, pd); }));
   return wrap;
 }
@@ -3210,6 +3739,11 @@ function buildNetProd(hid, pd){
   wrap.appendChild(makeHead('dot-blue', pd.text, null,
     function(){ removeProdRed(hid, pd.id); },
     function(t){ pd.text = t; renderAll(); }));
+  var t = String(pd.text).trim();
+  if(RX_SOFTWARE.test(t) || RX_TECNICA.test(t)){
+    wrap.appendChild(avisoNivel_('Esto parece una herramienta, no un producto. El producto es el resultado '+
+      'que se puede entregar y revisar: «Tabla de tiempos en Excel», no «Excel».'));
+  }
   return wrap;
 }
 
