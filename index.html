@@ -63,6 +63,10 @@
   .fases-pct{font-size:13px;color:#a8b0aa;}
   .fases-acts{display:flex;align-items:center;gap:10px;}
   .fases-acts .btnMini{padding:4px 10px;font-size:13px;}
+  .fases-acts .btn-excel{background:#1d6f42;color:#fff;border-color:#1d6f42;font-weight:600;}
+  .fases-acts .btn-excel:hover{background:#185c37;}
+  .fases-acts .btn-excel:disabled{opacity:.6;cursor:wait;}
+  .fases-acts{flex-wrap:wrap;justify-content:flex-end;}
   .fases-barra{display:flex;gap:4px;margin-bottom:16px;}
   .barra-seg{height:4px;border-radius:2px;overflow:hidden;}
   .barra-lleno{height:100%;border-radius:2px;transition:width .3s;}
@@ -3244,6 +3248,324 @@ function pintarGuia_(){
   g.innerHTML = h + '</div>';
 }
 
+/* ════════════════════════════════════════════════════════════
+   DESCARGA EN EXCEL
+   Un solo archivo con una hoja por paso, y se abre en la hoja del paso
+   desde el que se descarga. Cada hoja lleva un título, los datos del
+   grupo y una nota que explica qué contiene. La librería (ExcelJS) se
+   carga solo la primera vez que se pide, para no hacer más lenta la
+   entrada al aplicativo.
+════════════════════════════════════════════════════════════ */
+var EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+var XL = { verde:'FF1D6F42', cab:'FFE6EEE9', borde:'FFC9D2CC', tenue:'FF5F6B66', aviso:'FFA8501E', fuente:12 };
+
+function cargarExcelJS_(ok, mal){
+  if(window.ExcelJS){ ok(); return; }
+  var s = document.createElement('script');
+  s.src = EXCELJS_URL; s.async = true;
+  s.onload  = function(){ if(window.ExcelJS) ok(); else mal(); };
+  s.onerror = mal;
+  document.head.appendChild(s);
+}
+
+function descargarExcel(){
+  var btn = document.getElementById('btn-excel');
+  if(btn){ btn.disabled = true; btn.textContent = 'Preparando…'; }
+  function fin(){
+    var b = document.getElementById('btn-excel');
+    if(b){ b.disabled = false; b.textContent = '⬇ Descargar Excel'; }
+  }
+  cargarExcelJS_(function(){
+    var wb;
+    try{ wb = construirLibroExcel_(); }
+    catch(e){ console.error(e); toast('No se pudo generar el Excel', true); fin(); return; }
+    wb.xlsx.writeBuffer().then(function(buf){
+      var blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nombreArchivoExcel_();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+      toast('Excel descargado — se abre en la hoja del paso ' + pasoActual);
+      fin();
+    }, function(e){ console.error(e); toast('No se pudo generar el Excel', true); fin(); });
+  }, function(){
+    toast('No se pudo cargar el generador de Excel. Revisa tu conexión e intenta de nuevo.', true);
+    fin();
+  });
+}
+
+function nombreArchivoExcel_(){
+  var partes = ['Red-de-experimentos'];
+  if(grupo.ciclo) partes.push(grupo.ciclo);
+  if(grupo.numero_grupo) partes.push('Grupo-' + grupo.numero_grupo);
+  return partes.join('_').replace(/[^\w\-]/g,'-') + '.xlsx';
+}
+function lineaGrupo_(){
+  var p = [];
+  if(grupo.ciclo) p.push('Ciclo ' + grupo.ciclo);
+  if(grupo.numero_grupo) p.push('Grupo ' + grupo.numero_grupo);
+  if(grupo.coordinador) p.push('Coordinador(a): ' + grupo.coordinador);
+  p.push('Descargado el ' + new Date().toLocaleString());
+  return p.join('   ·   ');
+}
+
+/* Etiquetas que se repiten en varias hojas */
+function etiquetaProyecto_(py){
+  if(!py) return '';
+  var k = canvasExp.proyectos.indexOf(py);
+  return 'P' + (k+1) + ' · ' + ((py.nombre||'').trim() || '(proyecto sin nombre)');
+}
+function perteneceA_(e){
+  if(e.objetivoId === OBJ_GENERAL){
+    return 'Programa: ' + ((canvasExp.programa||'').trim() || '(sin nombre)');
+  }
+  var py = proyectoPorId_(e.proyectoId);
+  return py ? etiquetaProyecto_(py) : '— no adoptado por ningún proyecto —';
+}
+function siglaObjetivo_(id){
+  var o = objetivoPorId_(id);
+  return o ? o.sigla : 'Sin clasificar';
+}
+
+/* Arma una hoja con título, línea del grupo, nota explicativa, encabezados
+   y filas. Las celdas ajustan el texto y llevan bordes finos; la fila de
+   encabezados queda fija al desplazarse, con filtros. */
+function hojaExcel_(wb, nombre, titulo, nota, columnas, filas, vacio){
+  var n = columnas.length;
+  var ws = wb.addWorksheet(nombre, { views:[{ state:'frozen', ySplit:4 }] });
+  ws.columns = columnas.map(function(c){ return { width:c.w }; });
+  var borde = { style:'thin', color:{ argb:XL.borde } };
+  var bordes = { top:borde, left:borde, bottom:borde, right:borde };
+  var anchoTotal = 0; columnas.forEach(function(c){ anchoTotal += c.w; });
+
+  ws.mergeCells(1, 1, 1, n);
+  var c1 = ws.getCell(1, 1);
+  c1.value = titulo;
+  c1.font = { bold:true, size:15, color:{ argb:'FFFFFFFF' } };
+  c1.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:XL.verde } };
+  c1.alignment = { vertical:'middle', indent:1 };
+  ws.getRow(1).height = 28;
+
+  ws.mergeCells(2, 1, 2, n);
+  var c2 = ws.getCell(2, 1);
+  c2.value = lineaGrupo_();
+  c2.font = { size:11, color:{ argb:XL.tenue } };
+  c2.alignment = { vertical:'middle', indent:1 };
+  ws.getRow(2).height = 20;
+
+  ws.mergeCells(3, 1, 3, n);
+  var c3 = ws.getCell(3, 1);
+  c3.value = nota;
+  c3.font = { italic:true, size:11, color:{ argb:XL.tenue } };
+  c3.alignment = { wrapText:true, vertical:'top', indent:1 };
+  /* Excel no ajusta solo el alto de una celda combinada: se calcula. */
+  var porLinea = Math.max(40, Math.floor(anchoTotal * 1.15));
+  ws.getRow(3).height = Math.max(20, Math.ceil(nota.length / porLinea) * 15 + 6);
+
+  var hr = ws.getRow(4);
+  columnas.forEach(function(c, i){
+    var cell = hr.getCell(i+1);
+    cell.value = c.t;
+    cell.font = { bold:true, size:XL.fuente };
+    cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:XL.cab } };
+    cell.border = bordes;
+    cell.alignment = { wrapText:true, vertical:'middle' };
+  });
+  hr.height = 24;
+
+  if(!filas.length){
+    ws.mergeCells(5, 1, 5, n);
+    var cv = ws.getCell(5, 1);
+    cv.value = vacio || 'Todavía no hay nada registrado en este paso.';
+    cv.font = { italic:true, size:XL.fuente, color:{ argb:XL.aviso } };
+    cv.alignment = { indent:1 };
+    return ws;
+  }
+  filas.forEach(function(f, k){
+    var r = ws.getRow(5 + k);
+    f.forEach(function(v, i){
+      var cell = r.getCell(i+1);
+      var aviso = (typeof v === 'object' && v !== null && v.aviso);
+      cell.value = aviso ? v.aviso : (v == null ? '' : v);
+      cell.font = aviso ? { italic:true, size:XL.fuente, color:{ argb:XL.aviso } } : { size:XL.fuente };
+      cell.alignment = { wrapText:true, vertical:'top' };
+      cell.border = bordes;
+    });
+  });
+  ws.autoFilter = { from:{ row:4, column:1 }, to:{ row:4 + filas.length, column:n } };
+  ws.pageSetup = { orientation:'landscape', paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:0 };
+  return ws;
+}
+
+function construirLibroExcel_(){
+  var wb = new ExcelJS.Workbook();
+  wb.creator = 'Red de Experimentos — URP';
+  wb.created = new Date();
+
+  /* ── Hoja 0: datos del grupo ── */
+  var r0 = [
+    ['Curso', 'Taller de Investigación en Ingeniería I'],
+    ['Ciclo', grupo.ciclo || ''],
+    ['N° de grupo', grupo.numero_grupo || ''],
+    ['Coordinador(a)', grupo.coordinador || ''],
+    ['Compañero(a)', grupo.correoCompanero || ''],
+    ['Descargado desde', 'Paso ' + pasoActual + ' de ' + TOTAL_PASOS],
+    ['Contenido', 'Una hoja por paso: 1 Objetivos · 2 Programa · 3 Proyectos · 4 Enfoques y conceptos · '+
+                  '5 Preguntas y autores · 6 Procedimientos · 7 Canvas']
+  ];
+  hojaExcel_(wb, 'Datos del grupo', 'Red de Experimentos — datos del grupo',
+    'Este archivo reúne todo lo trabajado en el aplicativo Red de Experimentos. '+
+    'Se descarga completo desde cualquier paso y se abre en la hoja del paso desde el que se descargó.',
+    [{ t:'Dato', w:22 }, { t:'Valor', w:90 }], r0);
+
+  /* ── Hoja 1: objetivos ── */
+  var r1 = [];
+  if((canvasExp.og||'').trim() || (canvasExp.rg||'').trim()){
+    r1.push(['OG', canvasExp.og || '', canvasExp.rg || '',
+             'Programa: ' + ((canvasExp.programa||'').trim() || '(sin nombre)')]);
+  }
+  canvasExp.especificos.forEach(function(oe, i){
+    var pys = canvasExp.proyectos.filter(function(py){ return py.oeId === oe.id; })
+                                 .map(etiquetaProyecto_);
+    r1.push(['OE' + (i+1), oe.obj || '', oe.res || '',
+             pys.length ? pys.join('\n') : { aviso:'Sin proyecto asignado' }]);
+  });
+  hojaExcel_(wb, '1 Objetivos', 'Paso 1 · Objetivos',
+    'El objetivo general (OG) y los específicos (OE), cada uno con el resultado que se espera alcanzar. '+
+    'La última columna indica qué responde a cada objetivo: el programa responde al general y cada proyecto a un específico.',
+    [{ t:'Objetivo', w:11 }, { t:'Enunciado del objetivo', w:58 }, { t:'Resultado esperado', w:45 },
+     { t:'Responde a este objetivo', w:40 }], r1);
+
+  /* ── Hoja 2: programa ── */
+  var r2 = [];
+  if((canvasExp.programa||'').trim() || canvasExp.proyectos.length){
+    r2.push([canvasExp.programa || '', canvasExp.og || '',
+             canvasExp.proyectos.map(etiquetaProyecto_).join('\n')]);
+  }
+  hojaExcel_(wb, '2 Programa', 'Paso 2 · Programa',
+    'El programa es el paraguas que agrupa todos los proyectos y responde al objetivo general.',
+    [{ t:'Programa', w:45 }, { t:'Objetivo general al que responde', w:55 },
+     { t:'Proyectos que integra', w:50 }], r2);
+
+  /* ── Hoja 3: proyectos ── */
+  var r3 = canvasExp.proyectos.map(function(py, k){
+    var o = objetivoPorId_(py.oeId);
+    var es = enfoquesDelProyecto_(py.id).map(function(e){ return e.text; });
+    return [ 'P' + (k+1), py.nombre || '',
+             o ? o.sigla + ' · ' + o.texto : { aviso:'Sin objetivo específico asignado' },
+             es.length ? es.join('\n') : { aviso:'Sin enfoque adoptado (se asigna en el paso 4)' } ];
+  });
+  hojaExcel_(wb, '3 Proyectos', 'Paso 3 · Proyectos',
+    'Un proyecto por objetivo específico. La última columna muestra los enfoques que el proyecto adoptó en el paso 4.',
+    [{ t:'N°', w:7 }, { t:'Proyecto', w:42 }, { t:'Objetivo específico al que responde', w:58 },
+     { t:'Enfoque(s) adoptado(s)', w:45 }], r3);
+
+  /* ── Hoja 4: enfoques y conceptos ── */
+  var r4 = [];
+  data.forEach(function(e){
+    var obs0 = '';
+    if(esEnfoqueDesprendido_(e)){
+      var orig = conceptoPorId_(e.origenConceptoId), padre = orig ? enfoqueDelConcepto_(orig.id) : null;
+      if(orig) obs0 = 'Enfoque desprendido de la etapa «' + orig.text + '»' + (padre ? ' del enfoque «' + padre.text + '»' : '');
+    }
+    var cs = e.conceptos || [];
+    if(!cs.length){
+      r4.push([siglaObjetivo_(e.objetivoId), e.text, perteneceA_(e), '', { aviso:'Sin conceptos' }, obs0]);
+      return;
+    }
+    cs.forEach(function(c, j){
+      var hijo = enfoquePorId_(c.desarrolladoEnId);
+      var obs = hijo ? 'Se desarrolla en el enfoque «' + hijo.text + '»' : '';
+      if(j === 0 && obs0) obs = obs0 + (obs ? '\n' + obs : '');
+      r4.push([siglaObjetivo_(e.objetivoId), e.text, perteneceA_(e), j+1, c.text, obs]);
+    });
+  });
+  hojaExcel_(wb, '4 Enfoques y conceptos', 'Paso 4 · Enfoques y conceptos',
+    'Cada enfoque (metodología de solución) con sus conceptos (etapas). «Red» indica de qué red de ATLAS.ti viene el enfoque: '+
+    'OG es la del objetivo general y OE1, OE2… las de los objetivos específicos (ver hoja 1). '+
+    'Los enfoques de la red del objetivo general pertenecen al programa; los demás, a un proyecto.',
+    [{ t:'Red', w:10 }, { t:'Enfoque', w:40 }, { t:'Pertenece a', w:34 }, { t:'N°', w:6 },
+     { t:'Concepto (etapa)', w:45 }, { t:'Observación', w:40 }], r4);
+
+  /* ── Hoja 5: preguntas y autores ── */
+  var r5 = [];
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      var qs = preguntasDe_(c).map(function(q, i){ return 'P' + (i+1) + '. ' + String(q.text).trim(); });
+      var as = (c.autores||[]).map(function(a){ return String(a.text||'').trim(); }).filter(Boolean);
+      r5.push([e.text, c.text,
+               qs.length ? qs.join('\n') : { aviso:'Sin preguntas' },
+               as.length ? as.join('\n') : { aviso:'Sin autores' }]);
+    });
+  });
+  hojaExcel_(wb, '5 Preguntas y autores', 'Paso 5 · Preguntas y autores',
+    'Para cada concepto, las preguntas que hay detrás y los autores consultados. '+
+    'Las preguntas se numeran P1, P2… dentro de cada concepto; esa misma numeración aparece en la hoja 6.',
+    [{ t:'Enfoque', w:34 }, { t:'Concepto (etapa)', w:36 }, { t:'Preguntas', w:62 },
+     { t:'Autores consultados', w:42 }], r5);
+
+  /* ── Hoja 6: procedimientos, herramientas y productos ── */
+  var r6 = [];
+  function filasProc(e, c, etqPreg, pr){
+    var hs = pr.herrs || [];
+    if(!hs.length){ r6.push([e.text, c.text, etqPreg, pr.text, { aviso:'Sin herramienta' }, '']); return; }
+    hs.forEach(function(h){
+      var ps = h.prods || [];
+      if(!ps.length){ r6.push([e.text, c.text, etqPreg, pr.text, h.text, { aviso:'Sin producto' }]); return; }
+      ps.forEach(function(pd){ r6.push([e.text, c.text, etqPreg, pr.text, h.text, pd.text]); });
+    });
+  }
+  data.forEach(function(e){
+    (e.conceptos||[]).forEach(function(c){
+      var hijo = enfoquePorId_(c.desarrolladoEnId);
+      var qs = preguntasDe_(c);
+      qs.forEach(function(q, i){
+        var etq = 'P' + (i+1) + '. ' + String(q.text).trim();
+        var ps = procsDePregunta_(c, q.id);
+        if(!ps.length){
+          r6.push([e.text, c.text, etq,
+                   hijo ? 'Se desarrolla en el enfoque «' + hijo.text + '»'
+                        : { aviso:'Sin procedimiento: la pregunta queda sin responder' }, '', '']);
+          return;
+        }
+        ps.forEach(function(pr){ filasProc(e, c, etq, pr); });
+      });
+      procsSinPregunta_(c).forEach(function(pr){
+        filasProc(e, c, { aviso: qs.length ? 'Sin pregunta asignada' : 'El concepto no tiene preguntas' }, pr);
+      });
+      if(!qs.length && !(c.procs||[]).length){
+        r6.push([e.text, c.text, { aviso:'El concepto no tiene preguntas' }, '', '', '']);
+      }
+    });
+  });
+  hojaExcel_(wb, '6 Procedimientos', 'Paso 6 · Procedimientos, herramientas y productos',
+    'Cada pregunta pide un dato. El procedimiento es lo que se hace para conseguirlo; la herramienta, con qué se hace; '+
+    'y el producto, dónde queda el dato conseguido. Una fila por producto. Las celdas en color ámbar señalan lo que falta.',
+    [{ t:'Enfoque', w:30 }, { t:'Concepto (etapa)', w:30 }, { t:'Pregunta que responde', w:46 },
+     { t:'Procedimiento (sub etapa)', w:44 }, { t:'Herramienta', w:28 }, { t:'Producto / entregable', w:40 }], r6);
+
+  /* ── Hoja 7: canvas ── */
+  var r7 = filasCanvas_().map(function(f){
+    return CANVAS_COLS.map(function(c){ return f[c[1]] || ''; });
+  });
+  hojaExcel_(wb, '7 Canvas', 'Paso 7 · Canvas de experimentos',
+    'El canvas no se escribe: se arma solo con lo trabajado en los pasos anteriores. Una fila por producto o entregable. '+
+    'Entran los enfoques adoptados por un proyecto y los de la red del objetivo general, que van al nivel del programa.',
+    CANVAS_COLS.map(function(c){ return { t:c[0], w:(c[1]==='og'||c[1]==='oe') ? 34 : 26 }; }), r7,
+    'Todavía no hay nada que consolidar: faltan proyectos con enfoque adoptado.');
+
+  /* Se abre en la hoja del paso desde el que se descargó, con su pestaña
+     resaltada (Excel espera que la hoja activa figure como seleccionada). */
+  var activa = Math.min(Math.max(pasoActual, 0), 7);
+  wb.views = [{ x:0, y:0, width:20000, height:12000, firstSheet:0,
+                activeTab: activa, visibility:'visible' }];
+  wb.worksheets.forEach(function(ws, i){
+    ws.views = [{ state:'frozen', ySplit:4, tabSelected: i === activa }];
+  });
+  return wb;
+}
+
 /* Lleva la vista hasta un enfoque de la lista y lo resalta un momento.
    Sirve para seguir el vínculo de una etapa desprendida sin perderse. */
 function irAEnfoque_(id){
@@ -3925,6 +4247,9 @@ function renderFases(){
             '<span class="fases-acts">'+
               '<button class="btnMini" id="btn-recargar" onclick="recargarRed()" '+
                 'title="Vuelve a traer la red guardada en el servidor">↻ Actualizar</button>'+
+              '<button class="btnMini btn-excel" id="btn-excel" onclick="descargarExcel()" '+
+                'title="Descarga todo lo trabajado en un archivo Excel, con una hoja por paso. Se abre en la hoja de este paso.">'+
+                '⬇ Descargar Excel</button>'+
               '<span class="fases-pct">'+pct+'%</span>'+
             '</span>'+
           '</div>'+
