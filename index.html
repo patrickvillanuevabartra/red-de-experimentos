@@ -300,6 +300,22 @@
   .redobj-vacia .redobj-sig{color:#8b938d;}
   .redobj-suelta{border-left-color:#c97a2c;background:#fdf4e7;}
   .redobj-suelta .redobj-sig{color:#8a4a12;}
+  /* Cada red (OG, OE1, OE2…) es un bloque cerrado con su color: así no se
+     confunde dónde termina una y empieza la otra. */
+  .redgrp{--red:#8a6d2f;--red-bg:#fbf7ee;margin:26px 0 10px;padding:4px 14px 12px;
+          border:2px solid var(--red);border-left-width:10px;border-radius:8px;background:var(--red-bg);}
+  .redgrp:first-child{margin-top:6px;}
+  .redgrp > .redobj{margin:8px 0 12px;padding:6px 0 10px;background:transparent;border-left:none;
+          border-bottom:2px solid var(--red);border-radius:0;}
+  .redgrp .redobj-sig{display:inline-block;font-size:15px;color:#fff;background:var(--red);
+          padding:4px 12px;border-radius:4px;letter-spacing:.06em;}
+  .redgrp .redobj-txt{font-size:16.5px;font-weight:500;color:#1f2622;margin-top:7px;}
+  .redgrp .redobj-n{font-size:14px;}
+  .redgrp > .tree-item{background:#fff;}
+  /* Enfoque abierto como rama dentro de la etapa que lo desarrolla */
+  .con-rama{margin:10px 0 4px 28px;padding-left:14px;border-left:3px dashed #534AB7;position:relative;}
+  .con-rama .enf-origen{display:none;}   /* ya se ve de qué etapa sale */
+  .con-rama > .tree-item{background:#fff;}
   @media(max-width:820px){.cv-proy-campos2{grid-template-columns:1fr;}}
   .cad-proy-oe{font-size:12.5px;color:var(--amber);margin-top:3px;}
   @media(max-width:820px){.cv-proy-campos{grid-template-columns:1fr;}}
@@ -2816,7 +2832,17 @@ var PALETA_CLARA = {
   procedimiento:{ fill:'#FAECE7', stroke:'#993C1D', texto:'#4A1B0C' },
   herramienta: { fill:'#FBF3DC', stroke:'#8A6D1F', texto:'#3D3009' },
   producto:    { fill:'#E6EFF7', stroke:'#3A6EA5', texto:'#152B40' },
-  pregunta:    { fill:'#F3F5F8', stroke:'#5B7083', texto:'#1F2D3A', aviso:'#A8501E' }
+  pregunta:    { fill:'#F3F5F8', stroke:'#5B7083', texto:'#1F2D3A', aviso:'#A8501E' },
+  rama:'#534AB7',
+  redes: {
+    og:     { linea:'#9A5B00', fondo:'#FDF6EA', texto:'#5A3500' },
+    oe: [   { linea:'#1E5A8A', fondo:'#EEF4FA', texto:'#0F2F4A' },
+            { linea:'#8A2D63', fondo:'#FAEFF5', texto:'#4A1534' },
+            { linea:'#3B6B2A', fondo:'#F0F6EC', texto:'#1E3A14' },
+            { linea:'#5B4BA8', fondo:'#F2F0FB', texto:'#2A2160' },
+            { linea:'#8A3B12', fondo:'#FBF0EA', texto:'#4A1B0C' } ],
+    suelta: { linea:'#6E7681', fondo:'#F3F4F6', texto:'#3A4048' }
+  }
 };
 var PALETA_OSCURA = {
   fondo:'#1F1E1D', linea:'#4A4844', textoTenue:'#A5A199',
@@ -2825,7 +2851,17 @@ var PALETA_OSCURA = {
   procedimiento:{ fill:'#712B13', stroke:'#F0997B', texto:'#F5C4B3' },
   herramienta: { fill:'#5C4A12', stroke:'#E0C46A', texto:'#F2E2B0' },
   producto:    { fill:'#1F3A52', stroke:'#7FB2DC', texto:'#C3DDF2' },
-  pregunta:    { fill:'#262D35', stroke:'#8FA6BC', texto:'#D3DEE8', aviso:'#F0B07A' }
+  pregunta:    { fill:'#262D35', stroke:'#8FA6BC', texto:'#D3DEE8', aviso:'#F0B07A' },
+  rama:'#AFA9EC',
+  redes: {
+    og:     { linea:'#E0A040', fondo:'#2A2418', texto:'#F2D9A8' },
+    oe: [   { linea:'#6FA8DC', fondo:'#1C2530', texto:'#CFE2F3' },
+            { linea:'#D98AB8', fondo:'#2B1E26', texto:'#F2D3E5' },
+            { linea:'#8CC27A', fondo:'#1E2A1B', texto:'#D4EBCB' },
+            { linea:'#AFA9EC', fondo:'#25223A', texto:'#DDDAF8' },
+            { linea:'#F0997B', fondo:'#2E201A', texto:'#F5C4B3' } ],
+    suelta: { linea:'#F0B07A', fondo:'#2E251B', texto:'#F5D3B3' }
+  }
 };
 function paletaActual(){
   var oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -2889,22 +2925,44 @@ var COLS_RED = {
   preg: { tit:'Preguntas',               w:290, color:'pregunta' },
   proc: { tit:'Procedimientos',          w:226, color:'procedimiento' },
   herr: { tit:'Herramientas',            w:226, color:'herramienta' },
-  prod: { tit:'Productos / entregables', w:226, color:'producto' }
+  prod: { tit:'Productos / entregables', w:226, color:'producto' },
+  /* Rama: la etapa que se desarrolla en otro enfoque abre, a su derecha,
+     ese enfoque con sus propias etapas. */
+  enf2: { tit:'Se desarrolla en',        w:226, color:'enfoque', antes:44 },
+  con2: { tit:'Sus conceptos',           w:226, color:'concepto' }
 };
+/* Bloque de cada red (OG, OE1…) en el diagrama */
+var BANDA = { padX:18, barra:9, padB:14, sep:22, sigFont:15, txtFont:14.5, txtLineH:19, txtMax:2 };
 var NET_SEP = 12;   // separación horizontal entre columnas
 var PREG = { font:13, lineH:16, maxLineas:6, sepPreg:5 };
 
 function columnasVisibles_(){
-  return nivelRed < 3 ? ['enf','con'] : ['enf','con','preg','proc','herr','prod'];
+  if(nivelRed >= 3) return ['enf','con','preg','proc','herr','prod'];
+  return hayRamas_() ? ['enf','con','enf2','con2'] : ['enf','con'];
+}
+/* En el paso 4, ¿alguna etapa se desarrolla en otro enfoque que exista? */
+function hayRamas_(){
+  return data.some(function(e){
+    return (e.conceptos||[]).some(function(c){ return !!enfoqueRama_(e, c); });
+  });
+}
+/* El enfoque en que se desarrolla una etapa, si se puede dibujar como rama:
+   existe, no es el mismo enfoque y no abre a su vez otra rama. */
+function enfoqueRama_(padre, c){
+  if(!c.desarrolladoEnId) return null;
+  var h = enfoquePorId_(c.desarrolladoEnId);
+  if(!h || h.id === padre.id || esEnfoqueDesprendido_(padre)) return null;
+  return h;
 }
 /* Posición x de cada columna visible, acumulando anchos */
 function geometriaColumnas_(){
-  var x = NET_SEP, out = [];
+  var x = NET_SEP + (hayBandas_() ? BANDA.padX : 0), out = [];
   columnasVisibles_().forEach(function(k){
+    x += COLS_RED[k].antes || 0;   // aire extra para que la rama se vea
     out.push({ k:k, x:x, w:COLS_RED[k].w });
     x += COLS_RED[k].w + NET_SEP;
   });
-  return { cols:out, ancho:x };
+  return { cols:out, ancho: x + (hayBandas_() ? BANDA.padX : 0) };
 }
 
 /* Árbol que se dibuja. No es el árbol de datos: en el paso 6 cada concepto
@@ -2913,12 +2971,34 @@ function geometriaColumnas_(){
    cadena que se le pide al estudiante:
    concepto → preguntas → procedimiento → herramienta → producto. */
 function arbolVisual_(){
-  var conPreg = columnasVisibles_().length > 2;
+  var conPreg = nivelRed >= 3;
+  var bandas = hayBandas_();
   function nodo(k, text, sub){ return { k:k, text:text||'', sub:sub||'', kids:[] }; }
-  return data.map(function(e){
-    var ne = nodo('enf', e.text, subDeNodo_(e, 0));
+  /* Enfoques que se dibujan como rama de una etapa: no van a la raíz. */
+  var enRama = {};
+  if(!conPreg){
+    data.forEach(function(e){
+      (e.conceptos||[]).forEach(function(c){
+        var h = enfoqueRama_(e, c); if(h) enRama[h.id] = true;
+      });
+    });
+  }
+  return data.filter(function(e){ return !enRama[e.id]; }).map(function(e){
+    /* Dentro del bloque de su red, el enfoque ya no repite el objetivo. */
+    var ne = nodo('enf', e.text, bandas ? subSinObjetivo_(e) : subDeNodo_(e, 0));
+    ne.e = e;
     ne.kids = (e.conceptos||[]).map(function(c){
-      var nc = nodo('con', c.text, subDeNodo_(c, 1));
+      var h = conPreg ? null : enfoqueRama_(e, c);
+      var nc = nodo('con', c.text, h ? '' : subDeNodo_(c, 1));
+      if(h){
+        /* Rama: la etapa abre a su derecha el enfoque en que se desarrolla */
+        var o = (h.objetivoId && h.objetivoId !== e.objetivoId) ? objetivoPorId_(h.objetivoId) : null;
+        var nh = nodo('enf2', h.text, o ? 'de la red ' + o.sigla : '');
+        nh.rama = true;
+        nh.kids = (h.conceptos||[]).map(function(c2){ return nodo('con2', c2.text); });
+        nc.kids.push(nh);
+        return nc;
+      }
       if(!conPreg) return nc;
       function nodoProc(pr){
         var npr = nodo('proc', pr.text);
@@ -3025,6 +3105,29 @@ function subDeNodo_(n, col){
   return '';
 }
 
+/* Subtexto del enfoque dentro de su bloque: solo de qué etapa se desprendió */
+function subSinObjetivo_(e){
+  if(!esEnfoqueDesprendido_(e)) return '';
+  var d = conceptoPorId_(e.origenConceptoId);
+  return d ? '↱ de la etapa «' + recortar_(d.text, 50) + '»' : '';
+}
+/* Hay bloques por red cuando el grupo ya redactó sus objetivos */
+function hayBandas_(){ return objetivosDisponibles_().length > 0; }
+
+/* Bloques del diagrama: uno por objetivo, en el orden del paso 1, y al
+   final los enfoques que aún no dicen de qué red vienen. */
+function bandasDiagrama_(arbol){
+  var out = [];
+  objetivosDisponibles_().forEach(function(o){
+    out.push({ o:o, sig:'RED DEL ' + o.sigla, txt:o.texto,
+      raices: arbol.filter(function(n){ return (n.e.objetivoId||'') === o.id; }) });
+  });
+  var sueltas = arbol.filter(function(n){ return !objetivoPorId_(n.e.objetivoId); });
+  if(sueltas.length) out.push({ o:null, sig:'ENFOQUES SIN RED ASIGNADA',
+    txt:'Indica en el paso 4 de qué objetivo viene cada uno.', raices:sueltas });
+  return out;
+}
+
 /* 1.ª pasada: alto propio (_h) y alto del subárbol (_sh) de cada nodo.
    El subárbol nunca es menor que el propio nodo, así que un texto largo
    arriba abre espacio aunque tenga un solo hijo. */
@@ -3048,13 +3151,70 @@ function colocarSubarbol_(n, top){
 
 function calcularLayout_(){
   var arbol = arbolVisual_(), y = NET.topPad;
-  arbol.forEach(function(e){
-    medirSubarbol_(e);
-    colocarSubarbol_(e, y);
-    y += e._sh;
-  });
   var g = geometriaColumnas_();
-  return { arbol:arbol, alto: y + NET.botPad, ancho: g.ancho, cols: g.cols };
+  var bandas = [];
+  if(hayBandas_()){
+    var anchoTxt = g.ancho - 2*NET_SEP - BANDA.barra - 2*BANDA.padX;
+    bandasDiagrama_(arbol).forEach(function(b){
+      b.lineas = b.txt ? partirTexto(b.txt, anchoTxt, BANDA.txtFont, BANDA.txtMax) : [];
+      b.top = y;
+      var cab = 14 + BANDA.sigFont + 8 + b.lineas.length * BANDA.txtLineH + 14;
+      b.cab = cab;
+      y += cab;
+      if(!b.raices.length) y += 30;          // espacio para «todavía sin enfoques»
+      b.raices.forEach(function(e){
+        medirSubarbol_(e);
+        colocarSubarbol_(e, y);
+        y += e._sh;
+      });
+      y += BANDA.padB;
+      b.alto = y - b.top;
+      y += BANDA.sep;
+      bandas.push(b);
+    });
+    y -= BANDA.sep;
+  } else {
+    arbol.forEach(function(e){
+      medirSubarbol_(e);
+      colocarSubarbol_(e, y);
+      y += e._sh;
+    });
+  }
+  return { arbol:arbol, bandas:bandas, alto: y + NET.botPad, ancho: g.ancho, cols: g.cols };
+}
+
+/* Bloque de una red: marco con el color del objetivo, barra gruesa a la
+   izquierda y la etiqueta en una franja de color, para que OG y cada OE
+   se lean como secciones separadas. */
+function bandaSVG_(b, W, paleta){
+  var c = b.o ? colorRed_(b.o.id, paleta) : paleta.redes.suelta;
+  var x = NET_SEP, w = W - 2*NET_SEP;
+  var f = 'font-family="system-ui,-apple-system,Segoe UI,sans-serif"';
+  var s = '<g>';
+  s += '<rect x="'+x+'" y="'+b.top.toFixed(1)+'" width="'+w+'" height="'+b.alto.toFixed(1)+'" rx="10" '
+     + 'fill="'+c.fondo+'" stroke="'+c.linea+'" stroke-width="2"/>';
+  s += '<rect x="'+x+'" y="'+b.top.toFixed(1)+'" width="'+BANDA.barra+'" height="'+b.alto.toFixed(1)+'" rx="4" fill="'+c.linea+'"/>';
+  /* Etiqueta en franja de color */
+  var tx = x + BANDA.barra + BANDA.padX - 6, ty = b.top + 12;
+  var anchoSig = Math.round(b.sig.length * BANDA.sigFont * 0.66) + 22;
+  s += '<rect x="'+tx+'" y="'+ty.toFixed(1)+'" width="'+anchoSig+'" height="'+(BANDA.sigFont+10)+'" rx="4" fill="'+c.linea+'"/>';
+  s += '<text x="'+(tx+11)+'" y="'+(ty + BANDA.sigFont + 3).toFixed(1)+'" '+f+' font-size="'+BANDA.sigFont+'" '
+     + 'font-weight="700" letter-spacing="0.06em" fill="'+paleta.fondo+'">'+escapeXml(b.sig)+'</text>';
+  var ly = ty + BANDA.sigFont + 10 + BANDA.txtLineH + 2;
+  b.lineas.forEach(function(lin){
+    s += '<text x="'+tx+'" y="'+ly.toFixed(1)+'" '+f+' font-size="'+BANDA.txtFont+'" font-weight="600" '
+       + 'fill="'+c.texto+'">'+escapeXml(lin)+'</text>';
+    ly += BANDA.txtLineH;
+  });
+  /* Línea que separa la cabecera del contenido */
+  var yl = b.top + b.cab - 4;
+  s += '<line x1="'+(x+BANDA.barra+10)+'" y1="'+yl.toFixed(1)+'" x2="'+(x+w-12)+'" y2="'+yl.toFixed(1)+'" '
+     + 'stroke="'+c.linea+'" stroke-width="1" opacity="0.5"/>';
+  if(!b.raices.length){
+    s += '<text x="'+tx+'" y="'+(b.top + b.cab + 20).toFixed(1)+'" '+f+' font-size="14" font-style="italic" '
+       + 'fill="'+c.texto+'" opacity="0.8">Todavía sin enfoques en esta red.</text>';
+  }
+  return s + '</g>';
 }
 
 /* Alto de un nodo con texto principal y, opcionalmente, un subtexto
@@ -3123,16 +3283,30 @@ function construirSVG_(paleta, conFondo){
        + 'letter-spacing="0.06em" fill="'+paleta.textoTenue+'">'+COLS_RED[c.k].tit.toUpperCase()+'</text>';
   });
 
-  /* Enlaces primero, para que queden detrás de los nodos */
+  /* Bloques de cada red, al fondo */
+  (lay.bandas||[]).forEach(function(b){ s += bandaSVG_(b, W, paleta); });
+
+  /* Enlaces primero, para que queden detrás de los nodos. La rama hacia el
+     enfoque en que se desarrolla una etapa va más gruesa y punteada. */
   function enlaces(n){
     n.kids.forEach(function(k){
-      s += enlaceSVG_(col[n.k].x + col[n.k].w, n._y, col[k.k].x, k._y, paleta.linea);
+      var x1 = col[n.k].x + col[n.k].w, x2 = col[k.k].x;
+      if(k.rama){
+        var mx = (x1 + x2) / 2;
+        s += '<path d="M'+x1+' '+n._y+' C'+mx+' '+n._y+' '+mx+' '+k._y+' '+x2+' '+k._y+'" fill="none" '
+           + 'stroke="'+paleta.rama+'" stroke-width="2.6" stroke-dasharray="6 4"/>';
+        s += '<path d="M'+(x2-7)+' '+(k._y-5)+' L'+x2+' '+k._y+' L'+(x2-7)+' '+(k._y+5)+'" fill="none" '
+           + 'stroke="'+paleta.rama+'" stroke-width="2.2"/>';
+      } else {
+        s += enlaceSVG_(x1, n._y, x2, k._y, paleta.linea);
+      }
       enlaces(k);
     });
   }
   /* Nodos */
   function nodos(n){
     var c = col[n.k], color = paleta[COLS_RED[n.k].color];
+    if(n.rama) color = { fill:color.fill, stroke:paleta.rama, texto:color.texto };
     s += (n.k === 'preg')
       ? nodoPreguntasSVG_(c.x, n._y, c.w, n, color)
       : nodoSVG_(c.x, n._y, c.w, n.text, color, n.sub);
@@ -3576,6 +3750,23 @@ function irAEnfoque_(id){
   setTimeout(function(){ nodo.classList.remove('enf-resalte'); }, 1800);
 }
 
+/* Bloque que encierra una red en la lista de enfoques */
+function bloqueRed_(c){
+  var g = document.createElement('div'); g.className = 'redgrp';
+  g.style.setProperty('--red', c.linea);
+  g.style.setProperty('--red-bg', c.fondo);
+  return g;
+}
+/* Color propio de cada red: el OG siempre en ámbar oscuro y cada OE con el
+   suyo, el mismo en la lista y en el diagrama. */
+function colorRed_(objId, paleta){
+  var R = paleta.redes;
+  if(objId === OBJ_GENERAL) return R.og;
+  var k = indiceEspecifico_(objId);
+  if(k < 0) return R.suelta;
+  return R.oe[k % R.oe.length];
+}
+
 /* Cabecera de la red de un objetivo dentro de la lista de enfoques */
 function cabeceraRedObjetivo_(o, n, suelta){
   var h = document.createElement('div');
@@ -3632,16 +3823,25 @@ function renderNetwork(){
      colgar los niveles de abajo. */
   var objsRed = objetivosDisponibles_();
   if(nivelRed < 3 && objsRed.length){
-    objsRed.forEach(function(o){
-      var del = enfoquesDelObjetivo_(o.id);
-      list.appendChild(cabeceraRedObjetivo_(o, del.length, false));
-      del.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+    /* Los enfoques que son rama de una etapa se muestran dentro de ella */
+    var enRamaL = {};
+    data.forEach(function(e){
+      (e.conceptos||[]).forEach(function(c){ var h = enfoqueRama_(e, c); if(h) enRamaL[h.id] = true; });
     });
-    var sueltos = data.filter(function(e){ return !objetivoPorId_(e.objetivoId); });
+    objsRed.forEach(function(o, i){
+      var del = enfoquesDelObjetivo_(o.id).filter(function(e){ return !enRamaL[e.id]; });
+      var grp = bloqueRed_(colorRed_(o.id, PALETA_CLARA));
+      grp.appendChild(cabeceraRedObjetivo_(o, del.length, false));
+      del.forEach(function(e){ grp.appendChild(buildNetEnfoque(e)); });
+      list.appendChild(grp);
+    });
+    var sueltos = data.filter(function(e){ return !objetivoPorId_(e.objetivoId) && !enRamaL[e.id]; });
     if(sueltos.length){
-      list.appendChild(cabeceraRedObjetivo_(
+      var grpS = bloqueRed_(PALETA_CLARA.redes.suelta);
+      grpS.appendChild(cabeceraRedObjetivo_(
         { sigla:'SIN CLASIFICAR', texto:'' }, sueltos.length, true));
-      sueltos.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
+      sueltos.forEach(function(e){ grpS.appendChild(buildNetEnfoque(e)); });
+      list.appendChild(grpS);
     }
   } else {
     data.forEach(function(e){ list.appendChild(buildNetEnfoque(e)); });
@@ -3881,8 +4081,17 @@ function buildNetConcepto(eid, c){
       vd.textContent = 'deshacer';
       vd.title = 'Separar el vínculo; el enfoque no se borra';
       vd.addEventListener('click', function(){ soltarDesprendimiento(c.id); });
-      vb.appendChild(vi); vb.appendChild(vd);
+      /* Si se puede dibujar como rama, el enfoque se abre aquí mismo, dentro
+         de la etapa, y el botón «ir» sobra. */
+      var enRama = padre && enfoqueRama_(padre, c);
+      if(!enRama) vb.appendChild(vi);
+      vb.appendChild(vd);
       wrap.appendChild(vb);
+      if(enRama){
+        var rama = document.createElement('div'); rama.className = 'con-rama';
+        rama.appendChild(buildNetEnfoque(hijo));
+        wrap.appendChild(rama);
+      }
     } else if(padre && puedeDesprenderse_(padre, c)){
       var db = document.createElement('button'); db.className = 'con-desp';
       db.textContent = '⤴ convertir en enfoque propio';
