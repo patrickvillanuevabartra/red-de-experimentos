@@ -198,6 +198,19 @@
   .cvf td:nth-child(3),.cvf td:nth-child(4){background:#fbf7f2;}
   .cvf td:nth-child(5),.cvf td:nth-child(6){background:#f2f6f5;}
   .cvf tbody tr:hover td:nth-child(-n+6){background:#f0eef7;}
+  /* Bloques del canvas: una franja de color por objetivo (OG, OE1, OE2…),
+     los mismos colores que en la red semántica. */
+  .cvf tr.cvf-g td{background:var(--g)!important;color:#fff;padding:0;border:none;}
+  .cvf tr.cvf-g td > div{position:sticky;left:0;display:inline-block;max-width:900px;
+          padding:11px 14px;font-size:15.5px;line-height:1.4;}
+  .cvf tr.cvf-g b{display:inline-block;background:rgba(255,255,255,.22);border-radius:4px;
+          padding:2px 9px;margin-right:9px;letter-spacing:.05em;}
+  .cvf tr.cvf-g span{display:block;font-size:13.5px;opacity:.92;margin-top:4px;}
+  .cvf tr.cvf-gsep td{height:14px;padding:0;border:none;background:#fff!important;}
+  .cvf tr.cvf-fila td:first-child{border-left:8px solid var(--g);}
+  /* Las columnas del objetivo que manda en el bloque se resaltan con su color */
+  .cvf tr.cvf-og td:nth-child(-n+2),
+  .cvf tr.cvf-oe td:nth-child(3), .cvf tr.cvf-oe td:nth-child(4){background:var(--gf)!important;color:var(--gt);font-weight:600;}
 
   /* cascada heredada */
   .casc-proy{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:4px;
@@ -1413,8 +1426,8 @@ function filasCanvas_(){
   var filas = [];
   var og = canvasExp.og || '', rg = canvasExp.rg || '', prog = canvasExp.programa || '';
 
-  function recorrer(e, oe, re, proy){
-    var base = { og:og, rg:rg, oe:oe, re:re, prog:prog, proy:proy, enf:(e?e.text:'') };
+  function recorrer(e, oe, re, proy, g){
+    var base = { og:og, rg:rg, oe:oe, re:re, prog:prog, proy:proy, enf:(e?e.text:''), _g:g };
     if(!e || !(e.conceptos||[]).length){ filas.push(base); return; }
     e.conceptos.forEach(function(c){
       /* La etapa que se desarrolla en otro enfoque lo deja anotado en su
@@ -1444,20 +1457,23 @@ function filasCanvas_(){
      paraguas de los tres proyectos. Entra al canvas al nivel del programa,
      con las columnas de objetivo específico y proyecto en blanco. */
   enfoquesDelObjetivo_(OBJ_GENERAL).forEach(function(e){
-    recorrer(e, '', '', '');
+    recorrer(e, '', '', '', OBJ_GENERAL);
   });
 
   /* De los demás solo entra lo ADOPTADO: los enfoques que el grupo asignó a
      un proyecto. Los que estudió y descartó se quedan en la red,
      documentados, pero fuera del canvas. */
-  canvasExp.proyectos.forEach(function(py){
+  /* Proyectos en el orden de su objetivo específico, para que cada OE
+     quede en un solo bloque aunque los proyectos se hayan creado salteados. */
+  var ordenOE = function(py){ var k = indiceEspecifico_(py.oeId); return k < 0 ? 999 : k; };
+  canvasExp.proyectos.slice().sort(function(a, b){ return ordenOE(a) - ordenOE(b); }).forEach(function(py){
     var esp = especificoPorId_(py.oeId) || { obj:'', res:'' };
     var es = enfoquesDelProyecto_(py.id).filter(function(e){
       return e.objetivoId !== OBJ_GENERAL;   // ese ya entró arriba
     });
     if(!es.length){ return; }
     es.forEach(function(e){
-      recorrer(e, esp.obj || '', esp.res || '', py.nombre || '');
+      recorrer(e, esp.obj || '', esp.res || '', py.nombre || '', indiceEspecifico_(py.oeId) >= 0 ? py.oeId : '');
     });
   });
 
@@ -1477,9 +1493,32 @@ function renderCanvasFinal_(){
   CANVAS_COLS.forEach(function(c){ h += '<th>'+esc(c[0])+'</th>'; });
   h += '</tr></thead><tbody>';
 
-  var previo = {};
+  var previo = {}, grupoAct = null;
   filas.forEach(function(f){
-    h += '<tr>';
+    /* Franja de bloque cada vez que cambia el objetivo */
+    if(f._g !== grupoAct){
+      var o = objetivoPorId_(f._g);
+      var cg = o ? colorRed_(o.id, PALETA_CLARA) : PALETA_CLARA.redes.suelta;
+      var tit, det;
+      if(f._g === OBJ_GENERAL){
+        tit = 'OBJETIVO GENERAL (OG)';
+        det = 'Enfoques que cuelgan del programa: no responden a un objetivo específico ni a un proyecto, por eso esas columnas quedan vacías.';
+      } else if(o){
+        tit = 'OBJETIVO ESPECÍFICO ' + o.sigla;
+        det = 'Proyectos que responden a este objetivo y los enfoques que adoptaron.';
+      } else {
+        tit = 'PROYECTOS SIN OBJETIVO ESPECÍFICO';
+        det = 'Asocia cada proyecto a un objetivo específico en el paso 3.';
+      }
+      if(grupoAct !== null) h += '<tr class="cvf-gsep"><td colspan="'+CANVAS_COLS.length+'"></td></tr>';
+      h += '<tr class="cvf-g" style="--g:'+cg.linea+'"><td colspan="'+CANVAS_COLS.length+'"><div>'+
+           '<b>'+esc(tit)+'</b>'+(o && o.texto ? esc(o.texto) : '')+'<span>'+esc(det)+'</span></div></td></tr>';
+      grupoAct = f._g;
+      previo = {};   // en cada bloque se vuelve a escribir todo arriba
+    }
+    var cgf = objetivoPorId_(f._g) ? colorRed_(f._g, PALETA_CLARA) : PALETA_CLARA.redes.suelta;
+    var tipo = f._g === OBJ_GENERAL ? ' cvf-og' : (objetivoPorId_(f._g) ? ' cvf-oe' : '');
+    h += '<tr class="cvf-fila'+tipo+'" style="--g:'+cgf.linea+';--gf:'+cgf.fondo+';--gt:'+cgf.texto+'">';
     var corta = false;   // en cuanto una celda cambia, las siguientes se reimprimen
     CANVAS_COLS.forEach(function(c){
       var k = c[1], v = f[k] || '';
